@@ -1,20 +1,4 @@
-# Run control file of the UCRP model
-
-#*********************************************************************************************************
-# Notes on NEXT STEPS ####
-#*********************************************************************************************************
-# 1.(DONE) Allow the initial UAAL to be treated as loss/gain in the intial year. 
-# 2. Specify all the data modeification in the run control file. 
-# 3. (Not necessary)Try calculating amortization basis using market value based UAAL.(code already in Model.Sim.)
-# 4. Incorporate initial asset smoothing.
-# 5. Add STIP
-
-#*********************************************************************************************************
-# Notes on UCRP features ####
-#*********************************************************************************************************
-# STIP borrowing.
-  # STIP borrowing is directly added to total contribution (C). It reduces the gap between contribution and ADC.
-
+# Run control file of the LAFPP model
 
 rm(list = ls())
 gc()
