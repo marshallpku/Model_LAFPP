@@ -1,22 +1,31 @@
 
 gc()
 
+Tier_select <- "t5"
+
 #*********************************************************************************************************
 # 1.1 Load data,  for all tiers ####
 #*********************************************************************************************************
 
 # Plan information
-#source("UCRP_Data_RP2014.R")
-#source("UCRP_Data_PlanInfo.R")
-load("./Data/UCRP.PlanInfo.RData")  # for all tiers
+# source("LAFPP_Data_RP2000.R")
+# source("LAFPP_Data_PlanInfo.R")
+# source("LAFPP_Data_ImportMemberData.R")
 
-# Initial population
-source("UCRP_Data_Population.R")    # for all tiers
+load("Data_inputs/LAFPP_PlanInfo.RData")    # for all tiers
+load("Data_inputs/LAFPP_MemberData.RData")  # for all tiers
+
+
+#*********************************************************************************************************
+# 1.2 Create decrement tables ####
+#*********************************************************************************************************
 
 # Decrement tables
-source("UCRP_Data_Decrements.R")   # for all tiers
+source("LAFPP_Model_Decrements.R")
 
-
+list.decrements <- get_decrements("t5")
+decrement.model      <- list.decrements$decrement.model
+mortality.post.model <- list.decrements$mortality.post.model
 
 
 #**********************************************
@@ -35,19 +44,19 @@ source("UCRP_Data_Decrements.R")   # for all tiers
  #                                 ea >= Global_paramlist$min.ea)
 
 
-## Exclude the initial amortization basis when testing the program.
-if(!paramlist$useAVamort) init_amort_raw %<>% mutate(amount.annual = 0) 
-
-## Exclude the external fund. (currently only STIP borrowing)
-if(!paramlist$useExtFund) extFund %<>% mutate_each(funs(. * 0), -year)
+# ## Exclude the initial amortization basis when testing the program.
+# if(!paramlist$useAVamort) init_amort_raw %<>% mutate(amount.annual = 0) 
+# 
+# ## Exclude the external fund. (currently only STIP borrowing)
+# if(!paramlist$useExtFund) extFund %<>% mutate_each(funs(. * 0), -year)
 
 
 #*********************************************************************************************************
-# 1.2  Actual investment return, for all tiers ####
+# 1.3  Actual investment return, for all tiers ####
 #*********************************************************************************************************
-source("UCRP_Model_InvReturns.R")
+source("LAFPP_Model_InvReturns.R")
 i.r <- gen_returns()
-i.r[, 3] <-  c(paramlist$ir.mean, paramlist$ir.mean/2, rep(paramlist$ir.mean, Global_paramlist$nyear - 2))
+#i.r[, 3] <-  c(paramlist$ir.mean, paramlist$ir.mean/2, rep(paramlist$ir.mean, Global_paramlist$nyear - 2))
 
 
 
@@ -55,34 +64,26 @@ i.r[, 3] <-  c(paramlist$ir.mean, paramlist$ir.mean/2, rep(paramlist$ir.mean, Gl
 # 1.2 Create plan data ####
 #*********************************************************************************************************
 
-source("UCRP_Data_PlanData_Transform.R")
+source("LAFPP_Model_PrepData.R")
 
-salary  <- get_salary_proc(paramlist$Tier_select, paramlist$w.salgrowth.method)
-benefit <- get_benefit_tier(paramlist$Tier_select)
-init_pop       <- get_initPop_tier(paramlist$Tier_select)
-entrants_dist  <- get_entrantsDist_tier(paramlist$Tier_select)
+salary  <- get_salary_proc(Tier_select)
+benefit <- get_benefit_tier(Tier_select)
+init_pop <- get_initPop_tier(Tier_select)
 
-
-# Chnange variable names
-decrement.ucrp %<>% rename_("pxT" = paste0("pxT.",          paramlist$Tier_select),
-                            "qxr.la"   = paste0("qxr.la.",  paramlist$Tier_select),
-                            "qxr.ca"   = paste0("qxr.ca.",  paramlist$Tier_select),
-                            "qxr.LSC"  = paste0("qxr.LSC.", paramlist$Tier_select),
-                            "qxr"      = paste0("qxr.",     paramlist$Tier_select),
-                            "qxt"      = paste0("qxt.",     paramlist$Tier_select)
-)
+if(Tier_select == "t6"){
+  entrants_dist  <- get_entrantsDist_tier("t6")} else  
+  entrants_dist  <- numeric(length(paramlist$range_ea))
 
 
-bfactor %<>% mutate(Tier = paramlist$Tier_select,
-                    bfactor = ifelse(Tier == "t13", bf.13, bf.non13)) %>% 
-             select(age, bfactor)
+bfactor %<>% select(yos, matches(Tier_select)) %>% 
+             rename_("bfactor" = paste0("bf.", Tier_select))
 
 
 
 #*********************************************************************************************************
 # 2. Demographics ####
 #*********************************************************************************************************
-source("UCRP_Model_Demographics.R")
+source("LAFPP_Model_Demographics.R")
 gc()
 pop <- get_Population()
 

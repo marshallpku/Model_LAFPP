@@ -26,6 +26,23 @@ library("btools")
 source("Functions.R")
 
 
+# Road map for model files (all with suffix "LAFPP_" and extension ".R")
+ # Data_RP2000
+ # Data_PlanInfo 
+ # Data_ImportMemberData
+
+ # Model_decrements
+ # Model_InvReturns
+ # Model_PrepData
+ # Model_Demographics
+
+
+
+
+
+
+
+
 # 0. Parameters   ####
 #*********************************************************************************************************
 
@@ -37,7 +54,7 @@ Global_paramlist <- list(
   ncore     = 4,
   
   min.ea    = 20,
-  max.ea    = 74, 
+  max.ea    = 64, # Retirement rate is 100% at age 65 
   
   min.age   = 20,
   max.age   = 120 
@@ -54,14 +71,14 @@ paramlist <- list(
   
   Grouping    = "fillin",
   
-  r.min  = 50,
-  r.max  = 75, 
+  r.min  = 41,
+  r.max  = 65, 
   
-  fasyears = 3,
-  cola     = 0.02,
+  #fasyears = 3,
+  #cola     = 0.03,
   i = 0.0725,
   
-  infl = 0.03,
+  infl = 0.0325,
   prod = 0.01,
   s.year = 5,
   
@@ -70,9 +87,12 @@ paramlist <- list(
   m.surplus0 = 30,
   m.surplus1 = 15,
   
-  r.full = 60, # age at which vested terms are assumed to retire. 
-  r.yos  = 5,
-  v.yos  = 5, 
+  r.full = 50, # age at which vested terms are assumed to retire(Temp, should use r.vben)
+  r.vben = 50, # age at which vested terms are assumed to retire.
+  
+  #r.yos  = 5,
+  #v.yos  = 5, 
+  #r.age
   
   startingSal_growth = 0.038,
   w.salgrowth.method =  "simple", # "simple" or "withInit"
@@ -91,7 +111,7 @@ paramlist <- list(
   pct.ca.F =  0.8, # proportion of females who opt for ca upon retirement
   pct.ca.M =  0.6,
   
-  factor.ca = 0.25,
+  #factor.ca = 0.25,
   
   # Investment returns
   seed = 1234,
@@ -120,7 +140,8 @@ paramlist$range_age = with(Global_paramlist, min.age:max.age)
 paramlist$range_age.r = with(paramlist, r.min:r.max)
 paramlist$m.max = with(paramlist, max(m.UAAL0, m.UAAL1, m.surplus0, m.surplus1))
 paramlist$v     = with(paramlist, 1/(1 + i))
-paramlist$pct.M.LSC = with(paramlist, 1 - pct.F.LSC)
+
+
 
 
 # # Assign parameters to the global environment
@@ -128,7 +149,6 @@ paramlist$pct.M.LSC = with(paramlist, 1 - pct.F.LSC)
 # assign_parmsList(paramlist,        envir = environment())  
 
 
-devMode <- FALSE
 
 
 

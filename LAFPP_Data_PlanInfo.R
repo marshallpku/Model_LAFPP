@@ -3,8 +3,25 @@
 # This script performs necessary transformations (eg. truncation, expansion, imputation) to the original data, 
 # but do not create new variables (eg. computing weighted average. )
 
+# Data sources:
+  # Data_inputs/LAFPP_mortality.RData
+  # Data_inputs/LAFPP_PlanInfo.xlsx
+
 # List of outputs
- # 
+  # mortality_LAFPP, 
+  # retRates, 
+  # termRates, 
+  # disbRates, 
+  # bfactors, 
+  # salgrowth
+  # tier.param
+
+# Output file:
+  # Data_inputs/LAFPP_PlanInfo.RData
+
+
+#### To do list
+# 1. More smoothed imputation of decrements
 
 
 
@@ -16,11 +33,11 @@ file_planInfo <- "Data_inputs/LAFPP_PlanInfo.xlsx"
 #                      ## Tools ####
 #*********************************************************************************************************
 
-read_planInfoTable <- function(file, sheet, cellStart, cellEnd, ...){
-  require(XLConnect)
-  range <- xlrange(file, sheet, cellStart, cellEnd)
-  readWorksheetFromFile(file, sheet = sheet, header=TRUE, region=range, ...)
-}
+# read_planInfoTable <- function(file, sheet, cellStart, cellEnd, ...){
+#   require(XLConnect)
+#   range <- xlrange(file, sheet, cellStart, cellEnd)
+#   readWorksheetFromFile(file, sheet = sheet, header=TRUE, region=range, ...)
+# }
 
 
 
@@ -40,13 +57,13 @@ mortality_LAFPP %<>%  select(age,
 #*********************************************************************************************************
 #                      ## Retirement rates  ####
 #*********************************************************************************************************
-retRates <- read_planInfoTable(file_planInfo, sheet="Ret_dec", "B2", "B3", colTypes="numeric")
+retRates <- read_ExcelRange(file_planInfo, sheet="Ret_dec", "B2", "B3", colTypes="numeric")
 
 
 #*********************************************************************************************************
 #                      ## benefit factors  ####
 #*********************************************************************************************************
-bfactors <- read_planInfoTable(file_planInfo, sheet="Ret_bfactor", "B2", "B3", colTypes="numeric")
+bfactor <- read_ExcelRange(file_planInfo, sheet="Ret_bfactor", "B2", "B3", colTypes="numeric")
 
 
 
@@ -55,9 +72,9 @@ bfactors <- read_planInfoTable(file_planInfo, sheet="Ret_bfactor", "B2", "B3", c
 #                      ## Termination rates  ####
 #*********************************************************************************************************
 # Term rates for yos < 5
-termRates1 <- read_planInfoTable(file_planInfo, sheet="Term_dec1", "B2", "B3", colTypes="numeric")
+termRates1 <- read_ExcelRange(file_planInfo, sheet="Term_dec1", "B2", "B3", colTypes="numeric")
 # Term rates for yos >=5 (given every 5 years, need to expand to all ages)
-termRates2 <- read_planInfoTable(file_planInfo, sheet="Term_dec2", "B2", "B3", colTypes="numeric") %>% 
+termRates2 <- read_ExcelRange(file_planInfo, sheet="Term_dec2", "B2", "B3", colTypes="numeric") %>% 
               rename(age.match = age)
 
 termRates2 <- data.frame(age = 20:64) %>% 
@@ -83,7 +100,7 @@ termRates <- expand.grid(ea = 20:74, age = 20:64) %>%
 #                      ## disability rates  ####
 #*********************************************************************************************************
 # Assume disability rates are 0 after age 64.
-disbRates <- read_planInfoTable(file_planInfo, sheet="Disb_dec", "B2", "B3", colTypes="numeric") %>% 
+disbRates <- read_ExcelRange(file_planInfo, sheet="Disb_dec", "B2", "B3", colTypes="numeric") %>% 
              rename(age.match = age)
 
 disbRates <- data.frame(age = 20:64) %>% 
@@ -99,7 +116,7 @@ disbRates <- data.frame(age = 20:64) %>%
 AV.infl  <- 0.0325 # Assumed inflation used in salary scale in AV2015 
 AV.raise <- 0.0075 # Assumed "across the board" salary increases used in salary scale in AV2015 
 
-salgrowth <- read_planInfoTable(file_planInfo, sheet="SalaryGrowth", "B2", "B3", colTypes="numeric") %>% 
+salgrowth <- read_ExcelRange(file_planInfo, sheet="SalaryGrowth", "B2", "B3", colTypes="numeric") %>% 
              rename(yos.match = yos)
 
 salgrowth <- data.frame(yos = 0:65) %>% 
@@ -107,10 +124,19 @@ salgrowth <- data.frame(yos = 0:65) %>%
   left_join(salgrowth) %>% 
   mutate(salgrowth = salgrowth + AV.infl + AV.raise) %>% 
   select(-yos.match)
-  
 
 
-save(mortality_LAFPP, retRates, termRates, disbRates, bfactors, salgrowth,
+
+#*********************************************************************************************************
+#                      ## Tier specific parameters ####
+#*********************************************************************************************************
+
+tier.param <- read_ExcelRange(file_planInfo, sheet="Tier.param", colTypes="character") %>% 
+  mutate_each(funs(as.numeric), -tier)
+
+row.names(tier.param) <- tier.param$tier
+
+save(mortality_LAFPP, retRates, termRates, disbRates, bfactor, salgrowth, tier.param,
      file  = "Data_inputs/LAFPP_PlanInfo.RData")
 
 
