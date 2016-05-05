@@ -80,12 +80,11 @@ paramlist <- list(
   
   infl = 0.0325,
   prod = 0.01,
-  s.year = 5,
+  s.year = 7,
+  s.lower  = 0.6,  # AVA is adjusted to be within 40% of MVA:
+  s.upper  = 1.4,
   
-  m.UAAL0 = 20,
-  m.UAAL1 = 20,
-  m.surplus0 = 30,
-  m.surplus1 = 15,
+  m = 20,
   
   r.full = 50, # age at which vested terms are assumed to retire(Temp, should use r.vben)
   r.vben = 50, # age at which vested terms are assumed to retire.
@@ -123,7 +122,7 @@ paramlist <- list(
   
   smooth_method = "method1",
   salgrowth_amort = 0,
-  amort_method = "cd",
+  amort_method = "cp",
   amort_type = "closed",
   nonNegC = "FALSE",
   EEC_fixed = "TRUE",
@@ -135,7 +134,7 @@ paramlist <- list(
 paramlist$range_ea = with(Global_paramlist, min.ea:max.ea)
 paramlist$range_age = with(Global_paramlist, min.age:max.age)
 paramlist$range_age.r = with(paramlist, r.min:r.max)
-paramlist$m.max = with(paramlist, max(m.UAAL0, m.UAAL1, m.surplus0, m.surplus1))
+# paramlist$m.max = with(paramlist, max(m.UAAL0, m.UAAL1, m.surplus0, m.surplus1))
 paramlist$v     = with(paramlist, 1/(1 + i))
 
 

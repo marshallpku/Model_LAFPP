@@ -128,7 +128,7 @@ AggLiab <- get_AggLiab(Tier_select,
 # 6.  Simulation ####
 #*********************************************************************************************************
 source("LAFPP_Model_Sim.R")
-penSim_results <- run_sim(paramlist$Tier_select, AggLiab)
+penSim_results <- run_sim(Tier_select, AggLiab)
 
 
 
@@ -141,8 +141,8 @@ penSim_results <- run_sim(paramlist$Tier_select, AggLiab)
 var_display <- c("Tier", "sim", "year", "FR", "MA", "AL", 
                  #"AL.act", "AL.act.laca", "AL.act.v", "AL.act.LSC", "AL.la", "AL.ca", "AL.term", 
                  #"PVFB.laca", "PVFB.LSC", "PVFB.v", "PVFB", 
-                 "B", "B.la", "B.ca", "B.LSC", "B.v", 
-                 "nactives", "nterms", "PR", "NC_PR","Switch_amort")
+                 "B", "B.la", "B.ca", "B.v", 
+                 "nactives", "nterms", "PR", "NC_PR")
 
 
 penSim_results %>% filter(sim == -1) %>% select(one_of(var_display))

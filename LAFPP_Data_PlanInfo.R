@@ -15,6 +15,7 @@
   # bfactors, 
   # salgrowth
   # tier.param
+  # init_amort_raw
 
 # Output file:
   # Data_inputs/LAFPP_PlanInfo.RData
@@ -136,8 +137,28 @@ tier.param <- read_ExcelRange(file_planInfo, sheet="Tier.param", colTypes="chara
 
 row.names(tier.param) <- tier.param$tier
 
-save(mortality_LAFPP, retRates, termRates, disbRates, bfactor, salgrowth, tier.param,
+
+
+#*********************************************************************************************************
+#                      ## Initial Amortization Basis  ####
+#*********************************************************************************************************
+
+init_amort_raw <- read_ExcelRange(file_planInfo, sheet = "Init_amort", colTypes="character")
+  
+names(init_amort_raw) <-  c("Type", "year.est", "m.init", "amount.init", "amount.annual", "year.remaining", "Balance")
+
+init_amort_raw %<>% 
+  mutate(year.est = year(year.est)) %>% 
+  mutate_each(funs(as.numeric), -Type)
+
+# init_amort_raw %>% str
+
+
+
+
+save(mortality_LAFPP, retRates, termRates, disbRates, bfactor, salgrowth, tier.param, init_amort_raw,
      file  = "Data_inputs/LAFPP_PlanInfo.RData")
+
 
 
 
