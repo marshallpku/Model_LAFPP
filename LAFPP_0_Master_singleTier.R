@@ -91,48 +91,43 @@ pop <- get_Population()
 
 
 #*********************************************************************************************************
-# 3. Individual actuarial liabilities, normal costs and benenfits ####
+# 3. Actuarial liabilities and benefits for contingent annuitants and survivors ####
 #*********************************************************************************************************
-source("UCRP_Model_IndivLiab.R")
+source("LAFPP_Model_ContingentAnnuity.R")
+liab.ca <- get_contingentAnnuity(decrement.model, apply_reduction = FALSE)
+
+
+
+#*********************************************************************************************************
+# 4. Individual actuarial liabilities, normal costs and benenfits ####
+#*********************************************************************************************************
+source("LAFPP_Model_IndivLiab.R")
 gc()
 
 
-liab <- get_indivLab(decrement.ucrp,
-                     salary,
-                     benefit,
-                     bfactor,
-                     get(paste0("init_terminated.",paramlist$Tier_select)),
-                     .Tier_select = paramlist$Tier_select 
-)
+liab <- get_indivLab(Tier_select)
 
 
 
 
-#*********************************************************************************************************
-# 4. Actuarial liabilities and benefits for contingent annuitants and survivors ####
-#*********************************************************************************************************
-source("UCRP_Model_ContingentAnnuity.R")
-liab.ca <- get_contingentAnnuity(decrement.ucrp)
 
 
 #*********************************************************************************************************
 # 5. Aggregate actuarial liabilities, normal costs and benenfits ####
 #*********************************************************************************************************
-source("UCRP_Model_AggLiab.R")
+source("LAFPP_Model_AggLiab.R")
 gc()
 
-AggLiab <- get_AggLiab(get(paste0("init_beneficiaries.", paramlist$Tier_select)),
+AggLiab <- get_AggLiab(Tier_select,
                        liab,
                        liab.ca,
                        pop) 
 
 
-
-
 #*********************************************************************************************************
 # 6.  Simulation ####
 #*********************************************************************************************************
-source("UCRP_Model_Sim.R")
+source("LAFPP_Model_Sim.R")
 penSim_results <- run_sim(paramlist$Tier_select, AggLiab)
 
 

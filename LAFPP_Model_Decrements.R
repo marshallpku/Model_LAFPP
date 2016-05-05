@@ -13,10 +13,10 @@ get_decrements <- function(Tier_select,
                            .Global_paramlist = Global_paramlist,
                            .paramlist = paramlist){
 
-Tier_select <- "t5"
-
-.Global_paramlist = Global_paramlist
-.paramlist = paramlist
+# Tier_select <- "t5"
+# 
+# .Global_paramlist = Global_paramlist
+# .paramlist = paramlist
 
 assign_parmsList(.Global_paramlist, envir = environment())
 assign_parmsList(.paramlist,        envir = environment())
@@ -146,10 +146,17 @@ decrement.model
 # which means all active members who survive all other risks at (r.max - 1) will enter the status "retired" for sure at age r.max (and collect the benefit regardless 
 # whether they will die at r.max)      
 
+pct.ca <- pct.ca.M * pct.male + pct.ca.F * pct.female
+pct.la <- 1 - pct.ca
+
 decrement.model %<>% group_by(ea) %>%  
   mutate(qxr = ifelse(age == r.max - 1,
                              1 - qxt - qxm.pre - qxd, 
-                             lead(qxr)*(1 - qxt - qxm.pre - qxd)) # Total probability of retirement
+                             lead(qxr) * (1 - qxt - qxm.pre - qxd)), # Total probability of retirement
+         qxr.la = ifelse(age == r.max, 0 , qxr * pct.la),  # Prob of opting for life annuity
+         qxr.ca = ifelse(age == r.max, 0 , qxr * pct.ca)   # Prob of opting for contingent annuity
+         
+         
 )   
          
 
@@ -161,6 +168,10 @@ decrement.model %<>% group_by(ea) %>%
 
 
 # Calculate various survival probabilities
+
+
+
+
 decrement.model %<>% 
   mutate( pxm.pre = 1 - qxm.pre,
           

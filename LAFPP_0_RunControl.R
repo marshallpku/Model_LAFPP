@@ -35,7 +35,7 @@ source("Functions.R")
  # Model_InvReturns
  # Model_PrepData
  # Model_Demographics
-
+ # Model_LAFPP
 
 
 
@@ -105,11 +105,8 @@ paramlist <- list(
   newEnt_byTier = c(t76 = 0, t13 = 0.65, tm13 = 0.35),
   #entrants_dist = rep(1/length(range_ea), length(range_ea)),
   
-  pct.F.LSC = 0.6, # assumed proporotion of females, for the calculation of LSC amount 
-  
-  
-  pct.ca.F =  0.8, # proportion of females who opt for ca upon retirement
-  pct.ca.M =  0.6,
+  pct.ca.M =  0.8, # proportion of males who opt for ca upon retirement
+  pct.ca.F =  0.6,
   
   #factor.ca = 0.25,
   
@@ -144,9 +141,9 @@ paramlist$v     = with(paramlist, 1/(1 + i))
 
 
 
-# # Assign parameters to the global environment
-# assign_parmsList(Global_paramlist, envir = environment())
-# assign_parmsList(paramlist,        envir = environment())  
+## Assign parameters to the global environment
+  # assign_parmsList(Global_paramlist, envir = environment())
+  # assign_parmsList(paramlist,        envir = environment())  
 
 
 

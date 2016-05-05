@@ -545,7 +545,7 @@ get_init.terms.temp <- function(file, sheet, planname, cellStart = "B2", cellEnd
   df <- readWorksheetFromFile(file, sheet = sheet, header=TRUE, region= range, colTypes="character") %>% 
     mutate(value = suppressWarnings(as.numeric(value)))
   df
-  init_retirees <- data.frame(age = 20:49) %>% 
+  init_retirees <- data.frame(age = 30:49) %>% 
     mutate(nterms = df[df$variable == "terms.n.tot", "value"]/n(),
            benefit.50   = 12 * df[df$variable == "terms.ben50.mon", "value"],
            planname = planname) %>%
@@ -638,10 +638,23 @@ df_HPP %<>%
 init_actives_all <- bind_rows(df_nonHPP, df_HPP)
 
 
+
+#*************************************************************************************************************
+#                           Post processing to make data usable to the model                       #####                  
+#*************************************************************************************************************
+
 init_terms_all %<>% mutate(ea = 20) 
 
+# 
+#    mutate(year = Global_paramlist$init.year,
+#           age.term = age - 1,   # assume all terms are terminated in init.year - 1.
+#           ea   = age.term - yos,
+#           start.year = year - (age - ea),
+#           planname = "Terms_t76_grouped") 
 
-
+# init_terms_all
+# 
+# get_tierData(init_terms_all, Tier_select) %>% print
 
 #*************************************************************************************************************
 #                           Gender and occuplation(fire/polic) distribuitons                        #####                  
@@ -677,7 +690,7 @@ save(init_actives_all, init_retirees_all, init_beneficiaries_all, init_disb_all,
      file = "Data_inputs/LAFPP_MemberData.RData")
 
 
-
+init_terms_all
 
 
 

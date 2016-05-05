@@ -1,16 +1,15 @@
 # Simulation of the demograhics for a single tier in LAFPP
 
 ## Modifications on the original model
- #1. Since all retirees are modeled as contingent annuitants, we only need calculate new retirees each year(by ea, age), and there is no need to 
-     # track the number of retirees after retirement. 
- #2. The mortality for retirees are now retirement age dependent.
+  # 1. Need to calculate the number of new retirees opting for contingent annuity(by ea, age) for each year. (Can be calculated after the loop) 
+  # 2. The mortality for retirees are now retirement age dependent.
 
 
-get_Population <- function(.init_pop         = init_pop,
-                           .entrants_dist    = entrants_dist,
-                           .decrement.model   = decrement.model,
-                           .paramlist        = paramlist,
-                           .Global_paramlist = Global_paramlist){
+get_Population <- function(init_pop_         = init_pop,
+                           entrants_dist_    = entrants_dist,
+                           decrement.model_  = decrement.model,
+                           paramlist_        = paramlist,
+                           Global_paramlist_ = Global_paramlist){
 
 ## Inputs
 # - range_ea:         all possible entry ages  
@@ -32,15 +31,15 @@ get_Population <- function(.init_pop         = init_pop,
 #  (5)Dead       (dim = 3) We do not really need an array for dead, what's needed is only the total number of dead.  
 
 # Run the section below when developing new features.   
-   # .init_pop         = init_pop
-   # .entrants_dist    = entrants_dist
-   # .decrement.model  = decrement.model
-   # .paramlist        = paramlist
-   # .Global_paramlist = Global_paramlist
+   # init_pop_         = init_pop
+   # entrants_dist_    = entrants_dist
+   # decrement.model_  = decrement.model
+   # paramlist_        = paramlist
+   # Global_paramlist_ = Global_paramlist
 
 
- assign_parmsList(.Global_paramlist, envir = environment())
- assign_parmsList(.paramlist,        envir = environment())  
+ assign_parmsList(Global_paramlist_, envir = environment())
+ assign_parmsList(paramlist_,        envir = environment())  
 
 
 #*************************************************************************************************************
@@ -65,8 +64,8 @@ wf_dimnames.la <- list(range_ea, range_age, init.year:(init.year + nyear - 1), i
 wf_active  <- array(0, wf_dim, dimnames = wf_dimnames)
 wf_disb    <- array(0, wf_dim, dimnames = wf_dimnames) 
 wf_dead    <- array(0, wf_dim, dimnames = wf_dimnames)
-wf_term    <- array(0, wf_dim.term,    dimnames = wf_dimnames.term)
-wf_la      <- array(0, wf_dim.la, dimnames = wf_dimnames.la)
+wf_term    <- array(0, wf_dim.term, dimnames = wf_dimnames.term)
+wf_la <- array(0, wf_dim.la, dimnames = wf_dimnames.la)
 
 
 newDeath.act  <- numeric(nyear)
@@ -84,9 +83,9 @@ newDisb.act <- numeric(nyear)
 # Note on initial retirees: It is assumed that all initial retirees entered the workforce at age 54 and retireed in year 1. 
 # Altough this may produce yos greater than r.max - ea.min, it is irrelevant to the calculation since we do not care about initial retirees' yos.  
 # 
-wf_active[, , 1]   <- .init_pop$actives 
-wf_la[, , 1, 1]    <- .init_pop$retirees
-wf_term[, , 1, 1]  <- .init_pop$terms   # note that the initial terms are assigned to year.term = init.year - 1
+wf_active[, , 1]   <- init_pop_$actives 
+wf_la[, , 1, 1]    <- init_pop_$retirees
+wf_term[, , 1, 1]  <- init_pop_$terms   # note that the initial terms are assigned to year.term = init.year - 1
 # 
 
 
@@ -99,7 +98,9 @@ wf_term[, , 1, 1]  <- .init_pop$terms   # note that the initial terms are assign
 # Assume the actual decrement rates are the same as the rates in decrement tables.
 # Later we may allow the actual decrement rates to differ from the assumed rates. 
 
-decrement_wf <- sapply(.decrement.ucrp, function(x){x[is.na(x)] <- 0; return(x)}) %>% data.frame # just for safety
+# decrement_wf <- sapply(decrement.model_, function(x){x[is.na(x)] <- 0; return(x)}) %>% data.frame # just for safety
+
+decrement_wf <- decrement.model_ %>% mutate_each(funs(na2zero)) # just for safety 
 
 
 # Define a function that produce transition matrices from decrement table. 
@@ -122,8 +123,8 @@ make_dmat <- function(qx, df = decrement_wf) {
 p_active2term    <- make_dmat("qxt")
 p_active2disb    <- make_dmat("qxd")
 p_active2dead    <- make_dmat("qxm.pre")
-p_active2retired <- make_dmat("qxr")      # This include all three types of retirement: LSC, contingent annuity, and life annuity.
-p_active2la <- make_dmat("qxr.la")   # Prob of retiring as a life annuitant.
+p_active2retiree <- make_dmat("qxr")
+p_active2la <- make_dmat("qxr.la")
 
 
 
@@ -138,17 +139,18 @@ p_disb2dead    <- make_dmat("qxm.pre") #need to modify later.
 
 
 # Where do the retirees go 
-# Before we find better approach, the age.r dependent mortality for retirees are given in a data frame containing all combos 
-# of year, year.r, ea, and age that exist in wf_la. 
+# Before we find better approach, the age.r(retriement age) dependent mortality for retirees are given in a data frame containing all combos 
+# of year, year.r(year of retirement), ea, and age that exist in wf_la. 
 
 p_la2dead <- expand.grid(ea = range_ea, age = range_age, year = init.year:(init.year + nyear - 1), year.r = init.year:(init.year + nyear - 1)) %>%
   #filter(age >= ea) %>% 
   mutate(age.r = age - (year - year.r)) %>% 
-  left_join(mortality.post.ucrp %>% select(age.r, age, qxm.post.W)) %>%
+  left_join(mortality.post.model %>% select(age.r, age, qxm.post.W)) %>%
   mutate(qxm.post.W = na2zero(qxm.post.W)) %>% 
   arrange(year, year.r, age, ea)
 
-# x <- (p_retired2dead %>% filter(year == 2015))
+
+# x <- (p_retiree2dead %>% filter(year == 2015))
 
 
 
@@ -222,14 +224,13 @@ calc_entrants <- function(wf0, wf1, delta, dist, no.entrants = FALSE){
 # i runs from 2 to nyear. 
 
 for (j in 1:(nyear - 1)){
-  #j <-  1  
+  # j <-  1  
   # compute the inflow to and outflow
-  active2term    <- wf_active[, , j] * p_active2term  # This will join wf_term[, , j + 1, j + 1], note that workers who terminate in year j won't join the terminated group until j+1. 
+  active2term    <- wf_active[, , j] * p_active2term     # This will join wf_term[, , j + 1, j + 1], note that workers who terminate in year j won't join the terminated group until j+1. 
   active2disb    <- wf_active[, , j] * p_active2disb
   active2dead    <- wf_active[, , j] * p_active2dead
-  active2retired <- wf_active[, , j] * p_active2retired    # This will be used to calculate the number of actives leaving the workforce
-  active2la      <- wf_active[, , j] * p_active2la          # This will join wf_la[, , j + 1, j + 1].
-  
+  active2retiree <- wf_active[, , j] * p_active2retiree  # This will be used to calculate the number of actives leaving the workforce
+  active2la      <- wf_active[, , j] * p_active2la
   
   # Where do the terminated_vested go
   term2dead  <- wf_term[, , j, ] * as.vector(p_term2dead)           # a 3D array, each slice(3rd dim) contains the # of death in a termination age group
@@ -243,8 +244,8 @@ for (j in 1:(nyear - 1)){
   
   
   # Total inflow and outflow for each status
-  out_active   <- active2term + active2disb + active2retired + active2dead 
-  new_entrants <- calc_entrants(wf_active[, , j], wf_active[, , j] - out_active, wf_growth, dist = .entrants_dist, no.entrants = no_entrance) # new entrants
+  out_active   <- active2term + active2disb + active2retiree + active2dead 
+  new_entrants <- calc_entrants(wf_active[, , j], wf_active[, , j] - out_active, wf_growth, dist = entrants_dist_, no.entrants = no_entrance) # new entrants
   
   out_term <- term2dead    # This is a 3D array 
   in_term  <- active2term  # This is a matrix
@@ -253,11 +254,12 @@ for (j in 1:(nyear - 1)){
   in_disb  <- active2disb
   
   out_la <- la2dead        # This is a 3D array (ea x age x year.retire)
-  in_la  <- active2la      # This is a matrix
+  in_la  <- active2la     # This is a matrix
   
-  in_dead <- active2dead +                                        # In UCRP model, since life annuitants are only part of the total retirees, in_dead does not reflect the total number of death. 
-    apply(term2dead, c(1,2), sum) + apply(la2dead, c(1,2), sum) + # get a matirix of ea x age by summing over year.term/year.retiree
-    disb2dead 
+  in_dead <- active2dead +                                             
+             apply(term2dead, c(1,2), sum) +   # In UCRP model, since life annuitants are only part of the total retirees, in_dead does not reflect the total number of death.
+             apply(la2dead, c(1,2), sum) +     # get a matirix of ea x age by summing over year.term/year.retiree
+             disb2dead 
   
   # Calculate workforce for next year. 
   wf_active[, , j + 1]  <- (wf_active[, , j] - out_active) %*% A + new_entrants
@@ -311,24 +313,19 @@ term_reduced <- wf_term %>% group_by(year, age) %>% summarise(number.v = sum(num
 
 
 #*************************************************************************************************************
-#                                     Number of members opting for LSC and contingent annuity   ####
+#                                     Number of new contingent annuitants   ####
 #*************************************************************************************************************
 
-
-
-wf_LSC.ca <- wf_active %>% left_join(decrement_wf %>% select(age, ea, qxr.LSC, qxr.ca)) %>% 
-             mutate(new_LSC = number.a * qxr.LSC,
-                    new_ca  = number.a * qxr.ca,
+wf_new.ca <- wf_active %>% left_join(decrement_wf %>% select(age, ea, qxr.ca)) %>% 
+             mutate(new_ca  = number.a * qxr.ca,
                     year = year + 1,
                     age  = age + 1)
 
 
 
 
-
-
 # Final outputs
-pop <-  list(active = wf_active, term = wf_term, disb = wf_disb, la = wf_la, dead = wf_dead, LSC.ca = wf_LSC.ca)
+pop <-  list(active = wf_active, term = wf_term, disb = wf_disb, la = wf_la, dead = wf_dead, new_ca = wf_new.ca)
 
 return(pop)
 
