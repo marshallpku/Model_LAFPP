@@ -27,6 +27,11 @@ source("Functions.R")
 
 
 # Road map for model files (all with suffix "LAFPP_" and extension ".R")
+ 
+ # Master files:
+   # Master_singleTier
+   # Master_allTiers
+
  # Data_RP2000
  # Data_PlanInfo 
  # Data_ImportMemberData
@@ -35,7 +40,10 @@ source("Functions.R")
  # Model_InvReturns
  # Model_PrepData
  # Model_Demographics
- # Model_LAFPP
+ # Model_ContingentAnnuity
+ # Model_IndivLiab
+ # Model_AggLiab
+ # Model_Sim
 
 
 
@@ -63,7 +71,7 @@ Global_paramlist <- list(
 
 paramlist <- list(
   
-  runname = "UCRP",
+  runname = "LAFPP",
   #Tier_select = "t76",
   simTiers = "joint",
   useAVamort  = F, 
@@ -71,12 +79,12 @@ paramlist <- list(
   
   Grouping    = "fillin",
   
-  r.min  = 41,
+  r.min  = 41, # this is not required age of retirement benefit. 
   r.max  = 65, 
   
   #fasyears = 3,
   #cola     = 0.03,
-  i = 0.0725,
+  i = 0.075,
   
   infl = 0.0325,
   prod = 0.01,
@@ -101,7 +109,7 @@ paramlist <- list(
   
   wf_growth = 0,
   no_entrance = "F",
-  newEnt_byTier = c(t76 = 0, t13 = 0.65, tm13 = 0.35),
+  newEnt_byTier = c(t1 = 0, t2 = 0, t3 = 0, t4 = 0, t5 = 0, t6 = 1),
   #entrants_dist = rep(1/length(range_ea), length(range_ea)),
   
   pct.ca.M =  0.8, # proportion of males who opt for ca upon retirement
@@ -111,7 +119,7 @@ paramlist <- list(
   
   # Investment returns
   seed = 1234,
-  ir.mean = 0.0725,
+  ir.mean = 0.075,
   ir.sd   = 0.12,
   
   
@@ -152,10 +160,9 @@ paramlist$v     = with(paramlist, 1/(1 + i))
 #  Run all tiers ####
 #*********************************************************************************************************
 
-
 paramlist$simTiers <- "joint"  # "joint"(defult) or "separate"
-source("UCRP_0_Master_allTiers.R")
-
+source("LAFPP_0_Master_allTiers.R")
+# 
  
  
 
@@ -170,9 +177,9 @@ source("UCRP_0_Master_allTiers.R")
 # since the inital UAAL will not be amortized.(amort basis of the first year is overriden by the values from AV2015, which is set to zero here.)
 # (Already solved.)
 
-# paramlist$Tier_select <- "t76"
-# source("UCRP_0_Master_singleTier.R")
-# 
+Tier_select <- "t6"
+source("LAFPP_0_Master_singleTier.R")
+ 
 
 
 

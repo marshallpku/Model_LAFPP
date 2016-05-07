@@ -24,9 +24,9 @@ get_indivLab <- function(Tier_select_,
                          salary_          = salary,
                          benefit_         = benefit,
                          bfactor_         = bfactor,
-                         init_terms_all_  = init_terms_all,
                          mortality.post.model_ = mortality.post.model,
                          liab.ca_ = liab.ca,
+                         init_terms_all_  = init_terms_all,
                          paramlist_ = paramlist,
                          Global_paramlist_ = Global_paramlist){
 
@@ -67,7 +67,7 @@ min.year <- min(init.year - (max.age - (r.max - 1)), init.year - (r.max - 1 - mi
 # the year a 120-year-old retiree in year 1 entered the workforce at age r.max - 1 (remeber ea = r.max - 1 is assigned to all inital retirees)
 # the year a r.max year old active in year 1 enter the workforce at age min.ea 
 
-liab.ca %>% filter(age == age.r) %>% select(age, liab.ca.sum.1)
+# liab.ca %>% filter(age == age.r) %>% select(age, liab.ca.sum.1)
 
 
 liab.active <- expand.grid(start.year = min.year:(init.year + nyear - 1) , 
@@ -80,7 +80,7 @@ liab.active <- expand.grid(start.year = min.year:(init.year + nyear - 1) ,
   left_join(decrement.model_) %>% 
   left_join(bfactor_) %>%
   left_join(mortality.post.model_ %>% filter(age == age.r) %>% select(age, ax.r.W)) %>%
-  left_join(liab.ca %>% filter(age == age.r) %>% select(age, liab.ca.sum.1)) %>% 
+  left_join(liab.ca_ %>% filter(age == age.r) %>% select(age, liab.ca.sum.1)) %>% 
   group_by(start.year, ea) %>%
   
   
@@ -206,7 +206,7 @@ liab.la <- merge(liab.la,
                  by = c("ea", "age","start.year")) %>%
            arrange(start.year, ea, age.r) %>% 
            as.data.frame %>% 
-           left_join(select(mortality.post.model, age, age.r, ax.r.W.ret = ax.r.W)) %>%  #  load present value of annuity for all retirement ages, ax.r.W in liab.active cannot be used anymore. 
+           left_join(select(mortality.post.model_, age, age.r, ax.r.W.ret = ax.r.W)) %>%  #  load present value of annuity for all retirement ages, ax.r.W in liab.active cannot be used anymore. 
            left_join(benefit_)
 
 
@@ -303,7 +303,7 @@ liab.term.init <- expand.grid(ea         = unique(init_terminated_$ea),
          age.term >= ea) %>%
   left_join(init_terminated_ %>% select(ea, age.term, start.year, yos, benefit.50)) %>%
   left_join(select(liab.active, start.year, ea, age, bfactor, COLA.scale, pxRm, px_r.vben_m)) %>%
-  left_join(mortality.post.model %>% filter(age.r == r.vben) %>% select(age, ax.r.W.term = ax.r.W)) %>%
+  left_join(mortality.post.model_ %>% filter(age.r == r.vben) %>% select(age, ax.r.W.term = ax.r.W)) %>%
   group_by(start.year, ea, age.term) %>%
 
   mutate(
@@ -342,7 +342,7 @@ liab.term <- expand.grid(start.year = (init.year - (r.vben - 1 - min.age)):(init
 liab.term <- merge(liab.term,
                    select(liab.active, start.year, year, ea, age, Bx.v, COLA.scale, pxRm, px_r.vben_m) %>% data.table(key = "ea,age,start.year"),
                    all.x = TRUE, by = c("ea", "age","start.year")) %>% as.data.frame %>% 
-             left_join(mortality.post.model %>% filter(age.r == r.vben) %>% select(age, ax.r.W.term = ax.r.W))   # load present value of annuity for retirement age r.vben
+             left_join(mortality.post.model_ %>% filter(age.r == r.vben) %>% select(age, ax.r.W.term = ax.r.W))   # load present value of annuity for retirement age r.vben
 
 liab.term %<>% as.data.frame %>%
   group_by(start.year, ea, age.term) %>%

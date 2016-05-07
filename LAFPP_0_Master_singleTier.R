@@ -1,7 +1,7 @@
 
 gc()
 
-Tier_select <- "t5"
+# Tier_select <- "t1"
 
 #*********************************************************************************************************
 # 1.1 Load data,  for all tiers ####
@@ -9,7 +9,7 @@ Tier_select <- "t5"
 
 # Plan information
 # source("LAFPP_Data_RP2000.R")
-# source("LAFPP_Data_PlanInfo.R")
+ source("LAFPP_Data_PlanInfo.R")
 # source("LAFPP_Data_ImportMemberData.R")
 
 load("Data_inputs/LAFPP_PlanInfo.RData")    # for all tiers
@@ -23,7 +23,7 @@ load("Data_inputs/LAFPP_MemberData.RData")  # for all tiers
 # Decrement tables
 source("LAFPP_Model_Decrements.R")
 
-list.decrements <- get_decrements("t5")
+list.decrements <- get_decrements(Tier_select)
 decrement.model      <- list.decrements$decrement.model
 mortality.post.model <- list.decrements$mortality.post.model
 
@@ -35,7 +35,7 @@ mortality.post.model <- list.decrements$mortality.post.model
 ## Exclude selected type(s) of initial members
  # init_actives_all %<>% mutate(nactives = 0) 
  # init_retirees_all %<>% mutate(nretirees = 0)
- # init_beneficiaries_all %<>% mutate(n.R0S1 = 0)
+ # init_beneficiaries_all %<>% mutate(nbeneficiaries = 0)
  # init_terminated_all %<>% mutate(nterm = 0)
 
 
@@ -94,7 +94,7 @@ pop <- get_Population()
 # 3. Actuarial liabilities and benefits for contingent annuitants and survivors ####
 #*********************************************************************************************************
 source("LAFPP_Model_ContingentAnnuity.R")
-liab.ca <- get_contingentAnnuity(decrement.model, apply_reduction = FALSE)
+liab.ca <- get_contingentAnnuity(Tier_select, apply_reduction = FALSE)
 
 
 
@@ -138,14 +138,14 @@ penSim_results <- run_sim(Tier_select, AggLiab)
 #*********************************************************************************************************
 
 
-var_display <- c("Tier", "sim", "year", "FR", "MA", "AL", 
+var_display <- c("Tier", "sim", "year", "FR", "MA", "AL", "AL.la", "AL.ca", 
                  #"AL.act", "AL.act.laca", "AL.act.v", "AL.act.LSC", "AL.la", "AL.ca", "AL.term", 
                  #"PVFB.laca", "PVFB.LSC", "PVFB.v", "PVFB", 
                  "B", "B.la", "B.ca", "B.v", 
                  "nactives", "nterms", "PR", "NC_PR")
 
 
-penSim_results %>% filter(sim == -1) %>% select(one_of(var_display))
+penSim_results %>% filter(sim == -1) %>% select(one_of(var_display)) %>% print
 #penSim_results %>% filter(sim == -1) %>% data.frame
 
 

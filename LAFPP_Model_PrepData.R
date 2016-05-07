@@ -34,9 +34,9 @@
 
 # 
 
-get_tierData <- function(df, tier = Tier_select, grouping = paramlist$Grouping) df %<>% filter(grepl(tier, planname), grepl(grouping, planname))
+get_tierData <- function(df, tier, grouping = paramlist$Grouping) df %<>% filter(grepl(tier, planname), grepl(grouping, planname))
 
-get_tierData(init_actives_all) %>% print
+# get_tierData(init_actives_all) %>% print
 
 #*************************************************************************************************************
 #                        Create weighed salary scale for facutly and staff members                      #####                  
@@ -201,7 +201,7 @@ salary.fn <- get_salary(SS.all.fn, init_sal.fn)
 return(salary.fn)
 }
 
- get_salary_proc("t6") %>% arrange(start.year, ea, age)
+ # get_salary_proc("t6") %>% arrange(start.year, ea, age)
 
 
 
@@ -328,8 +328,8 @@ get_entrantsDist <- function(.actives,          #= tailored_demoData$actives,
      # .actives          = actives
      # .range_ea = range_ea
      # simple = F
-  #   .paramlist        = paramlist
-  #   .Global_paramlist = Global_paramlist  
+     #   .paramlist        = paramlist
+     #   .Global_paramlist = Global_paramlist  
   
   assign_parmsList(.Global_paramlist, envir = environment())
   assign_parmsList(.paramlist,        envir = environment())   

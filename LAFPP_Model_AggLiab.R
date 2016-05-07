@@ -1,4 +1,4 @@
-# This script calculate aggregate annual ALs, NCs and benefit payments for UCRP.
+# This script calculate aggregate annual ALs, NCs and benefit payments for LAFPP.
 
 
 
@@ -6,7 +6,8 @@ get_AggLiab <- function( Tier_select_,
                          liab_,
                          liab.ca_,
                          pop_,
-                        
+                         mortality.post.model_,
+                         
                          init_beneficiaries_all_  = init_beneficiaries_all,
                          paramlist_        = paramlist,
                          Global_paramlist_ = Global_paramlist){
@@ -15,6 +16,7 @@ get_AggLiab <- function( Tier_select_,
   
   
   # Run the section below when developing new features.  
+    # for single tier
      # Tier_select_ = Tier_select
      # liab_   = liab
      # liab.ca_ = liab.ca
@@ -22,6 +24,24 @@ get_AggLiab <- function( Tier_select_,
      # init_beneficiaries_ = get_tierData(init_beneficiaries_all, Tier_select)
      # paramlist_ = paramlist
      # Global_paramlist_ = Global_paramlist
+  
+   # for all tiers
+     # Tier_select_ = "t1"
+     # liab_   = liab.t1
+     # liab.ca_ = liab.ca.t1
+     # pop_    = pop$pop.t1
+     # mortality.post.model_ = mortality.post.model.t1
+     # 
+     # init_beneficiaries_all_  = init_beneficiaries_all
+     # paramlist_ = paramlist
+     # Global_paramlist_ = Global_paramlist
+     
+  
+  
+  
+  
+  
+  
   
    assign_parmsList(Global_paramlist_, envir = environment())
    assign_parmsList(paramlist_,        envir = environment())
@@ -37,7 +57,6 @@ get_AggLiab <- function( Tier_select_,
    # "av"  menas sum of variables related to life annuity, contingent annuity, and term benefits for actives. 
    
    
-  
   #*************************************************************************************************************
   #                                     ## Liabilities and NCs for actives   ####
   #*************************************************************************************************************
@@ -162,7 +181,7 @@ get_AggLiab <- function( Tier_select_,
                  group_by(init.age) %>% 
                  arrange(init.age, age) %>% 
                  mutate(age.r = age.r[age == init.age]) %>% # necessary?
-                 left_join(select(mortality.post.model, age, age.r, ax.r.W.ben = ax.r.W, pxm.post.W)) %>% 
+                 left_join(select(mortality.post.model_, age, age.r, ax.r.W.ben = ax.r.W, pxm.post.W)) %>% 
                  mutate(year     =  init.year + age -  init.age,
                         n.R0S1   = nbeneficiaries * cumprod(ifelse(age == init.age, 1, lag(pxm.post.W))),
                         B.ca     = benefit * (1 + cola)^(age - init.age),
