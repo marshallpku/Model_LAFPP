@@ -57,7 +57,7 @@ source("Functions.R")
 Global_paramlist <- list(
   
   init.year = 2015,
-  nyear     = 40,
+  nyear     = 10,
   nsim      = 5,
   ncore     = 4,
   
@@ -84,7 +84,7 @@ paramlist <- list(
   
   #fasyears = 3,
   #cola     = 0.03,
-  i = 0.075,
+  i = 0.065,
   
   infl = 0.0325,
   prod = 0.01,
@@ -160,9 +160,9 @@ paramlist$v     = with(paramlist, 1/(1 + i))
 #  Run all tiers ####
 #*********************************************************************************************************
 
-paramlist$simTiers <- "joint"  # "joint"(defult) or "separate"
-source("LAFPP_0_Master_allTiers.R")
-# 
+# paramlist$simTiers <- "joint"  # "joint"(defult) or "separate"
+# source("LAFPP_0_Master_allTiers.R")
+# # 
  
  
 
@@ -177,10 +177,15 @@ source("LAFPP_0_Master_allTiers.R")
 # since the inital UAAL will not be amortized.(amort basis of the first year is overriden by the values from AV2015, which is set to zero here.)
 # (Already solved.)
 
-Tier_select <- "t6"
-source("LAFPP_0_Master_singleTier.R")
+# Tier_select <- "t6"
+# source("LAFPP_0_Master_singleTier.R")
  
 
+
+
+
+Tier_select <- "t5"
+source("LAFPP_0_Master_Duration.R")
 
 
 
