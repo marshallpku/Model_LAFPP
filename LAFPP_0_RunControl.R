@@ -20,7 +20,7 @@ library(readxl)
 library(stringr)
 library("readxl")
 library("XLConnect") # slow but convenient because it reads ranges; NOTE: I had to install Java 64-bit on Windows 10 64-bit to load properly
-library(xlsx)
+# library(xlsx)
 library("btools")
 
 source("Functions.R")
@@ -149,8 +149,8 @@ paramlist$v     = with(paramlist, 1/(1 + i))
 
 
 ## Assign parameters to the global environment
-  # assign_parmsList(Global_paramlist, envir = environment())
-  # assign_parmsList(paramlist,        envir = environment())  
+   # assign_parmsList(Global_paramlist, envir = environment())
+   # assign_parmsList(paramlist,        envir = environment())  
 
 
 
@@ -183,9 +183,12 @@ paramlist$v     = with(paramlist, 1/(1 + i))
 
 
 
+   
+   
+# Checking the importance of death benefit
 
-Tier_select <- "t5"
-source("LAFPP_0_Master_Duration.R")
+ Tier_select <- "t5"
+# source("LAFPP_0_Master_Duration.R")
 
 
 
