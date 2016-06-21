@@ -1,4 +1,4 @@
-# Checking the importance of death benefit in LAFPP. (Death before retirement)
+# Checking the importance of death benefit and disability benefit in LAFPP. (Death before retirement)
 
 # Approach
  # Comparing liability, PVFB, and benefit of service retirement and death benefit for 1 unit of actives 
@@ -20,6 +20,34 @@
 
 
 
+
+decrement.model_ = decrement.model
+salary_          = salary
+benefit_         = benefit
+bfactor_         = bfactor
+init_terms_all_ = init_terms_all # get_tierData(init_terms_all, Tier_select)
+Tier_select_     = "t5"
+mortality.post.model_ = mortality.post.model
+liab.ca_         = liab.ca
+paramlist_       =  paramlist
+Global_paramlist_ =  Global_paramlist
+
+
+assign_parmsList(Global_paramlist_, envir = environment()) # environment() returns the local environment of the function.
+assign_parmsList(paramlist_,        envir = environment())
+
+# Choosing tier specific parameters and data
+fasyears <- tier.param[Tier_select_, "fasyears"]
+r.vben   <- tier.param[Tier_select_, "r.vben"]
+r.yos    <- tier.param[Tier_select_, "r.yos"]
+r.age    <- tier.param[Tier_select_, "r.age"]
+v.yos    <- tier.param[Tier_select_, "v.yos"]
+cola     <- tier.param[Tier_select_, "cola"]
+
+init_terminated_ <-  get_tierData(init_terms_all_, Tier_select_)
+
+
+
 min.year <- min(init.year - (max.age - (r.max - 1)), init.year - (r.max - 1 - min.ea))
 ## Track down to the year that is the smaller one of the two below: 
 # the year a 120-year-old retiree in year 1 entered the workforce at age r.max - 1 (remeber ea = r.max - 1 is assigned to all inital retirees)
@@ -29,7 +57,7 @@ min.year <- min(init.year - (max.age - (r.max - 1)), init.year - (r.max - 1 - mi
 
 
 liab.active <- expand.grid(start.year = init.year , 
-                           ea = c(20, 30, 40,48), age = range_age) %>%
+                           ea = c(20, 30, 40), age = range_age) %>%
   filter(start.year + max.age - ea >= init.year, age >= ea) %>%  # drop redundant combinations of start.year and ea. (delet those who never reach year 1.) 
   mutate(year = start.year + age - ea) %>%  # year index in the simulation)
   arrange(start.year, ea, age) %>% 
@@ -149,7 +177,8 @@ liab.active %<>%
 liab.active %<>%   
   mutate( gx.disb = 1, 
           # gx.disb = 0,
-          Bx.disb  = gx.disb * fas * 0.60,  # This is the benefit level if the employee starts to CLAIM benefit at age x, not internally retire at age x. 
+          Bx.disb  = gx.disb * fas * ifelse(yos < 20, 0.55,
+                                     ifelse(yos > 30, 0.75, 0.65)),  # This is the benefit level if the employee starts to CLAIM benefit at age x, not internally retire at age x. 
           TCx.disb   = lead(Bx.disb) * qxd * lead(ax) * v,         # term cost of life annuity at the internal retirement age x (start to claim benefit at age x + 1)
           
           # TCx.r = Bx.r * qxr.a * ax,
@@ -168,19 +197,46 @@ liab.active %<>%
 
 
 
-
-
 Comparison <- 
-liab.active %>% select(year, age, ea, 
+liab.active %>% select(year,ea, age, 
                        ALx.EAN.CP.laca, NCx.EAN.CP.laca, PVFBx.laca, 
                        ALx.EAN.CP.death, NCx.EAN.CP.death, PVFBx.death,
                        ALx.EAN.CP.disb, NCx.EAN.CP.disb, PVFBx.disb) %>% 
   mutate(pct.AL_death = 100 * ALx.EAN.CP.death / ALx.EAN.CP.laca,
          pct.NC_death = 100 * NCx.EAN.CP.death / NCx.EAN.CP.laca,
          pct.AL_disb  = 100 * ALx.EAN.CP.disb / ALx.EAN.CP.laca,
-         pct.NC_disb  = 100 * NCx.EAN.CP.disb / NCx.EAN.CP.laca)
+         pct.NC_disb  = 100 * NCx.EAN.CP.disb / NCx.EAN.CP.laca) %>% 
+  filter(age %in% seq(20,60, 5))
 
-  
+
+# AL, NC of death benefit and disability benefit as % of service retirement benefit.   
+Comparison %>% select(ea, age, starts_with("pct")) %>% print
+
+
+# Notes
+ #1. ALs of death benefit are around 1%~4% of retirement benefit, depending on ea and age. 
+ #2. NCs of death benefit are around 6% of retirement benefit for ea less than 30 and 11% for ea of 40. 
+ 
+ #3. ALs of disability benefit are around 5%~10% of retirement benefit for ea less than 30, and 6%~15% for ea of 40. 
+ #4. NCs of disability benefit are around 10%~12% of retirement benefit for ea less than 30, and 25% for ea of 40. 
+
+# Conclusion:
+ # Death and disability benefits are worth modeling for LAFPP.
+ # Adding death and disability benefits are expected to increase normal cost by around 15%~20%, and AL by 6%~12%, which are not negligible. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

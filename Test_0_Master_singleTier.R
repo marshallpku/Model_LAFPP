@@ -106,6 +106,8 @@ liab.ca <- get_contingentAnnuity(Tier_select, apply_reduction = FALSE)
 #source("LAFPP_Model_IndivLiab.R")
 #gc()
 
+source("Test_DeathBen.R")
+
 
 #liab <- get_indivLab(Tier_select)
 
