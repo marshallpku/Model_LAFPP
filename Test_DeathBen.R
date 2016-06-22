@@ -10,8 +10,7 @@
 # (c) all members are assumed married, spouses at the same age. 
 
 # Service retirement provision
-# (a) Singe retirement age at 60
-# (b) benefit paid in life annuity (no surviving spouses)
+# (a) benefit paid in life annuity (no surviving spouses)
 
 # Other assumptions:
 # Mortaity is the same for actives and retirees. 
