@@ -142,7 +142,7 @@ var_display <- c("Tier", "sim", "year", "FR", "MA", "AL", "AL.la", "AL.ca",
                  #"AL.act", "AL.act.laca", "AL.act.v", "AL.act.LSC", "AL.la", "AL.ca", "AL.term", 
                  #"PVFB.laca", "PVFB.LSC", "PVFB.v", "PVFB", 
                  "B", "B.la", "B.ca", "B.v", 
-                 "nactives", "nterms", "PR", "NC_PR")
+                 "nactives", "nterms", "PR", "NC_PR", "NC")
 
 
 penSim_results %>% filter(sim == -1) %>% select(one_of(var_display)) %>% print

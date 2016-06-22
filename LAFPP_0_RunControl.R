@@ -84,7 +84,7 @@ paramlist <- list(
   
   #fasyears = 3,
   #cola     = 0.03,
-  i = 0.065,
+  i = 0.075,
   
   infl = 0.0325,
   prod = 0.01,
@@ -162,7 +162,7 @@ paramlist$v     = with(paramlist, 1/(1 + i))
 
 # paramlist$simTiers <- "joint"  # "joint"(defult) or "separate"
 # source("LAFPP_0_Master_allTiers.R")
-# # 
+#
  
  
 
@@ -187,7 +187,7 @@ paramlist$v     = with(paramlist, 1/(1 + i))
    
 # Checking the importance of death benefit
 
- Tier_select <- "t5"
+Tier_select <- "t5"
 # source("Test_0_Master_singleTier.R")
 
 

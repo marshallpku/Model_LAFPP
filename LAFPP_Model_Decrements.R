@@ -40,8 +40,6 @@ mortality.model <- data.frame(age = range_age) %>%
     # as that obtained by calculating the members for males and females separately and summing them up. This is required by the the actuarially 
     # equivalence between life annuity and contingent annuity. 
  
-  # Since there is no life annuitants in LAFPP, the age dependent weights are redundant, we keep it here just for making the code more consistent across
-  # different plans.  
 
 mortality.post.model <- expand.grid(age = range_age, 
                                     age.r = min(range_age.r):max.age) %>% 
