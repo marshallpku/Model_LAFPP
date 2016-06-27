@@ -46,7 +46,20 @@ source("Functions.R")
  # Model_Sim
 
 
+# Notes on DROP
+# 1. DROP participants are treated as retirees in the model, they do not affect the determination of new entrants. 
+# 2. Plan to model DROP participants' payroll and EEC, which are not neglectible quantitatively. 
+# 3. When assuming DROP participants are retirees, the fund pays benefits to DROP accounts. 
 
+# Notes on benefit for death before retirement
+
+
+# Notes on disability benefits
+# As of June26 2016
+  # all disabilities are assumed as service connected (90% in the AV)
+  # disability rate not applied to members eligible to DROP
+  # Disability are modeled as life annuity. 
+  # Plan to apply an adjustment factor to mortality after disability mortality 
 
 
 
@@ -57,7 +70,7 @@ source("Functions.R")
 Global_paramlist <- list(
   
   init.year = 2015,
-  nyear     = 30,
+  nyear     = 10,
   nsim      = 5,
   ncore     = 4,
   
@@ -160,8 +173,8 @@ paramlist$v     = with(paramlist, 1/(1 + i))
 #  Run all tiers ####
 #*********************************************************************************************************
 
-# paramlist$simTiers <- "joint"  # "joint"(defult) or "separate"
-# source("LAFPP_0_Master_allTiers.R")
+paramlist$simTiers <- "joint"  # "joint"(defult) or "separate"
+source("LAFPP_0_Master_allTiers.R")
 #
  
  
@@ -177,8 +190,8 @@ paramlist$v     = with(paramlist, 1/(1 + i))
 # since the inital UAAL will not be amortized.(amort basis of the first year is overriden by the values from AV2015, which is set to zero here.)
 # (Already solved.)
 
-Tier_select <- "t5"
-source("LAFPP_0_Master_singleTier.R")
+# Tier_select <- "t5"
+# source("LAFPP_0_Master_singleTier.R")
  
 
 

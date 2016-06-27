@@ -60,34 +60,34 @@ get_Population_allTiers_LAFPP <- function(
 #  (5)Dead       (dim = 3) We do not really need an array for dead, what's needed is only the total number of dead.  
 
 # Run the section below when developing new features.   
-  # init_pop.t1_         = init_pop.t1 
-  # entrants_dist.t1_    = entrants_dist.t1  
-  # decrement.model.t1_  = list.decrements.t1$decrement.model  
+  # init_pop.t1_         = init_pop.t1
+  # entrants_dist.t1_    = entrants_dist.t1
+  # decrement.model.t1_  = list.decrements.t1$decrement.model
   # mortality.post.model.t1_ = mortality.post.model.t1
   # 
-  # init_pop.t2_         = init_pop.t2 
-  # entrants_dist.t2_    = entrants_dist.t2  
-  # decrement.model.t2_   = list.decrements.t2$decrement.model  
+  # init_pop.t2_         = init_pop.t2
+  # entrants_dist.t2_    = entrants_dist.t2
+  # decrement.model.t2_   = list.decrements.t2$decrement.model
   # mortality.post.model.t2_ = mortality.post.model.t2
   # 
-  # init_pop.t3_         = init_pop.t3 
-  # entrants_dist.t3_    = entrants_dist.t3  
-  # decrement.model.t3_   = list.decrements.t3$decrement.model  
+  # init_pop.t3_         = init_pop.t3
+  # entrants_dist.t3_    = entrants_dist.t3
+  # decrement.model.t3_   = list.decrements.t3$decrement.model
   # mortality.post.model.t3_ = mortality.post.model.t3
   # 
-  # init_pop.t4_         = init_pop.t4 
-  # entrants_dist.t4_    = entrants_dist.t4  
-  # decrement.model.t4_   = list.decrements.t4$decrement.model  
+  # init_pop.t4_         = init_pop.t4
+  # entrants_dist.t4_    = entrants_dist.t4
+  # decrement.model.t4_   = list.decrements.t4$decrement.model
   # mortality.post.model.t4_ = mortality.post.model.t4
   # 
-  # init_pop.t5_         = init_pop.t5 
-  # entrants_dist.t5_    = entrants_dist.t5  
-  # decrement.model.t5_   = list.decrements.t5$decrement.model  
+  # init_pop.t5_         = init_pop.t5
+  # entrants_dist.t5_    = entrants_dist.t5
+  # decrement.model.t5_   = list.decrements.t5$decrement.model
   # mortality.post.model.t5_ = mortality.post.model.t5
   # 
-  # init_pop.t6_         = init_pop.t6 
-  # entrants_dist.t6_    = entrants_dist.t6  
-  # decrement.model.t6_  = list.decrements.t6$decrement.model  
+  # init_pop.t6_         = init_pop.t6
+  # entrants_dist.t6_    = entrants_dist.t6
+  # decrement.model.t6_  = list.decrements.t6$decrement.model
   # mortality.post.model.t6_ = mortality.post.model.t6
   # 
   # paramlist_        = paramlist
@@ -99,6 +99,7 @@ get_Population_allTiers_LAFPP <- function(
  assign_parmsList(Global_paramlist_, envir = environment())
  assign_parmsList(paramlist_,        envir = environment())  
 
+ pct.QSS <- pct.ca.F * pct.female + pct.ca.M * pct.male
 
 #*************************************************************************************************************
 #                                     Creating arrays for each status, FOR ALL TIERS ####
@@ -114,9 +115,15 @@ wf_dim.term      <- c(length(range_ea), length(range_age), nyear, nyear + 1)
 wf_dimnames.term <- list(range_ea, range_age, init.year:(init.year + nyear - 1), (init.year - 1) :(init.year + nyear - 1))
 
 
-# # The array of retirees has 4 dimensions: ea x age x year x year of retirement
+# The array of retirees has 4 dimensions: ea x age x year x year of retirement
 wf_dim.la      <- c(length(range_ea), length(range_age), nyear, nyear)
 wf_dimnames.la <- list(range_ea, range_age, init.year:(init.year + nyear - 1), init.year:(init.year + nyear - 1))
+
+
+# The array of death beneficiearies has 4 dimensions: ea x age x year x year of death(of the active)
+wf_dim.deathBen      <- c(length(range_ea), length(range_age), nyear, nyear)
+wf_dimnames.deathBen <- list(range_ea, range_age, init.year:(init.year + nyear - 1), init.year:(init.year + nyear - 1))
+
 
 
 wf_active.t1 <- wf_active.t2 <- wf_active.t3 <- wf_active.t4 <- wf_active.t5 <- wf_active.t6  <- array(0, wf_dim, dimnames = wf_dimnames)
@@ -124,6 +131,7 @@ wf_disb.t1   <- wf_disb.t2   <- wf_disb.t3  <- wf_disb.t4   <- wf_disb.t5   <- w
 wf_dead.t1   <- wf_dead.t2   <- wf_dead.t3 <- wf_dead.t4   <- wf_dead.t5   <- wf_dead.t6      <- array(0, wf_dim, dimnames = wf_dimnames)
 wf_term.t1   <- wf_term.t2   <- wf_term.t3 <- wf_term.t4   <- wf_term.t5   <- wf_term.t6      <- array(0, wf_dim.term,    dimnames = wf_dimnames.term)
 wf_la.t1     <- wf_la.t2     <- wf_la.t3   <- wf_la.t4     <- wf_la.t5     <- wf_la.t6        <- array(0, wf_dim.la, dimnames = wf_dimnames.la)
+wf_deathBen.t1     <- wf_deathBen.t2     <- wf_deathBen.t3   <- wf_deathBen.t4     <- wf_deathBen.t5     <- wf_deathBen.t6        <- array(0, wf_dim.deathBen, dimnames = wf_dimnames.deathBen)
 
 
 newDeath.act.t1 <-  newDeath.act.t2 <-   newDeath.act.t3 <- newDeath.act.t4 <-  newDeath.act.t5 <-   newDeath.act.t6   <- numeric(nyear)
@@ -221,15 +229,19 @@ decrement_wf.t6 <- decrement.model.t6_ %>% mutate_each(funs(na2zero)) # just for
   p_active2term.t1    <- make_dmat("qxt",     decrement_wf.t1)
   p_active2disb.t1    <- make_dmat("qxd",     decrement_wf.t1)
   p_active2dead.t1    <- make_dmat("qxm.pre", decrement_wf.t1)
+  p_active2deathBen.t1<- make_dmat("qxm.pre", decrement_wf.t1) * pct.QSS
   p_active2retired.t1 <- make_dmat("qxr",     decrement_wf.t1)      # This include all three types of retirement: LSC, contingent annuity, and life annuity.
   p_active2la.t1      <- make_dmat("qxr.la",  decrement_wf.t1)   # Prob of retiring as a life annuitant.
   
   # Where do the terminated go
-  p_term2dead.t1    <- make_dmat("qxm.term", decrement_wf.t1) # need to modify later
+  p_term2dead.t1    <- make_dmat("qxm.term", decrement_wf.t1) 
   
   # Where do the disabled go
-  p_disb2dead.t1    <- make_dmat("qxm.pre", decrement_wf.t1) #need to modify later.
+  p_disb2dead.t1    <- make_dmat("qxm.pre", decrement_wf.t1) 
 
+  # Where do the death beneficiaries go
+  p_deathBen2dead.t1 <- make_dmat("qxm.deathBen", decrement_wf.t1)
+  
   
 ## For Tier 2
   
@@ -237,6 +249,7 @@ decrement_wf.t6 <- decrement.model.t6_ %>% mutate_each(funs(na2zero)) # just for
   p_active2term.t2    <- make_dmat("qxt",     decrement_wf.t2)
   p_active2disb.t2    <- make_dmat("qxd",     decrement_wf.t2)
   p_active2dead.t2    <- make_dmat("qxm.pre", decrement_wf.t2)
+  p_active2deathBen.t2<- make_dmat("qxm.pre", decrement_wf.t2) * pct.QSS
   p_active2retired.t2 <- make_dmat("qxr",     decrement_wf.t2)      # This include all three types of retirement: LSC, contingent annuity, and life annuity.
   p_active2la.t2      <- make_dmat("qxr.la",  decrement_wf.t2)   # Prob of retiring as a life annuitant.
   
@@ -246,6 +259,9 @@ decrement_wf.t6 <- decrement.model.t6_ %>% mutate_each(funs(na2zero)) # just for
   # Where do the disabled go
   p_disb2dead.t2    <- make_dmat("qxm.pre", decrement_wf.t2) #need to modify later.
   
+  # Where do the death beneficiaries go
+  p_deathBen2dead.t2 <- make_dmat("qxm.deathBen", decrement_wf.t2)
+  
   
 ## For Tier 3
   
@@ -253,6 +269,7 @@ decrement_wf.t6 <- decrement.model.t6_ %>% mutate_each(funs(na2zero)) # just for
   p_active2term.t3    <- make_dmat("qxt",     decrement_wf.t3)
   p_active2disb.t3    <- make_dmat("qxd",     decrement_wf.t3)
   p_active2dead.t3    <- make_dmat("qxm.pre", decrement_wf.t3)
+  p_active2deathBen.t3<- make_dmat("qxm.pre", decrement_wf.t3) * pct.QSS
   p_active2retired.t3 <- make_dmat("qxr",     decrement_wf.t3)      # This include all three types of retirement: LSC, contingent annuity, and life annuity.
   p_active2la.t3      <- make_dmat("qxr.la",  decrement_wf.t3)   # Prob of retiring as a life annuitant.
   
@@ -262,6 +279,8 @@ decrement_wf.t6 <- decrement.model.t6_ %>% mutate_each(funs(na2zero)) # just for
   # Where do the disabled go
   p_disb2dead.t3    <- make_dmat("qxm.pre", decrement_wf.t3) #need to modify later.
   
+  # Where do the death beneficiaries go
+  p_deathBen2dead.t3 <- make_dmat("qxm.deathBen", decrement_wf.t3)
   
   ## For Tier 4
   
@@ -269,6 +288,7 @@ decrement_wf.t6 <- decrement.model.t6_ %>% mutate_each(funs(na2zero)) # just for
   p_active2term.t4    <- make_dmat("qxt",     decrement_wf.t4)
   p_active2disb.t4    <- make_dmat("qxd",     decrement_wf.t4)
   p_active2dead.t4    <- make_dmat("qxm.pre", decrement_wf.t4)
+  p_active2deathBen.t4<- make_dmat("qxm.pre", decrement_wf.t4) * pct.QSS
   p_active2retired.t4 <- make_dmat("qxr",     decrement_wf.t4)      # This include all three types of retirement: LSC, contingent annuity, and life annuity.
   p_active2la.t4      <- make_dmat("qxr.la",  decrement_wf.t4)   # Prob of retiring as a life annuitant.
   
@@ -278,6 +298,8 @@ decrement_wf.t6 <- decrement.model.t6_ %>% mutate_each(funs(na2zero)) # just for
   # Where do the disabled go
   p_disb2dead.t4    <- make_dmat("qxm.pre", decrement_wf.t4) #need to modify later.
   
+  # Where do the death beneficiaries go
+  p_deathBen2dead.t4 <- make_dmat("qxm.deathBen", decrement_wf.t4)
   
 ## For Tier 5
   
@@ -285,6 +307,7 @@ decrement_wf.t6 <- decrement.model.t6_ %>% mutate_each(funs(na2zero)) # just for
   p_active2term.t5    <- make_dmat("qxt",     decrement_wf.t5)
   p_active2disb.t5    <- make_dmat("qxd",     decrement_wf.t5)
   p_active2dead.t5    <- make_dmat("qxm.pre", decrement_wf.t5)
+  p_active2deathBen.t5<- make_dmat("qxm.pre", decrement_wf.t5) * pct.QSS
   p_active2retired.t5 <- make_dmat("qxr",     decrement_wf.t5)      # This include all three types of retirement: LSC, contingent annuity, and life annuity.
   p_active2la.t5      <- make_dmat("qxr.la",  decrement_wf.t5)   # Prob of retiring as a life annuitant.
   
@@ -294,7 +317,8 @@ decrement_wf.t6 <- decrement.model.t6_ %>% mutate_each(funs(na2zero)) # just for
   # Where do the disabled go
   p_disb2dead.t5    <- make_dmat("qxm.pre", decrement_wf.t5) #need to modify later.
   
-  
+  # Where do the death beneficiaries go
+  p_deathBen2dead.t5 <- make_dmat("qxm.deathBen", decrement_wf.t5)
   
   ## For Tier 6
   
@@ -302,6 +326,7 @@ decrement_wf.t6 <- decrement.model.t6_ %>% mutate_each(funs(na2zero)) # just for
   p_active2term.t6    <- make_dmat("qxt",     decrement_wf.t6)
   p_active2disb.t6    <- make_dmat("qxd",     decrement_wf.t6)
   p_active2dead.t6    <- make_dmat("qxm.pre", decrement_wf.t6)
+  p_active2deathBen.t6<- make_dmat("qxm.pre", decrement_wf.t6) * pct.QSS
   p_active2retired.t6 <- make_dmat("qxr",     decrement_wf.t6)      # This include all three types of retirement: LSC, contingent annuity, and life annuity.
   p_active2la.t6      <- make_dmat("qxr.la",  decrement_wf.t6)   # Prob of retiring as a life annuitant.
   
@@ -311,7 +336,8 @@ decrement_wf.t6 <- decrement.model.t6_ %>% mutate_each(funs(na2zero)) # just for
   # Where do the disabled go
   p_disb2dead.t6    <- make_dmat("qxm.pre", decrement_wf.t6) #need to modify later.
   
-  
+  # Where do the death beneficiaries go
+  p_deathBen2dead.t6 <- make_dmat("qxm.deathBen", decrement_wf.t6)
   
   
 
@@ -543,7 +569,7 @@ A <- diag(length(range_age) + 1)[-1, -(length(range_age) + 1)]
 # i runs from 2 to nyear. 
 
 for (j in 1:(nyear - 1)){
-   #j <-  1  
+   # j <-  1  
   
   #*******************************************
   # Stage 1 Seperations by type in each tier *
@@ -556,6 +582,7 @@ for (j in 1:(nyear - 1)){
     active2dead.t1    <- wf_active.t1[, , j] * p_active2dead.t1
     active2retired.t1 <- wf_active.t1[, , j] * p_active2retired.t1    # This will be used to calculate the number of actives leaving the workforce
     active2la.t1      <- wf_active.t1[, , j] * p_active2la.t1          # This will join wf_la[, , j + 1, j + 1].
+    active2deathBen.t1<- wf_active.t1[, , j] * p_active2deathBen.t1
     
     # Where do the terminated_vested go
     term2dead.t1  <- wf_term.t1[, , j, ] * as.vector(p_term2dead.t1)           # a 3D array, each slice(3rd dim) contains the # of death in a termination age group
@@ -566,6 +593,9 @@ for (j in 1:(nyear - 1)){
     # Where do the disabled go
     disb2dead.t1 <- wf_disb.t1[, , j] * p_disb2dead.t1
   
+    # Where do the QSSs of death benefit go
+    deathBen2dead.t1  <- wf_deathBen.t1[, , j, ] * as.vector(p_deathBen2dead.t1)
+    
     
   ## Tier 2
     # compute the inflow to and outflow
@@ -574,6 +604,7 @@ for (j in 1:(nyear - 1)){
     active2dead.t2    <- wf_active.t2[, , j] * p_active2dead.t2
     active2retired.t2 <- wf_active.t2[, , j] * p_active2retired.t2    # This will be used to calculate the number of actives leaving the workforce
     active2la.t2      <- wf_active.t2[, , j] * p_active2la.t2          # This will join wf_la[, , j + 1, j + 1].
+    active2deathBen.t2<- wf_active.t2[, , j] * p_active2deathBen.t2
     
     # Where do the terminated_vested go
     term2dead.t2  <- wf_term.t2[, , j, ] * as.vector(p_term2dead.t2)           # a 3D array, each slice(3rd dim) contains the # of death in a termination age group
@@ -584,7 +615,8 @@ for (j in 1:(nyear - 1)){
     # Where do the disabled go
     disb2dead.t2 <- wf_disb.t2[, , j] * p_disb2dead.t2
  
-  
+    # Where do the QSSs of death benefit go
+    deathBen2dead.t2  <- wf_deathBen.t2[, , j, ] * as.vector(p_deathBen2dead.t2)
     
   ## Tier 3
     # compute the inflow to and outflow
@@ -593,6 +625,7 @@ for (j in 1:(nyear - 1)){
     active2dead.t3    <- wf_active.t3[, , j] * p_active2dead.t3
     active2retired.t3 <- wf_active.t3[, , j] * p_active2retired.t3    # This will be used to calculate the number of actives leaving the workforce
     active2la.t3      <- wf_active.t3[, , j] * p_active2la.t3          # This will join wf_la[, , j + 1, j + 1].
+    active2deathBen.t3<- wf_active.t3[, , j] * p_active2deathBen.t3
     
     # Where do the terminated_vested go
     term2dead.t3  <- wf_term.t3[, , j, ] * as.vector(p_term2dead.t3)           # a 3D array, each slice(3rd dim) contains the # of death in a termination age group
@@ -602,6 +635,10 @@ for (j in 1:(nyear - 1)){
     
     # Where do the disabled go
     disb2dead.t3 <- wf_disb.t3[, , j] * p_disb2dead.t3
+    
+    # Where do the QSSs of death benefit go
+    deathBen2dead.t3  <- wf_deathBen.t3[, , j, ] * as.vector(p_deathBen2dead.t3)
+    
   
   
   ## Tier 4
@@ -611,6 +648,7 @@ for (j in 1:(nyear - 1)){
     active2dead.t4    <- wf_active.t4[, , j] * p_active2dead.t4
     active2retired.t4 <- wf_active.t4[, , j] * p_active2retired.t4    # This will be used to calculate the number of actives leaving the workforce
     active2la.t4      <- wf_active.t4[, , j] * p_active2la.t4          # This will join wf_la[, , j + 1, j + 1].
+    active2deathBen.t4<- wf_active.t4[, , j] * p_active2deathBen.t4
     
     # Where do the terminated_vested go
     term2dead.t4  <- wf_term.t4[, , j, ] * as.vector(p_term2dead.t4)           # a 3D array, each slice(3rd dim) contains the # of death in a termination age group
@@ -621,6 +659,8 @@ for (j in 1:(nyear - 1)){
     # Where do the disabled go
     disb2dead.t4 <- wf_disb.t4[, , j] * p_disb2dead.t4
   
+    # Where do the QSSs of death benefit go
+    deathBen2dead.t4  <- wf_deathBen.t4[, , j, ] * as.vector(p_deathBen2dead.t4)
     
   ## Tier 5
     # compute the inflow to and outflow
@@ -629,6 +669,7 @@ for (j in 1:(nyear - 1)){
     active2dead.t5    <- wf_active.t5[, , j] * p_active2dead.t5
     active2retired.t5 <- wf_active.t5[, , j] * p_active2retired.t5    # This will be used to calculate the number of actives leaving the workforce
     active2la.t5      <- wf_active.t5[, , j] * p_active2la.t5          # This will join wf_la[, , j + 1, j + 1].
+    active2deathBen.t5<- wf_active.t5[, , j] * p_active2deathBen.t5
     
     # Where do the terminated_vested go
     term2dead.t5  <- wf_term.t5[, , j, ] * as.vector(p_term2dead.t5)           # a 3D array, each slice(3rd dim) contains the # of death in a termination age group
@@ -639,6 +680,8 @@ for (j in 1:(nyear - 1)){
     # Where do the disabled go
     disb2dead.t5 <- wf_disb.t5[, , j] * p_disb2dead.t5
   
+    # Where do the QSSs of death benefit go
+    deathBen2dead.t5  <- wf_deathBen.t5[, , j, ] * as.vector(p_deathBen2dead.t5)
     
   ## Tier 6
     # compute the inflow to and outflow
@@ -647,6 +690,7 @@ for (j in 1:(nyear - 1)){
     active2dead.t6    <- wf_active.t6[, , j] * p_active2dead.t6
     active2retired.t6 <- wf_active.t6[, , j] * p_active2retired.t6    # This will be used to calculate the number of actives leaving the workforce
     active2la.t6      <- wf_active.t6[, , j] * p_active2la.t6          # This will join wf_la[, , j + 1, j + 1].
+    active2deathBen.t6<- wf_active.t6[, , j] * p_active2deathBen.t6
     
     # Where do the terminated_vested go
     term2dead.t6  <- wf_term.t6[, , j, ] * as.vector(p_term2dead.t6)           # a 3D array, each slice(3rd dim) contains the # of death in a termination age group
@@ -657,6 +701,8 @@ for (j in 1:(nyear - 1)){
     # Where do the disabled go
     disb2dead.t6 <- wf_disb.t6[, , j] * p_disb2dead.t6
   
+    # Where do the QSSs of death benefit go
+    deathBen2dead.t6  <- wf_deathBen.t6[, , j, ] * as.vector(p_deathBen2dead.t6)
   
 
   #***********************************
@@ -729,6 +775,9 @@ for (j in 1:(nyear - 1)){
     out_la.t1 <- la2dead.t1        # This is a 3D array (ea x age x year.retire)
     in_la.t1  <- active2la.t1      # This is a matrix
     
+    out_deathBen.t1 <- deathBen2dead.t1        # This is a 3D array (ea x age x year.retire)
+    in_deathBen.t1  <- active2deathBen.t1    # This is a matrix
+    
     in_dead.t1 <- active2dead.t1 +                                        # In LAFPP model, since life annuitants are only part of the total retirees, in_dead does not reflect the total number of death. 
       apply(term2dead.t1, c(1,2), sum) + apply(la2dead.t1, c(1,2), sum) + # get a matirix of ea x age by summing over year.term/year.retiree
       disb2dead.t1 
@@ -744,6 +793,9 @@ for (j in 1:(nyear - 1)){
     out_la.t2 <- la2dead.t2        # This is a 3D array (ea x age x year.retire)
     in_la.t2  <- active2la.t2      # This is a matrix
     
+    out_deathBen.t2 <- deathBen2dead.t2        # This is a 3D array (ea x age x year.retire)
+    in_deathBen.t2  <- active2deathBen.t2    # This is a matrix
+    
     in_dead.t2 <- active2dead.t2 +                                        # In LAFPP model, since life annuitants are only part of the total retirees, in_dead does not reflect the total number of death. 
       apply(term2dead.t2, c(1,2), sum) + apply(la2dead.t2, c(1,2), sum) + # get a matirix of ea x age by summing over year.term/year.retiree
       disb2dead.t2 
@@ -757,6 +809,9 @@ for (j in 1:(nyear - 1)){
     
     out_la.t3 <- la2dead.t3        # This is a 3D array (ea x age x year.retire)
     in_la.t3  <- active2la.t3      # This is a matrix
+    
+    out_deathBen.t3 <- deathBen2dead.t3        # This is a 3D array (ea x age x year.retire)
+    in_deathBen.t3  <- active2deathBen.t3    # This is a matrix
     
     in_dead.t3 <- active2dead.t3 +                                        # In LAFPP model, since life annuitants are only part of the total retirees, in_dead does not reflect the total number of death. 
       apply(term2dead.t3, c(1,2), sum) + apply(la2dead.t3, c(1,2), sum) + # get a matirix of ea x age by summing over year.term/year.retiree
@@ -773,6 +828,9 @@ for (j in 1:(nyear - 1)){
     out_la.t4 <- la2dead.t4        # This is a 3D array (ea x age x year.retire)
     in_la.t4  <- active2la.t4      # This is a matrix
     
+    out_deathBen.t4 <- deathBen2dead.t4        # This is a 3D array (ea x age x year.retire)
+    in_deathBen.t4  <- active2deathBen.t4    # This is a matrix
+    
     in_dead.t4 <- active2dead.t4 +                                        # In LAFPP model, since life annuitants are only part of the total retirees, in_dead does not reflect the total number of death. 
       apply(term2dead.t4, c(1,2), sum) + apply(la2dead.t4, c(1,2), sum) + # get a matirix of ea x age by summing over year.term/year.retiree
       disb2dead.t4
@@ -788,6 +846,9 @@ for (j in 1:(nyear - 1)){
     out_la.t5 <- la2dead.t5        # This is a 3D array (ea x age x year.retire)
     in_la.t5  <- active2la.t5      # This is a matrix
     
+    out_deathBen.t5 <- deathBen2dead.t5        # This is a 3D array (ea x age x year.retire)
+    in_deathBen.t5  <- active2deathBen.t5    # This is a matrix
+    
     in_dead.t5 <- active2dead.t5 +                                        # In LAFPP model, since life annuitants are only part of the total retirees, in_dead does not reflect the total number of death. 
       apply(term2dead.t5, c(1,2), sum) + apply(la2dead.t5, c(1,2), sum) + # get a matirix of ea x age by summing over year.term/year.retiree
       disb2dead.t5
@@ -802,6 +863,9 @@ for (j in 1:(nyear - 1)){
     
     out_la.t6 <- la2dead.t6        # This is a 3D array (ea x age x year.retire)
     in_la.t6  <- active2la.t6      # This is a matrix
+    
+    out_deathBen.t6 <- deathBen2dead.t6        # This is a 3D array (ea x age x year.retire)
+    in_deathBen.t6  <- active2deathBen.t6    # This is a matrix
     
     in_dead.t6 <- active2dead.t6 +                                        # In LAFPP model, since life annuitants are only part of the total retirees, in_dead does not reflect the total number of death. 
       apply(term2dead.t6, c(1,2), sum) + apply(la2dead.t6, c(1,2), sum) + # get a matirix of ea x age by summing over year.term/year.retiree
@@ -825,6 +889,9 @@ for (j in 1:(nyear - 1)){
     wf_disb.t1[, ,   j + 1]    <- (wf_disb.t1[, , j] + in_disb.t1 - out_disb.t1) %*% A
     wf_dead.t1[, ,   j + 1]    <- (wf_dead.t1[, , j] + in_dead.t1) %*% A
     
+    wf_deathBen.t1[, , j + 1, ]      <- apply((wf_deathBen.t1[, , j, ] - out_deathBen.t1), 3, function(x) x %*% A) %>% array(wf_dim.deathBen[-3])
+    wf_deathBen.t1[, , j + 1, j + 1] <- in_deathBen.t1 %*% A
+    
     newDeath.act.t1[j]  <- sum(active2dead.t1)
     newDeath.ret.t1[j]  <- sum(la2dead.t1)
     # newDeath.term[j] <- sum()
@@ -845,6 +912,9 @@ for (j in 1:(nyear - 1)){
     wf_disb.t2[, ,   j + 1]    <- (wf_disb.t2[, , j] + in_disb.t2 - out_disb.t2) %*% A
     wf_dead.t2[, ,   j + 1]    <- (wf_dead.t2[, , j] + in_dead.t2) %*% A
     
+    wf_deathBen.t2[, , j + 1, ]      <- apply((wf_deathBen.t2[, , j, ] - out_deathBen.t2), 3, function(x) x %*% A) %>% array(wf_dim.deathBen[-3])
+    wf_deathBen.t2[, , j + 1, j + 1] <- in_deathBen.t2 %*% A
+    
     newDeath.act.t2[j]  <- sum(active2dead.t2)
     newDeath.ret.t2[j]  <- sum(la2dead.t2)
     # newDeath.term[j] <- sum()
@@ -863,6 +933,9 @@ for (j in 1:(nyear - 1)){
     
     wf_disb.t3[, ,   j + 1]    <- (wf_disb.t3[, , j] + in_disb.t3 - out_disb.t3) %*% A
     wf_dead.t3[, ,   j + 1]    <- (wf_dead.t3[, , j] + in_dead.t3) %*% A
+    
+    wf_deathBen.t3[, , j + 1, ]      <- apply((wf_deathBen.t3[, , j, ] - out_deathBen.t3), 3, function(x) x %*% A) %>% array(wf_dim.deathBen[-3])
+    wf_deathBen.t3[, , j + 1, j + 1] <- in_deathBen.t3 %*% A
     
     newDeath.act.t3[j]  <- sum(active2dead.t3)
     newDeath.ret.t3[j]  <- sum(la2dead.t3)
@@ -883,6 +956,9 @@ for (j in 1:(nyear - 1)){
     wf_disb.t4[, ,   j + 1]    <- (wf_disb.t4[, , j] + in_disb.t4 - out_disb.t4) %*% A
     wf_dead.t4[, ,   j + 1]    <- (wf_dead.t4[, , j] + in_dead.t4) %*% A
     
+    wf_deathBen.t4[, , j + 1, ]      <- apply((wf_deathBen.t4[, , j, ] - out_deathBen.t4), 3, function(x) x %*% A) %>% array(wf_dim.deathBen[-3])
+    wf_deathBen.t4[, , j + 1, j + 1] <- in_deathBen.t4 %*% A
+    
     newDeath.act.t4[j]  <- sum(active2dead.t4)
     newDeath.ret.t4[j]  <- sum(la2dead.t4)
     # newDeath.term[j] <- sum()
@@ -901,6 +977,9 @@ for (j in 1:(nyear - 1)){
     
     wf_disb.t5[, ,   j + 1]    <- (wf_disb.t5[, , j] + in_disb.t5 - out_disb.t5) %*% A
     wf_dead.t5[, ,   j + 1]    <- (wf_dead.t5[, , j] + in_dead.t5) %*% A
+    
+    wf_deathBen.t5[, , j + 1, ]      <- apply((wf_deathBen.t5[, , j, ] - out_deathBen.t5), 3, function(x) x %*% A) %>% array(wf_dim.deathBen[-3])
+    wf_deathBen.t5[, , j + 1, j + 1] <- in_deathBen.t5 %*% A
     
     newDeath.act.t5[j]  <- sum(active2dead.t5)
     newDeath.ret.t5[j]  <- sum(la2dead.t5)
@@ -921,14 +1000,16 @@ for (j in 1:(nyear - 1)){
     wf_disb.t6[, ,   j + 1]    <- (wf_disb.t6[, , j] + in_disb.t6 - out_disb.t6) %*% A
     wf_dead.t6[, ,   j + 1]    <- (wf_dead.t6[, , j] + in_dead.t6) %*% A
     
+    wf_deathBen.t6[, , j + 1, ]      <- apply((wf_deathBen.t6[, , j, ] - out_deathBen.t6), 3, function(x) x %*% A) %>% array(wf_dim.deathBen[-3])
+    wf_deathBen.t6[, , j + 1, j + 1] <- in_deathBen.t6 %*% A
+    
     newDeath.act.t6[j]  <- sum(active2dead.t6)
     newDeath.ret.t6[j]  <- sum(la2dead.t6)
     # newDeath.term[j] <- sum()
     
     newDisb.act.t6[j] <- sum(active2disb.t6)
 
-    
- 
+
 }
 
 
@@ -946,7 +1027,6 @@ get_df.wf_active <- function(df){
     mutate(year = f2n(year), age = as.numeric(age)) %>% 
     filter(age >= ea)
 }
- 
  wf_active.t1 <- get_df.wf_active(wf_active.t1)
  wf_active.t2 <- get_df.wf_active(wf_active.t2)
  wf_active.t3 <- get_df.wf_active(wf_active.t3)
@@ -960,12 +1040,12 @@ get_df.wf_la <- function(df){
                    number.la = as.vector(df)) %>% 
     filter(age >= ea)
 }
-wf_la.t1  <- get_df.wf_la(wf_la.t1)
-wf_la.t2  <- get_df.wf_la(wf_la.t2)
-wf_la.t3  <- get_df.wf_la(wf_la.t3)
-wf_la.t4  <- get_df.wf_la(wf_la.t4)
-wf_la.t5  <- get_df.wf_la(wf_la.t5)
-wf_la.t6  <- get_df.wf_la(wf_la.t6)
+ wf_la.t1  <- get_df.wf_la(wf_la.t1)
+ wf_la.t2  <- get_df.wf_la(wf_la.t2)
+ wf_la.t3  <- get_df.wf_la(wf_la.t3)
+ wf_la.t4  <- get_df.wf_la(wf_la.t4)
+ wf_la.t5  <- get_df.wf_la(wf_la.t5)
+ wf_la.t6  <- get_df.wf_la(wf_la.t6)
 
 
 get_df.wf_term <- function(df){
@@ -973,13 +1053,27 @@ get_df.wf_term <- function(df){
                      number.v = as.vector(df)) %>% 
     filter(age >= ea)
 }
-wf_term.t1  <- get_df.wf_term(wf_term.t1)
-wf_term.t2  <- get_df.wf_term(wf_term.t2)
-wf_term.t3  <- get_df.wf_term(wf_term.t3)
-wf_term.t4  <- get_df.wf_term(wf_term.t4)
-wf_term.t5  <- get_df.wf_term(wf_term.t5)
-wf_term.t6  <- get_df.wf_term(wf_term.t6)
+ wf_term.t1  <- get_df.wf_term(wf_term.t1)
+ wf_term.t2  <- get_df.wf_term(wf_term.t2)
+ wf_term.t3  <- get_df.wf_term(wf_term.t3)
+ wf_term.t4  <- get_df.wf_term(wf_term.t4)
+ wf_term.t5  <- get_df.wf_term(wf_term.t5)
+ wf_term.t6  <- get_df.wf_term(wf_term.t6)
 
+ 
+get_df.wf_deathBen <- function(df){
+   df <- data.frame(expand.grid(ea = range_ea, age = range_age, year = init.year:(init.year + nyear - 1), year.death = init.year:(init.year + nyear - 1)),
+                    number.deathBen = as.vector(df)) %>% 
+     filter(age >= ea)
+ }
+ wf_deathBen.t1  <- get_df.wf_deathBen(wf_deathBen.t1)
+ wf_deathBen.t2  <- get_df.wf_deathBen(wf_deathBen.t2)
+ wf_deathBen.t3  <- get_df.wf_deathBen(wf_deathBen.t3)
+ wf_deathBen.t4  <- get_df.wf_deathBen(wf_deathBen.t4)
+ wf_deathBen.t5  <- get_df.wf_deathBen(wf_deathBen.t5)
+ wf_deathBen.t6  <- get_df.wf_deathBen(wf_deathBen.t6)
+ 
+ # wf_deathBen.t1 %>% filter(number.deathBen !=0)
 
 # summarize term across termination year. Resulting data frame will join .Liab$active as part of the output. 
 # term_reduced <- wf_term %>% group_by(year, age) %>% summarise(number.v = sum(number.v, na.rm = TRUE))
@@ -988,7 +1082,7 @@ wf_term.t6  <- get_df.wf_term(wf_term.t6)
 
 
 #*************************************************************************************************************
-#                                     Number of members opting for LSC and contingent annuity   ####
+#                                     Number of members opting for contingent annuity   ####
 #*************************************************************************************************************
 
 get_wf_new.ca <- function(df_actives, decrement){
@@ -1009,12 +1103,12 @@ wf_new.ca.t6  <- get_wf_new.ca(wf_active.t6, decrement_wf.t6)
 # Final outputs
 
 pop <- list(   
-     pop.t1 = list(active  = wf_active.t1,  term = wf_term.t1, disb = wf_disb.t1, la = wf_la.t1, dead = wf_dead.t1, new_ca = wf_new.ca.t1),
-     pop.t2 = list(active  = wf_active.t2,  term = wf_term.t2, disb = wf_disb.t2, la = wf_la.t2, dead = wf_dead.t2, new_ca = wf_new.ca.t2),
-     pop.t3 = list(active  = wf_active.t3,  term = wf_term.t3, disb = wf_disb.t3, la = wf_la.t3, dead = wf_dead.t3, new_ca = wf_new.ca.t3),
-     pop.t4 = list(active  = wf_active.t4,  term = wf_term.t4, disb = wf_disb.t4, la = wf_la.t4, dead = wf_dead.t4, new_ca = wf_new.ca.t4),
-     pop.t5 = list(active  = wf_active.t5,  term = wf_term.t5, disb = wf_disb.t5, la = wf_la.t5, dead = wf_dead.t5, new_ca = wf_new.ca.t5),
-     pop.t6 = list(active  = wf_active.t6,  term = wf_term.t6, disb = wf_disb.t6, la = wf_la.t6, dead = wf_dead.t6, new_ca = wf_new.ca.t6)
+     pop.t1 = list(active  = wf_active.t1,  term = wf_term.t1, disb = wf_disb.t1, la = wf_la.t1, deathBen = wf_deathBen.t1, dead = wf_dead.t1, new_ca = wf_new.ca.t1),
+     pop.t2 = list(active  = wf_active.t2,  term = wf_term.t2, disb = wf_disb.t2, la = wf_la.t2, deathBen = wf_deathBen.t2, dead = wf_dead.t2, new_ca = wf_new.ca.t2),
+     pop.t3 = list(active  = wf_active.t3,  term = wf_term.t3, disb = wf_disb.t3, la = wf_la.t3, deathBen = wf_deathBen.t3, dead = wf_dead.t3, new_ca = wf_new.ca.t3),
+     pop.t4 = list(active  = wf_active.t4,  term = wf_term.t4, disb = wf_disb.t4, la = wf_la.t4, deathBen = wf_deathBen.t4, dead = wf_dead.t4, new_ca = wf_new.ca.t4),
+     pop.t5 = list(active  = wf_active.t5,  term = wf_term.t5, disb = wf_disb.t5, la = wf_la.t5, deathBen = wf_deathBen.t5, dead = wf_dead.t5, new_ca = wf_new.ca.t5),
+     pop.t6 = list(active  = wf_active.t6,  term = wf_term.t6, disb = wf_disb.t6, la = wf_la.t6, deathBen = wf_deathBen.t6, dead = wf_dead.t6, new_ca = wf_new.ca.t6)
 )
 
 return(pop)

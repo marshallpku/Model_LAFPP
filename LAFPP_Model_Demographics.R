@@ -31,11 +31,11 @@ get_Population <- function(init_pop_         = init_pop,
 #  (5)Dead       (dim = 3) We do not really need an array for dead, what's needed is only the total number of dead.  
 
 # Run the section below when developing new features.   
-   init_pop_         = init_pop
-   entrants_dist_    = entrants_dist
-   decrement.model_  = decrement.model
-   paramlist_        = paramlist
-   Global_paramlist_ = Global_paramlist
+   # init_pop_         = init_pop
+   # entrants_dist_    = entrants_dist
+   # decrement.model_  = decrement.model
+   # paramlist_        = paramlist
+   # Global_paramlist_ = Global_paramlist
 
 
  assign_parmsList(Global_paramlist_, envir = environment())
@@ -61,7 +61,7 @@ wf_dimnames.term <- list(range_ea, range_age, init.year:(init.year + nyear - 1),
 wf_dim.la      <- c(length(range_ea), length(range_age), nyear, nyear)
 wf_dimnames.la <- list(range_ea, range_age, init.year:(init.year + nyear - 1), init.year:(init.year + nyear - 1))
 
-# # The array of retirees has 4 dimensions: ea x age x year x year of death(of the active)
+# # The array of death beneficiaries has 4 dimensions: ea x age x year x year of death(of the active)
 wf_dim.deathBen      <- c(length(range_ea), length(range_age), nyear, nyear)
 wf_dimnames.deathBen <- list(range_ea, range_age, init.year:(init.year + nyear - 1), init.year:(init.year + nyear - 1))
 
@@ -130,7 +130,7 @@ make_dmat <- function(qx, df = decrement_wf) {
 p_active2term    <- make_dmat("qxt")
 p_active2disb    <- make_dmat("qxd")
 p_active2dead    <- make_dmat("qxm.pre")
-p_active2deathBen <- make_dmat("qxm.pre") * pct.QSS
+p_active2deathBen<- make_dmat("qxm.pre") * pct.QSS
 p_active2retiree <- make_dmat("qxr")
 p_active2la      <- make_dmat("qxr.la")
 
@@ -145,7 +145,7 @@ p_term2dead    <- make_dmat("qxm.term")
 p_disb2dead    <- make_dmat("qxm.pre")
 
 
-# Where do the disabled go
+# Where do the death beneficiaries go
 p_deathBen2dead <- make_dmat("qxm.deathBen") #need to modify later.
 
 
@@ -237,7 +237,7 @@ calc_entrants <- function(wf0, wf1, delta, dist, no.entrants = FALSE){
 # i runs from 2 to nyear. 
 
 for (j in 1:(nyear - 1)){
-  j <-  1  
+  # j <-  1  
   # compute the inflow to and outflow
   active2term    <- wf_active[, , j] * p_active2term     # This will join wf_term[, , j + 1, j + 1], note that workers who terminate in year j won't join the terminated group until j+1. 
   active2disb    <- wf_active[, , j] * p_active2disb

@@ -394,7 +394,7 @@ pct.QSS
 
 # Calculate normal costs and liabilities of retirement benefits with multiple retirement ages  
 liab.active %<>%   
-  mutate( gx.death  = 0,
+  mutate( gx.death  = 1,
           Bx.death  = gx.death * switch(Tier_select_,
                                         t1 = 0.5 * fas,
                                         t2 = 0.55 * fas,
