@@ -6,8 +6,8 @@ get_AggLiab <- function( Tier_select_,
                          liab_,
                          liab.ca_,
                          pop_,
-                         mortality.post.model_,
                          
+                         mortality.post.model_ = mortality.post.model,
                          init_beneficiaries_all_  = init_beneficiaries_all,
                          paramlist_        = paramlist,
                          Global_paramlist_ = Global_paramlist){
@@ -21,10 +21,11 @@ get_AggLiab <- function( Tier_select_,
      # liab_   = liab
      # liab.ca_ = liab.ca
      # pop_    = pop
-     # init_beneficiaries_ = get_tierData(init_beneficiaries_all, Tier_select)
+     # mortality.post.model_ = mortality.post.model
+     # init_beneficiaries_all_  = init_beneficiaries_all
      # paramlist_ = paramlist
      # Global_paramlist_ = Global_paramlist
-  
+     # 
    # for all tiers
      # Tier_select_ = "t1"
      # liab_   = liab.t1
@@ -66,17 +67,20 @@ get_AggLiab <- function( Tier_select_,
   liab_$active[-(1:3)] <- colwise(na2zero)(liab_$active[-(1:3)]) # replace NAs with 0, so summation involing missing values will not produce NAs. 
   
   liab_$active %<>%  
-    mutate(ALx.laca.tot = ALx.laca * number.a,
-           ALx.v.tot    = ALx.v    * number.a,
-           ALx.av.tot   = ALx.laca.tot + ALx.v.tot,
+    mutate(ALx.laca.tot  = ALx.laca * number.a,
+           ALx.v.tot     = ALx.v    * number.a,
+           ALx.death.tot = ALx.death * number.a,
+           ALx.av.tot    = ALx.laca.tot + ALx.v.tot + ALx.death.tot,
            
-           NCx.laca.tot = NCx.laca * number.a,
-           NCx.v.tot    = NCx.v    * number.a,
-           NCx.av.tot   = NCx.laca.tot + NCx.v.tot,
+           NCx.laca.tot  = NCx.laca * number.a,
+           NCx.v.tot     = NCx.v    * number.a,
+           NCx.death.tot = NCx.death * number.a,
+           NCx.av.tot    = NCx.laca.tot + NCx.v.tot + NCx.death.tot,
            
-           PVFBx.laca.tot = PVFBx.laca * number.a,
-           PVFBx.v.tot    = PVFBx.v    * number.a,
-           PVFBx.av.tot   = PVFBx.laca.tot + PVFBx.v.tot,
+           PVFBx.laca.tot  = PVFBx.laca * number.a,
+           PVFBx.v.tot     = PVFBx.v    * number.a,
+           PVFBx.death.tot = PVFBx.death * number.a,
+           PVFBx.av.tot    = PVFBx.laca.tot + PVFBx.v.tot + PVFBx.death.tot,
            
            PR.tot  = sx * number.a,
            
@@ -87,14 +91,17 @@ get_AggLiab <- function( Tier_select_,
     summarise(
       ALx.laca.sum = sum(ALx.laca.tot, na.rm = TRUE),
       ALx.v.sum    = sum(ALx.v.tot,    na.rm = TRUE),
+      ALx.death.sum= sum(ALx.death.tot,na.rm = TRUE),
       ALx.av.sum   = sum(ALx.av.tot,   na.rm = TRUE), 
       
       NCx.laca.sum = sum(NCx.laca.tot, na.rm = TRUE),
       NCx.v.sum    = sum(NCx.v.tot,    na.rm = TRUE),
+      NCx.death.sum= sum(NCx.death.tot,na.rm = TRUE),
       NCx.av.sum   = sum(NCx.av.tot,   na.rm = TRUE),
       
       PVFBx.laca.sum = sum(PVFBx.laca.tot, na.rm = TRUE),
       PVFBx.v.sum    = sum(PVFBx.v.tot,    na.rm = TRUE),
+      PVFBx.death.sum= sum(PVFBx.death.tot,na.rm = TRUE),
       PVFBx.av.sum   = sum(PVFBx.av.tot,   na.rm = TRUE),
       
       
@@ -104,7 +111,7 @@ get_AggLiab <- function( Tier_select_,
       as.matrix # extracting elements from matrices is much faster than from data.frame
   
   
-
+  # active.agg
   
   #*************************************************************************************************************
   #                                     ## Liabilities and benefits for retirees   ####
@@ -130,6 +137,30 @@ get_AggLiab <- function( Tier_select_,
     as.matrix
   
   
+  
+  #*************************************************************************************************************
+  #                                     ## Liabilities and benefits for retirees   ####
+  #*************************************************************************************************************
+  
+  liab_$death  <- data.table(liab_$death,    key = "ea,age,year,year.death")
+  pop_$deathBen   <- data.table(pop_$deathBen,  key = "ea,age,year,year.death")
+  liab_$death  <- merge(pop_$deathBen, liab_$death, by = c("ea", "age","year", "year.death"), all.x = TRUE)
+  liab_$death  <- as.data.frame(liab_$death)
+  
+  
+  liab_$death %<>% 
+    mutate(ALx.death.tot = ALx.death * number.deathBen,
+           B.death.tot   = B.death   * number.deathBen,
+           runname = runname)
+  
+  death.agg <- liab_$death %>% 
+    group_by(year) %>% 
+    summarise(ALx.death.sum   = sum(ALx.death.tot, na.rm = TRUE),
+              B.death.sum     = sum(B.death.tot  , na.rm = TRUE),
+              ndeathBen       = sum(number.deathBen , na.rm = TRUE)) %>% 
+    # mutate(runname = runname) %>% 
+    as.matrix
+
   
   #*************************************************************************************************************
   #                                 ## Liabilities and benefits for vested terms.   ####
@@ -241,7 +272,8 @@ get_AggLiab <- function( Tier_select_,
   AggLiab <-  list(active = active.agg, 
                    la     = la.agg,
                    ca     = ca.agg, 
-                   term   = term.agg)
+                   term   = term.agg,
+                   death  = death.agg)
               
               # ind_active  = if(paramlist$save.indiv) .liab$active  else "Not saved", 
               # ind_retiree = if(paramlist$save.indiv) .liab$retiree else "Not saved",

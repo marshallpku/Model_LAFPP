@@ -27,11 +27,25 @@ assign_parmsList(.paramlist,        envir = environment())
 #                                Prepare mortality tables for UCRP                        #####                  
 #*************************************************************************************************************
 
+#Note on qxm.deathBen
+  # qxm.deathBen applies to beneficiaires of benenfits for death before retirement.
+  # For now (Jun 26, 2016), qxm.deathBen is a weighted average of mortalities of survivors.
+  # Weights are constant over time: 95% female survivors and 5% male survivors. For now, we do not take into 
+    # account the effect difference in mortality of males and females on gender ratio over time.  
+  # Wives are 3 years younger than husbands. 
+
 mortality.model <- data.frame(age = range_age) %>% 
   left_join(mortality_LAFPP) %>% 
   mutate(qxm.pre = qxm.pre.male  * pct.male + qxm.pre.female  * pct.female,   # mortality for actives
-         qxm.d   = qxm.d.male    * pct.male + qxm.d.female  * pct.female) %>% 
-  select(age, qxm.pre, qxm.post.male, qxm.post.female, qxm.d)
+         qxm.d   = qxm.d.male    * pct.male + qxm.d.female  * pct.female,
+         
+         qxm.deathBen = ifelse(age > max(age - 3), 1, lead(qxm.post.female, 3)) * pct.male + 
+                        ifelse(age < min(age + 3), qxm.post.male[age == min(age)],lag(qxm.post.male, 3)) * pct.female,
+         qxm.deathBen = ifelse(age == max(age), 1, qxm.deathBen)
+         ) %>% 
+  select(age, qxm.pre, qxm.post.male, qxm.post.female, qxm.d, qxm.deathBen)
+# mortality.model
+
 
 
 ## Compute present values of life annuity(with cola) at each retirement age, using uni-sex mortality with age dependent weights
@@ -68,7 +82,7 @@ mortality.post.model <- expand.grid(age = range_age,
   select(age, qxm.post.W, pxm.post.W, ax.r.W)
 
 
-# construct mortality rate for terms: 
+# Construct mortality rate for terms: 
  # before r.vben: qxm.pre
  # after r.vben:  qxm.post.W with age.r == r.vben
 
@@ -79,11 +93,13 @@ mortality.model %<>% left_join(mortality.post.model %>% ungroup %>%
                      select(-qxm.post.term)
 
 
+
 # disability rate                            
 disbrates.model <- disbRates %>%  
   mutate(qxd = qxd.fire * prop.occupation[Tier_select, "pct.fire"] + 
                qxd.plc  * prop.occupation[Tier_select, "pct.plc"]) %>% 
   select(age, qxd)
+
 
 # term rates
 termrates.model <- termRates %>% 
@@ -139,10 +155,10 @@ decrement.model
 
 
 # Adjustment to the decrement table:
-# Move qxr.a backward by 1 period.(qxr at t is now assigned to t - 1), the probability of retirement at t - 1 is lead(qxr.a(t))*(1 - qxt.a(t-1) - qxm.a(t-1) - qxd.a(t-1))
-# For the age right before the max retirement age (r.max - 1), probability of retirement is 1 - qxm.a - qxd.a - qxt.a,
-# which means all active members who survive all other risks at (r.max - 1) will enter the status "retired" for sure at age r.max (and collect the benefit regardless 
-# whether they will die at r.max)      
+  # Move qxr.a backward by 1 period.(qxr at t is now assigned to t - 1), the probability of retirement at t - 1 is lead(qxr.a(t))*(1 - qxt.a(t-1) - qxm.a(t-1) - qxd.a(t-1))
+  # For the age right before the max retirement age (r.max - 1), probability of retirement is 1 - qxm.a - qxd.a - qxt.a,
+  # which means all active members who survive all other risks at (r.max - 1) will enter the status "retired" for sure at age r.max (and collect the benefit regardless 
+  # whether they will die at r.max)      
 
 pct.ca <- pct.ca.M * pct.male + pct.ca.F * pct.female
 pct.la <- 1 - pct.ca
@@ -172,6 +188,7 @@ decrement.model %<>% group_by(ea) %>%
 
 decrement.model %<>% 
   mutate( pxm.pre = 1 - qxm.pre,
+          pxm.deathBen = 1 - qxm.deathBen, 
           
           pxT     = 1 - qxt - qxd - qxm.pre - qxr,                            
           

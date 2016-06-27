@@ -9,7 +9,7 @@ gc()
 
 # Plan information
 # source("LAFPP_Data_RP2000.R")
- source("LAFPP_Data_PlanInfo.R")
+# source("LAFPP_Data_PlanInfo.R")
 # source("LAFPP_Data_ImportMemberData.R")
 
 load("Data_inputs/LAFPP_PlanInfo.RData")    # for all tiers
@@ -141,7 +141,7 @@ penSim_results <- run_sim(Tier_select, AggLiab)
 var_display <- c("Tier", "sim", "year", "FR", "MA", "AL", "AL.la", "AL.ca", 
                  #"AL.act", "AL.act.laca", "AL.act.v", "AL.act.LSC", "AL.la", "AL.ca", "AL.term", 
                  #"PVFB.laca", "PVFB.LSC", "PVFB.v", "PVFB", 
-                 "B", "B.la", "B.ca", "B.v", 
+                 "B", "B.la", "B.ca", "B.death", 
                  "nactives", "nterms", "PR", "NC_PR", "NC")
 
 

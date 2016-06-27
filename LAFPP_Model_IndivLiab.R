@@ -10,7 +10,10 @@
 # 3.1 AL and NC of deferred benefits for actives
 # 3.2 AL and benefits for vested terminated members
 
-# 4. Selecting variables for the chosen actuarial method
+# 4.1 AL and NC of benefit for death before retirement
+# 4.2 AL and benefits for vested terminated members
+
+# 5. Selecting variables for the chosen actuarial method
 
 # Notes for LAFPP
  # 1. benefit factors given in AVs are already percentages of final average salary, therefore it should not be multiplied by 
@@ -35,7 +38,7 @@ get_indivLab <- function(Tier_select_,
   # salary_          = salary
   # benefit_         = benefit
   # bfactor_         = bfactor
-  # init_terminated_ = get_tierData(init_terms_all, Tier_select) 
+  # init_terms_all_ = init_terms_all # get_tierData(init_terms_all, Tier_select)
   # Tier_select_     = "t5"
   # mortality.post.model_ = mortality.post.model
   # liab.ca_         = liab.ca
@@ -102,8 +105,8 @@ liab.active <- expand.grid(start.year = min.year:(init.year + nyear - 1) ,
     bx = lead(Bx) - Bx,                           # benefit accrual at age x
 
     
-    # ax = get_tla(pxm, i, COLA.scale),                  # Since retirees die at max.age for sure, the life annuity with COLA is equivalent to temporary annuity with COLA up to age max.age. 
-    # ax.r = get_tla(pxm.r, i, COLA.scale),              # ax calculated with mortality table for retirees. 
+    ax.deathBen = get_tla(pxm.deathBen, i, COLA.scale),    # Since retirees die at max.age for sure, the life annuity with COLA is equivalent to temporary annuity with COLA up to age max.age. 
+    # ax.r = get_tla(pxm.r, i, COLA.scale),       # ax calculated with mortality table for retirees. 
     
     
     axR = c(get_tla(pxT[age < r.max], i), rep(0, max.age - r.max + 1)),                        # aT..{x:r.max-x-|} discount value of r.max at age x, using composite decrement       
@@ -127,8 +130,10 @@ liab.active <- expand.grid(start.year = min.year:(init.year + nyear - 1) ,
 # 
 # 
 
+
+
 #*************************************************************************************************************
-#                        2.1  ALs and NCs of life annuity and contingent annuity for actives                #####                  
+#                        2.1  ALs and NCs of life annuity and contingent annuity for actives             #####                  
 #*************************************************************************************************************
 
 # Calculate normal costs and liabilities of retirement benefits with multiple retirement ages  
@@ -237,7 +242,7 @@ liab.la %<>% as.data.frame  %>% # filter(start.year == -41, ea == 21, age.retire
 
 
 #*************************************************************************************************************
-#                         4.1 AL and NC of deferred benefits for actives                        #####
+#                         3.1 AL and NC of deferred benefits for actives                        #####
 #*************************************************************************************************************
 
 # Calculate normal costs and liabilities of deferred retirement benefits
@@ -272,15 +277,14 @@ liab.active %<>%
          # NC and AL of EAN.CP
          NCx.EAN.CP.v = ifelse(age < r.vben, PVFBx.v[age == min(age)]/(sx[age == min(age)] * ayxs[age == r.vben]) * sx, 0),  # for testing spreading NC.v up to r.vben
          ALx.EAN.CP.v = PVFBx.v - NCx.EAN.CP.v * axrs
-  ) %>%
-  ungroup %>% select(start.year, year, ea, age, everything())
+  ) 
   
 # x <- liab.active %>% filter(start.year == 1, ea == 20)
 
 
 
 #*************************************************************************************************************
-#                       4.2 AL for vested terminatede members                        #####
+#                       3.2 AL for vested terminatede members                        #####
 #*************************************************************************************************************
 
 # # Calculate AL and benefit payment for initial vested terms.
@@ -376,29 +380,138 @@ liab.term <-  bind_rows(list(liab.term.init,                                  # 
 # liab.term %>% filter(year.term == 2014, start.year == 1980) %>% head
 # liab.term[!duplicated(liab.term %>% select(start.year, ea, age, year.term)),]
 #   any(T)
-#   
+
+
+
 #*************************************************************************************************************
-#                 # Choosing AL and NC variables corresponding to the chosen acturial methed             #####
+#                        4.1  ALs and NCs of benefit for death before retirement, for actives                  #####                  
 #*************************************************************************************************************
+# QSS: qualified Surviving Spouse
+pct.QSS <- pct.ca.F * pct.female + pct.ca.M * pct.male
+pct.QSS
+
+
+
+# Calculate normal costs and liabilities of retirement benefits with multiple retirement ages  
+liab.active %<>%   
+  mutate( gx.death  = 0,
+          Bx.death  = gx.death * switch(Tier_select_,
+                                        t1 = 0.5 * fas,
+                                        t2 = 0.55 * fas,
+                                        t3 = 0.75 * fas,
+                                        t4 = 0.75 * fas,
+                                        t5 = 0.75 * fas,
+                                        t6 = 0.8  * fas 
+                                        ), # This is the benefit level if the employee starts to CLAIM benefit at age x, not internally retire at age x. 
+          TCx.death = lead(Bx.death) * qxm.pre * pct.QSS  * lead(ax.deathBen) * v, # term cost of life annuity at the internal retirement age x (start to claim benefit at age x + 1)
+
+          # TCx.r = Bx.r * qxr.a * ax,
+          PVFBx.death  = c(get_PVFB(pxT[age <= r.max], v, TCx.death[age <= r.max]), rep(0, max.age - r.max)),
+          
+          ## NC and AL of UC
+          # TCx.r1 = gx.r * qxe * ax,  # term cost of $1's benefit
+          # NCx.UC = bx * c(get_NC.UC(pxT[age <= r.max], v, TCx.r1[age <= r.max]), rep(0, 45)),
+          # ALx.UC = Bx * c(get_PVFB(pxT[age <= r.max], v, TCx.r1[age <= r.max]), rep(0, 45)),
+          
+          # # NC and AL of PUC
+          # TCx.rPUC = ifelse(age == min(age), 0, (Bx / (age - min(age)) * gx.r * qxr.a * ax.r)), # Note that this is not really term cost 
+          # NCx.PUC = c(get_NC.UC(pxT[age <= r.max], v, TCx.rPUC[age <= r.max]),  rep(0, max.age - r.max)),
+          # ALx.PUC = c(get_AL.PUC(pxT[age <= r.max], v, TCx.rPUC[age <= r.max]), rep(0, max.age - r.max)),
+          
+          # NC and AL of EAN.CD
+          NCx.EAN.CD.death = ifelse(age < r.max, PVFBx.death[age == min(age)]/ayx[age == r.max], 0),
+          ALx.EAN.CD.death = PVFBx.death - NCx.EAN.CD.death * axR,
+          
+          # NC and AL of EAN.CP
+          NCx.EAN.CP.death   = ifelse(age < r.max, sx * PVFBx.death[age == min(age)]/(sx[age == min(age)] * ayxs[age == r.max]), 0),
+          PVFNC.EAN.CP.death = NCx.EAN.CP.death * axRs,
+          ALx.EAN.CP.death   = PVFBx.death - PVFNC.EAN.CP.death
+  ) 
+
+
+
+#*************************************************************************************************************
+#                       2.2   ALs and benefits for QSS for death benefit before retirement               #####                  
+#*************************************************************************************************************
+
+liab.death <- rbind(
+  # grids for who die after year 1.
+  expand.grid(ea           = range_ea[range_ea < r.max],
+              age.death = min.age:r.max,
+              start.year   = (init.year + 1 - (r.max - min(range_ea))):(init.year + nyear - 1),
+              age          = range_age) %>%
+    filter(age   >= ea,
+           age.death >= ea,
+           age   >= age.death,
+           start.year + (age.death - ea) >= init.year + 1, # retire after year 2, LHS is the year of retirement
+           start.year + age - ea >= init.year + 1) # not really necessary since we already have age >= age.r
+) %>%
+  data.table(key = "start.year,ea,age.death,age")
+
+
+liab.death <- merge(liab.death,
+                 select(liab.active, start.year, ea, age, Bx.death, COLA.scale, gx.death, ax.deathBen) %>% data.table(key = "ea,age,start.year"),
+                 all.x = TRUE, 
+                 by = c("ea", "age","start.year")) %>%
+  arrange(start.year, ea, age.death) %>% 
+  as.data.frame 
+  #%>% 
+  # left_join(select(mortality.post.model_, age, age.r, ax.r.W.ret = ax.r.W)) %>%  #  load present value of annuity for all retirement ages, ax.r.W in liab.active cannot be used anymore. 
+  #left_join(benefit_)
+
+
+liab.death %<>% as.data.frame  %>% 
+  group_by(start.year, ea, age.death) %>%
+  mutate(
+    year       = start.year + age - ea,
+    year.death = start.year + age.death - ea, # year of death of the active
+    Bx.death   = ifelse(is.na(Bx.death), 0, Bx.death),  # just for safety
+    B.death    = Bx.death[age == age.death] * COLA.scale / COLA.scale[age == age.death],               # Benefits for retirees after year 1
+    ALx.death     = B.death * ax.deathBen                                                                # Liability for remaining retirement benefits, PV of all future benefit adjusted with COLA
+    
+  ) %>% ungroup %>%
+  # select(start.year, year, ea, age, year.retire, age.retire,  B.r, ALx.r)# , ax, Bx, COLA.scale, gx.r)
+  filter(year %in% seq(init.year, len = nyear) ) %>%
+  select(year, ea, age, year.death, age.death, start.year, B.death, ALx.death) %>% 
+  arrange(age.death, start.year, ea, age)
+
+
+# liab.death %>% ungroup %>% arrange(start.year, ea, year.death, age) %>%  head(100)
+
+
+
+
+
+#*************************************************************************************************************
+#                 # 5.  Choosing AL and NC variables corresponding to the chosen acturial methed             #####
+#*************************************************************************************************************
+
+
+liab.active %<>% ungroup %>% select(start.year, year, ea, age, everything())
 
 
 ALx.laca.method   <- paste0("ALx.", actuarial_method, ".laca")
 NCx.laca.method   <- paste0("NCx.", actuarial_method, ".laca")
 
+ALx.death.method   <- paste0("ALx.", actuarial_method, ".death")
+NCx.death.method   <- paste0("NCx.", actuarial_method, ".death")
+
 ALx.v.method <- paste0("ALx.", actuarial_method, ".v")
 NCx.v.method <- paste0("NCx.", actuarial_method, ".v")
 
-ALx.LSC.method <- paste0("ALx.", actuarial_method, ".LSC")
-NCx.LSC.method <- paste0("NCx.", actuarial_method, ".LSC")
 
 
-
-var.names <- c("sx", ALx.laca.method, NCx.laca.method, ALx.v.method, NCx.v.method, "PVFBx.laca", "PVFBx.v", "Bx.laca")
+var.names <- c("sx", ALx.laca.method, NCx.laca.method, 
+                     ALx.v.method, NCx.v.method, 
+                     ALx.death.method, NCx.death.method,
+                     "PVFBx.laca", "PVFBx.v", "PVFBx.death", "Bx.laca")
 liab.active %<>% 
   filter(year %in% seq(init.year, len = nyear)) %>%
   select(year, ea, age, one_of(var.names)) %>%
-  rename_("ALx.laca"  = ALx.laca.method,  "NCx.laca"   = NCx.laca.method, 
-          "ALx.v"   = ALx.v.method,   "NCx.v"    = NCx.v.method)   # Note that dplyr::rename_ is used. 
+  rename_("ALx.laca"   = ALx.laca.method,  "NCx.laca"   = NCx.laca.method, 
+          "ALx.v"      = ALx.v.method,     "NCx.v"      = NCx.v.method,
+          "ALx.death"  = ALx.death.method, "NCx.death"  = NCx.death.method
+           )   # Note that dplyr::rename_ is used. 
 
 
 
@@ -408,7 +521,7 @@ liab.active %<>%
   # liab.term
   # B.LSC
 
-liab <- list(active = liab.active, la = liab.la, term = liab.term)
+liab <- list(active = liab.active, la = liab.la, term = liab.term, death = liab.death)
 
 }
 
