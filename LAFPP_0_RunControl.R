@@ -174,7 +174,7 @@ paramlist$v     = with(paramlist, 1/(1 + i))
 #*********************************************************************************************************
 
 paramlist$simTiers <- "joint"  # "joint"(defult) or "separate"
-source("LAFPP_0_Master_allTiers.R")
+#source("LAFPP_0_Master_allTiers.R")
 #
  
  
@@ -192,7 +192,7 @@ source("LAFPP_0_Master_allTiers.R")
 
 # Tier_select <- "t5"
 # source("LAFPP_0_Master_singleTier.R")
- 
+#  
 
 
 
@@ -200,8 +200,8 @@ source("LAFPP_0_Master_allTiers.R")
    
 # Checking the importance of death benefit
 
-# Tier_select <- "t5"
-# source("Test_0_Master_singleTier.R")
+#Tier_select <- "t5"
+#source("Test_0_Master_singleTier.R")
 
 
 

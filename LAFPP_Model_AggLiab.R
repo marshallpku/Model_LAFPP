@@ -40,10 +40,6 @@ get_AggLiab <- function( Tier_select_,
   
   
   
-  
-  
-  
-  
    assign_parmsList(Global_paramlist_, envir = environment())
    assign_parmsList(paramlist_,        envir = environment())
   
@@ -55,7 +51,7 @@ get_AggLiab <- function( Tier_select_,
   # Notes on naming conventions:
    # "tot" means total AL/NA/... in each year * age * ea cell
    # "sum" means sum of AL/NA/... across age * ea in each year. 
-   # "av"  menas sum of variables related to life annuity, contingent annuity, and term benefits for actives. 
+   # "av"  menas sum of variables related to life annuity, contingent annuity, and term benefits for actives. (now plus death benefit and disability benefit)
    
    
   #*************************************************************************************************************
@@ -70,17 +66,20 @@ get_AggLiab <- function( Tier_select_,
     mutate(ALx.laca.tot  = ALx.laca * number.a,
            ALx.v.tot     = ALx.v    * number.a,
            ALx.death.tot = ALx.death * number.a,
-           ALx.av.tot    = ALx.laca.tot + ALx.v.tot + ALx.death.tot,
+           ALx.disb.tot  = ALx.disb * number.a,
+           ALx.av.tot    = ALx.laca.tot + ALx.v.tot + ALx.death.tot + ALx.disb.tot,
            
            NCx.laca.tot  = NCx.laca * number.a,
            NCx.v.tot     = NCx.v    * number.a,
            NCx.death.tot = NCx.death * number.a,
-           NCx.av.tot    = NCx.laca.tot + NCx.v.tot + NCx.death.tot,
+           NCx.disb.tot  = NCx.disb * number.a,
+           NCx.av.tot    = NCx.laca.tot + NCx.v.tot + NCx.death.tot + NCx.disb.tot,
            
            PVFBx.laca.tot  = PVFBx.laca * number.a,
            PVFBx.v.tot     = PVFBx.v    * number.a,
            PVFBx.death.tot = PVFBx.death * number.a,
-           PVFBx.av.tot    = PVFBx.laca.tot + PVFBx.v.tot + PVFBx.death.tot,
+           PVFBx.disb.tot  = PVFBx.disb * number.a,
+           PVFBx.av.tot    = PVFBx.laca.tot + PVFBx.v.tot + PVFBx.death.tot + PVFBx.disb.tot,
            
            PR.tot  = sx * number.a,
            
@@ -92,18 +91,20 @@ get_AggLiab <- function( Tier_select_,
       ALx.laca.sum = sum(ALx.laca.tot, na.rm = TRUE),
       ALx.v.sum    = sum(ALx.v.tot,    na.rm = TRUE),
       ALx.death.sum= sum(ALx.death.tot,na.rm = TRUE),
+      ALx.disb.sum = sum(ALx.disb.tot, na.rm = TRUE),
       ALx.av.sum   = sum(ALx.av.tot,   na.rm = TRUE), 
       
       NCx.laca.sum = sum(NCx.laca.tot, na.rm = TRUE),
       NCx.v.sum    = sum(NCx.v.tot,    na.rm = TRUE),
       NCx.death.sum= sum(NCx.death.tot,na.rm = TRUE),
+      NCx.disb.sum = sum(NCx.disb.tot, na.rm = TRUE),
       NCx.av.sum   = sum(NCx.av.tot,   na.rm = TRUE),
       
       PVFBx.laca.sum = sum(PVFBx.laca.tot, na.rm = TRUE),
       PVFBx.v.sum    = sum(PVFBx.v.tot,    na.rm = TRUE),
       PVFBx.death.sum= sum(PVFBx.death.tot,na.rm = TRUE),
+      PVFBx.disb.sum = sum(PVFBx.disb.tot, na.rm = TRUE),
       PVFBx.av.sum   = sum(PVFBx.av.tot,   na.rm = TRUE),
-      
       
       PR.sum    = sum(PR.tot,  na.rm = TRUE),
       
@@ -139,7 +140,7 @@ get_AggLiab <- function( Tier_select_,
   
   
   #*************************************************************************************************************
-  #                                     ## Liabilities and benefits for retirees   ####
+  #                                     ## Liabilities and benefits for death benefit   ####
   #*************************************************************************************************************
   
   liab_$death  <- data.table(liab_$death,    key = "ea,age,year,year.death")
@@ -161,6 +162,30 @@ get_AggLiab <- function( Tier_select_,
     # mutate(runname = runname) %>% 
     as.matrix
 
+  
+  #*************************************************************************************************************
+  #                                     ## Liabilities and benefits for disability benefit   ####
+  #*************************************************************************************************************
+  
+  liab_$disb  <- data.table(liab_$disb,    key = "ea,age,year,year.disb")
+  pop_$disb   <- data.table(pop_$disb,  key = "ea,age,year,year.disb")
+  liab_$disb  <- merge(pop_$disb, liab_$disb, by = c("ea", "age","year", "year.disb"), all.x = TRUE)
+  liab_$disb  <- as.data.frame(liab_$disb)
+  
+  
+  liab_$disb %<>% 
+    mutate(ALx.disb.tot = ALx.disb * number.disb,
+           B.disb.tot   = B.disb   * number.disb,
+           runname = runname)
+  
+  disb.agg <- liab_$disb %>% 
+    group_by(year) %>% 
+    summarise(ALx.disb.sum   = sum(ALx.disb.tot, na.rm = TRUE),
+              B.disb.sum     = sum(B.disb.tot  , na.rm = TRUE),
+              ndisb       = sum(number.disb , na.rm = TRUE)) %>% 
+    # mutate(runname = runname) %>% 
+    as.matrix
+  
   
   #*************************************************************************************************************
   #                                 ## Liabilities and benefits for vested terms.   ####
@@ -273,7 +298,8 @@ get_AggLiab <- function( Tier_select_,
                    la     = la.agg,
                    ca     = ca.agg, 
                    term   = term.agg,
-                   death  = death.agg)
+                   death  = death.agg,
+                   disb   = disb.agg)
               
               # ind_active  = if(paramlist$save.indiv) .liab$active  else "Not saved", 
               # ind_retiree = if(paramlist$save.indiv) .liab$retiree else "Not saved",

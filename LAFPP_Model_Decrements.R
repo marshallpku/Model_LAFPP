@@ -37,7 +37,7 @@ assign_parmsList(.paramlist,        envir = environment())
 mortality.model <- data.frame(age = range_age) %>% 
   left_join(mortality_LAFPP) %>% 
   mutate(qxm.pre = qxm.pre.male  * pct.male + qxm.pre.female  * pct.female,   # mortality for actives
-         qxm.d   = qxm.d.male    * pct.male + qxm.d.female  * pct.female,
+         qxm.d   = (qxm.d.male    * pct.male + qxm.d.female  * pct.female) * 1,
          
          qxm.deathBen = ifelse(age > max(age - 3), 1, lead(qxm.post.female, 3)) * pct.male + 
                         ifelse(age < min(age + 3), qxm.post.male[age == min(age)],lag(qxm.post.male, 3)) * pct.female,
@@ -100,7 +100,22 @@ disbrates.model <- disbRates %>%
                qxd.plc  * prop.occupation[Tier_select, "pct.plc"]) %>% 
   select(age, qxd)
 
+ # disb rate not applied to members eligible to DROP
 
+if(Tier_select %in% c("t1", "t2", "t4")){
+  disbrates.model <- left_join(expand.grid(age = range_age, ea = range_ea),
+                               disbrates.model) %>%
+                     mutate(yos = age - ea,
+                            qxd = ifelse(yos >= 25, 0, qxd))
+} else {
+  disbrates.model <- left_join(expand.grid(age = range_age, ea = range_ea),
+                               disbrates.model) %>%
+    mutate(yos = age - ea,
+           qxd = ifelse(yos >= 25 & age >= 50, 0, qxd))
+}
+                   
+
+disbrates.model
 # term rates
 termrates.model <- termRates %>% 
   mutate(qxt = qxt.fire * prop.occupation[Tier_select, "pct.fire"] + 
@@ -188,7 +203,8 @@ decrement.model %<>% group_by(ea) %>%
 
 decrement.model %<>% 
   mutate( pxm.pre = 1 - qxm.pre,
-          pxm.deathBen = 1 - qxm.deathBen, 
+          pxm.deathBen = 1 - qxm.deathBen,
+          pxm.d = 1 - qxm.d,
           
           pxT     = 1 - qxt - qxd - qxm.pre - qxr,                            
           

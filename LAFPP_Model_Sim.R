@@ -164,36 +164,40 @@ run_sim <- function(Tier_select_,
   penSim0$AL.act.laca <- AggLiab_$active[, "ALx.laca.sum"]
   penSim0$AL.act.v    <- AggLiab_$active[, "ALx.v.sum"]
   penSim0$AL.act.death<- AggLiab_$active[, "ALx.death.sum"]
-  penSim0$AL.act      <-  with(penSim0, AL.act.laca + AL.act.v + penSim0$AL.act.death)
+  penSim0$AL.act.disb <- AggLiab_$active[, "ALx.disb.sum"]
+  penSim0$AL.act      <-  with(penSim0, AL.act.laca + AL.act.v + penSim0$AL.act.death + penSim0$AL.act.disb)
   
   penSim0$AL.la    <- AggLiab_$la[, "ALx.la.sum"]
   penSim0$AL.ca    <- AggLiab_$ca[, "liab.ca.sum"]
   penSim0$AL.term  <- AggLiab_$term[, "ALx.v.sum"]
   penSim0$AL.death <- AggLiab_$death[, "ALx.death.sum"]
+  penSim0$AL.disb  <- AggLiab_$disb[, "ALx.disb.sum"]
   
-  
-  penSim0$AL      <- with(penSim0, AL.act + AL.la + AL.ca +  AL.term + AL.death)
+  penSim0$AL       <- with(penSim0, AL.act + AL.la + AL.ca +  AL.term + AL.death + AL.disb)
   
   
   # NC(j)
   penSim0$NC.laca <- AggLiab_$active[, "NCx.laca.sum"]
   penSim0$NC.v    <- AggLiab_$active[, "NCx.v.sum"]
-  penSim0$NC.death<- AggLiab_$active[, "NCx.death.sum"] 
-  penSim0$NC      <-  with(penSim0, NC.laca + NC.v + NC.death)
+  penSim0$NC.death<- AggLiab_$active[, "NCx.death.sum"]
+  penSim0$NC.disb <- AggLiab_$active[, "NCx.disb.sum"] 
+  penSim0$NC      <-  with(penSim0, NC.laca + NC.v + NC.death + NC.disb)
   
   
   # PVFB(j)
   penSim0$PVFB.laca <- AggLiab_$active[, "PVFBx.laca.sum"]
   penSim0$PVFB.v    <- AggLiab_$active[, "PVFBx.v.sum"]
-  penSim0$PVFB.death<- AggLiab_$active[, "PVFBx.death.sum"] 
-  penSim0$PVFB      <-  with(penSim0, PVFB.laca + PVFB.v + PVFB.death) #Note this is the total PVFB for actives. PVFB for retirees/beneficiaries are the same as AL.
+  penSim0$PVFB.death<- AggLiab_$active[, "PVFBx.death.sum"]
+  penSim0$PVFB.disb <- AggLiab_$active[, "PVFBx.disb.sum"] 
+  penSim0$PVFB      <-  with(penSim0, PVFB.laca + PVFB.v + PVFB.death + PVFB.disb) #Note this is the total PVFB for actives. PVFB for retirees/beneficiaries are the same as AL.
   
   # B(j)
   penSim0$B.la    <- AggLiab_$la[, "B.la.sum"]
   penSim0$B.ca    <- AggLiab_$ca[, "B.ca.sum"]
   penSim0$B.v     <- AggLiab_$term[, "B.v.sum"]
   penSim0$B.death <- AggLiab_$death[, "B.death.sum"]
-  penSim0$B       <- with(penSim0, B.la + B.ca + B.v + B.death)
+  penSim0$B.disb  <- AggLiab_$disb[, "B.disb.sum"]
+  penSim0$B       <- with(penSim0, B.la + B.ca + B.v + B.death + B.disb)
   
   # PR(j)
   penSim0$PR <- AggLiab_$active[, "PR.sum"]
@@ -205,6 +209,7 @@ run_sim <- function(Tier_select_,
   penSim0$n.ca.R0S1 <- AggLiab_$ca[, "n.R0S1"]
   penSim0$nterms    <- AggLiab_$term[, "nterms"]
   penSim0$ndeathBen <- AggLiab_$death[, "ndeathBen"]
+  penSim0$ndisb     <- AggLiab_$disb[,  "ndisb"]
 
 
   
