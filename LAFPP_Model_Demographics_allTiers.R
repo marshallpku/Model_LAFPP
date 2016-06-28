@@ -160,32 +160,37 @@ newDisb.act.t1 <- newDisb.act.t2 <- newDisb.act.t3 <- newDisb.act.t4 <- newDisb.
 wf_active.t1[, , 1]   <- init_pop.t1_$actives 
 wf_la.t1[, , 1, 1]    <- init_pop.t1_$retirees
 wf_term.t1[, , 1, 1]  <- init_pop.t1_$terms   # note that the initial terms are assigned to year.term = init.year - 1
+wf_disb.t1[, , 1, 1]  <- init_pop.t1_$disb
 
 # Tier 2
 wf_active.t2[, , 1]   <- init_pop.t2_$actives 
 wf_la.t2[, , 1, 1]    <- init_pop.t2_$retirees
 wf_term.t2[, , 1, 1]  <- init_pop.t2_$terms   # note that the initial terms are assigned to year.term = init.year - 1
+wf_disb.t2[, , 1, 1]  <- init_pop.t2_$disb
 
 # Tier 3
 wf_active.t3[, , 1]   <- init_pop.t3_$actives 
 wf_la.t3[, , 1, 1]    <- init_pop.t3_$retirees
 wf_term.t3[, , 1, 1]  <- init_pop.t3_$terms   # note that the initial terms are assigned to year.term = init.year - 1
+wf_disb.t3[, , 1, 1]  <- init_pop.t3_$disb
 
 # Tier 4
 wf_active.t3[, , 1]   <- init_pop.t3_$actives 
 wf_la.t3[, , 1, 1]    <- init_pop.t3_$retirees
 wf_term.t3[, , 1, 1]  <- init_pop.t3_$terms   # note that the initial terms are assigned to year.term = init.year - 1
+wf_disb.t3[, , 1, 1]  <- init_pop.t3_$disb
 
 # Tier 5
 wf_active.t5[, , 1]   <- init_pop.t5_$actives 
 wf_la.t5[, , 1, 1]    <- init_pop.t5_$retirees
 wf_term.t5[, , 1, 1]  <- init_pop.t5_$terms   # note that the initial terms are assigned to year.term = init.year - 1
+wf_disb.t5[, , 1, 1]  <- init_pop.t5_$disb
 
 # Tier 6
 wf_active.t6[, , 1]   <- init_pop.t6_$actives 
 wf_la.t6[, , 1, 1]    <- init_pop.t6_$retirees
 wf_term.t6[, , 1, 1]  <- init_pop.t6_$terms   # note that the initial terms are assigned to year.term = init.year - 1
-
+wf_disb.t6[, , 1, 1]  <- init_pop.t6_$disb
 
 
 

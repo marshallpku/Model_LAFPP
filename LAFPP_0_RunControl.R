@@ -60,7 +60,7 @@ source("Functions.R")
   # disability rate not applied to members eligible to DROP
   # Disability are modeled as life annuity. 
   # Plan to apply an adjustment factor to mortality after disability mortality 
-
+  # # of disabled at age min.age(20) must be 0.
 
 
 
@@ -174,8 +174,8 @@ paramlist$v     = with(paramlist, 1/(1 + i))
 #*********************************************************************************************************
 
 paramlist$simTiers <- "joint"  # "joint"(defult) or "separate"
-#source("LAFPP_0_Master_allTiers.R")
-#
+source("LAFPP_0_Master_allTiers.R")
+
  
  
 
@@ -191,8 +191,8 @@ paramlist$simTiers <- "joint"  # "joint"(defult) or "separate"
 # (Already solved.)
 
 # Tier_select <- "t5"
-# source("LAFPP_0_Master_singleTier.R")
-#  
+#source("LAFPP_0_Master_singleTier.R")
+
 
 
 

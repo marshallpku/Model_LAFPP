@@ -130,6 +130,14 @@ benefit.t4 <- get_benefit_tier("t4")
 benefit.t5 <- get_benefit_tier("t5")
 benefit.t6 <- get_benefit_tier("t6")
 
+benefit.disb.t1 <- get_benefit.disb_tier("t1")
+benefit.disb.t2 <- get_benefit.disb_tier("t2")
+benefit.disb.t3 <- get_benefit.disb_tier("t3")
+benefit.disb.t4 <- get_benefit.disb_tier("t4")
+benefit.disb.t5 <- get_benefit.disb_tier("t5")
+benefit.disb.t6 <- get_benefit.disb_tier("t6")
+
+
 init_pop.t1 <- get_initPop_tier("t1")
 init_pop.t2 <- get_initPop_tier("t2")
 init_pop.t3 <- get_initPop_tier("t3")
@@ -203,6 +211,7 @@ liab.t1 <- get_indivLab("t1",
                          decrement.model.t1,
                          salary.t1,
                          benefit.t1,
+                         benefit.disb.t1,
                          bfactor.t1,
                          mortality.post.model.t1,
                          liab.ca.t1)
@@ -211,6 +220,7 @@ liab.t2 <- get_indivLab("t2",
                         decrement.model.t2,
                         salary.t2,
                         benefit.t2,
+                        benefit.disb.t2,
                         bfactor.t2,
                         mortality.post.model.t2,
                         liab.ca.t2)
@@ -219,6 +229,7 @@ liab.t3 <- get_indivLab("t3",
                         decrement.model.t3,
                         salary.t3,
                         benefit.t3,
+                        benefit.disb.t3,
                         bfactor.t3,
                         mortality.post.model.t3,
                         liab.ca.t3)
@@ -227,6 +238,7 @@ liab.t4 <- get_indivLab("t4",
                         decrement.model.t4,
                         salary.t4,
                         benefit.t4,
+                        benefit.disb.t4,
                         bfactor.t4,
                         mortality.post.model.t4,
                         liab.ca.t4)
@@ -235,6 +247,7 @@ liab.t5 <- get_indivLab("t5",
                         decrement.model.t5,
                         salary.t5,
                         benefit.t5,
+                        benefit.disb.t5,
                         bfactor.t5,
                         mortality.post.model.t5,
                         liab.ca.t5)
@@ -243,6 +256,7 @@ liab.t6 <- get_indivLab("t6",
                         decrement.model.t6,
                         salary.t6,
                         benefit.t6,
+                        benefit.disb.t6,
                         bfactor.t6,
                         mortality.post.model.t6,
                         liab.ca.t6)

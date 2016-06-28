@@ -66,8 +66,9 @@ i.r <- gen_returns()
 
 source("LAFPP_Model_PrepData.R")
 
-salary  <- get_salary_proc(Tier_select)
-benefit <- get_benefit_tier(Tier_select)
+salary       <- get_salary_proc(Tier_select)
+benefit      <- get_benefit_tier(Tier_select)
+benefit.disb <- get_benefit.disb_tier(Tier_select)
 init_pop <- get_initPop_tier(Tier_select)
 
 if(Tier_select == "t6"){

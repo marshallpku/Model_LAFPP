@@ -29,6 +29,7 @@ get_indivLab <- function(Tier_select_,
                          decrement.model_ = decrement.model,
                          salary_          = salary,
                          benefit_         = benefit,
+                         benefit.disb_    = benefit.disb,
                          bfactor_         = bfactor,
                          mortality.post.model_ = mortality.post.model,
                          liab.ca_ = liab.ca,
@@ -40,6 +41,7 @@ get_indivLab <- function(Tier_select_,
   # decrement.model_ = decrement.model
   # salary_          = salary
   # benefit_         = benefit
+  # benefit.disb_    = benefit.disb
   # bfactor_         = bfactor
   # init_terms_all_ = init_terms_all # get_tierData(init_terms_all, Tier_select)
   # Tier_select_     = "t5"
@@ -530,6 +532,16 @@ liab.active %<>%
 #*************************************************************************************************************
 
 liab.disb <- rbind(
+  # grids for initial retirees in year 1
+  # To simplified the calculation, it is assmed that all initial disabled entered the workforce at age min.age and 
+  # become disabled in year 1. This assumption will cause the age of disability and yos of some of the disabled not compatible with the eligiblility rules,
+  # but this is not an issue since the main goal is to generate the correct cashflow and liablity for the initial disabled.
+  expand.grid(ea         = min.age,
+              age.disb   = benefit.disb_$age, # This ensures that year of retirement is year 1.
+              start.year = init.year - (benefit.disb_$age - min.age),
+              age        = range_age) %>%
+    filter(age >= ea + 1 - start.year),
+  
   # grids for who die after year 1.
   expand.grid(ea           = range_ea[range_ea < r.max],
               age.disb     = min.age:r.max,
@@ -543,16 +555,19 @@ liab.disb <- rbind(
 ) %>%
   data.table(key = "start.year,ea,age.disb,age")
 
+liab.disb <- liab.disb[!duplicated(liab.disb %>% select(start.year, ea, age, age.disb ))]
+
 
 liab.disb <- merge(liab.disb,
                     select(liab.active, start.year, ea, age, Bx.disb, COLA.scale, gx.disb, ax.disb) %>% data.table(key = "ea,age,start.year"),
                     all.x = TRUE, 
                     by = c("ea", "age","start.year")) %>%
   arrange(start.year, ea, age.disb) %>% 
-  as.data.frame 
+  as.data.frame %>% 
+  left_join(benefit.disb_)
 #%>% 
 # left_join(select(mortality.post.model_, age, age.r, ax.r.W.ret = ax.r.W)) %>%  #  load present value of annuity for all retirement ages, ax.r.W in liab.active cannot be used anymore. 
-#left_join(benefit_)
+
 
 
 liab.disb %<>% as.data.frame  %>% 
@@ -561,7 +576,9 @@ liab.disb %<>% as.data.frame  %>%
     year       = start.year + age - ea,
     year.disb  = start.year + age.disb - ea, # year of disability of the active
     Bx.disb    = ifelse(is.na(Bx.disb), 0, Bx.disb),  # just for safety
-    B.disb     = Bx.disb[age == age.disb] * COLA.scale / COLA.scale[age == age.disb],               # Benefits for disability retirees after year 1
+    B.disb     = ifelse(year.disb <= init.year,
+                        benefit.disb[year == init.year] * COLA.scale / COLA.scale[year == init.year],  # Benefits for initial retirees
+                        Bx.disb[age == age.disb] * COLA.scale / COLA.scale[age == age.disb]),          # Benefits for disability retirees after year 1
     ALx.disb   = B.disb * ax.disb                                                           # Liability for remaining diability benefits, PV of all future benefit adjusted with COLA
     
   ) %>% ungroup %>%

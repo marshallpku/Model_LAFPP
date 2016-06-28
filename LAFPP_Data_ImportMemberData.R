@@ -492,7 +492,7 @@ init_beneficiaries_all
 #                             Importing initial disabled (Temporary)                                #####                  
 #*************************************************************************************************************
 
-get_init.disb.temp <- function(file, sheet, planname, cellStart = "B2", cellEnd = "B3"){
+get_init.disb.temp <- function(file, sheet, planname, age_spread, cellStart = "B2", cellEnd = "B3"){
   
   # file <- file_memberData
   # sheet <-   "Other_t2"
@@ -505,7 +505,7 @@ get_init.disb.temp <- function(file, sheet, planname, cellStart = "B2", cellEnd 
   df <- readWorksheetFromFile(file, sheet = sheet, header=TRUE, region= range, colTypes="character") %>% 
     mutate(value = suppressWarnings(as.numeric(value)))
   df
-  init_retirees <- data.frame(age = 20:80) %>% 
+  init_retirees <- data.frame(age = age_spread) %>% 
     mutate(ndisb = df[df$variable == "disb.n.tot", "value"]/n(),
            benefit   = 12 * df[df$variable == "disb.ben.mon", "value"],
            planname = planname) %>%
@@ -515,21 +515,21 @@ get_init.disb.temp <- function(file, sheet, planname, cellStart = "B2", cellEnd 
 }
 
 init_disb_all <- bind_rows(
-  get_init.disb.temp(file_memberData, "Other_t1", "Disb_t1"),
-  get_init.disb.temp(file_memberData, "Other_t2", "Disb_t2"),
-  get_init.disb.temp(file_memberData, "Other_t3", "Disb_t3"),
-  get_init.disb.temp(file_memberData, "Other_t4", "Disb_t4"),
-  get_init.disb.temp(file_memberData, "Other_t5_noHPP", "Disb_t5_noHPP"),
-  get_init.disb.temp(file_memberData, "Other_t5_HPP",   "Disb_t5_HPP"),
-  get_init.disb.temp(file_memberData, "Other_t6_noHPP", "Disb_t6_noHPP"),
-  get_init.disb.temp(file_memberData, "Other_t6_HPP",   "Disb_t6_HPP")
+  get_init.disb.temp(file_memberData, "Other_t1", "Disb_t1", 80:85),
+  get_init.disb.temp(file_memberData, "Other_t2", "Disb_t2", 63:83),
+  get_init.disb.temp(file_memberData, "Other_t3", "Disb_t3", 46:66),
+  get_init.disb.temp(file_memberData, "Other_t4", "Disb_t4", 43:64),
+  get_init.disb.temp(file_memberData, "Other_t5_noHPP", "Disb_t5_noHPP", 41:61),
+  get_init.disb.temp(file_memberData, "Other_t5_HPP",   "Disb_t5_HPP", 41:61),
+  get_init.disb.temp(file_memberData, "Other_t6_noHPP", "Disb_t6_noHPP", 41:61),
+  get_init.disb.temp(file_memberData, "Other_t6_HPP",   "Disb_t6_HPP", 41:61)
 )
 
 init_disb_all
 
 
 #*************************************************************************************************************
-#                             Importing initial disabled (Temporary)                                #####                  
+#                             Importing initial vested terms (Temporary)                                #####                  
 #*************************************************************************************************************
 
 get_init.terms.temp <- function(file, sheet, planname, cellStart = "B2", cellEnd = "B3"){
@@ -982,3 +982,11 @@ init_terms_all
 # 
 # 
 # # decrement.ucrp %>% filter(ea == 20) %>% select(age, qxm.pre) %>% mutate(qxm.pre = qxm.pre * 100)
+
+# init_disb_all %>% filter(grepl("fillin", planname)) %>% group_by(planname) %>% 
+#   summarize(avg_age = sum(age * ndisb)/sum(ndisb) )
+
+
+
+
+
