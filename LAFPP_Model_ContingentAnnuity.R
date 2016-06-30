@@ -150,7 +150,7 @@ get_liab.ben <- function(gender.R,
        # 1. Retiree with a living spouse, whose AL consists of two parts:
             # a. AL for the retiree's life annuity
             # b. AL attributable to the contingent annuity of the survivor. 
-       # 2. Retiree without a living spouse (spouse dies after the employee retirees). AL is just a life annuity
+       # 2. Retiree without a living spouse (spouse dies when the retiree is still alive). AL is just a life annuity
        # 3. Living spouse. AL is just a life annuity
       
       # AL of an individual retiree attributable to the life annuity at each age. 

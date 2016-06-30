@@ -167,10 +167,10 @@ run_sim <- function(Tier_select_,
   penSim0$AL.act.disb <- AggLiab_$active[, "ALx.disb.sum"]
   penSim0$AL.act      <-  with(penSim0, AL.act.laca + AL.act.v + penSim0$AL.act.death + penSim0$AL.act.disb)
   
-  penSim0$AL.la    <- AggLiab_$la[, "ALx.la.sum"]
-  penSim0$AL.ca    <- AggLiab_$ca[, "liab.ca.sum"]
+  penSim0$AL.la    <- AggLiab_$la[,   "ALx.la.sum"]
+  penSim0$AL.ca    <- AggLiab_$ca[,   "liab.ca.sum"]
   penSim0$AL.term  <- AggLiab_$term[, "ALx.v.sum"]
-  penSim0$AL.death <- AggLiab_$death[, "ALx.death.sum"]
+  penSim0$AL.death <- AggLiab_$death[,"ALx.death.sum"]
   penSim0$AL.disb  <- AggLiab_$disb[, "ALx.disb.sum"]
   
   penSim0$AL       <- with(penSim0, AL.act + AL.la + AL.ca +  AL.term + AL.death + AL.disb)

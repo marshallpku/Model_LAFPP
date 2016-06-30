@@ -46,10 +46,22 @@ source("Functions.R")
  # Model_Sim
 
 
+# Notes on service retirement
+ # initial service retirees are currently (June27, 2016) modeled as life annuitants. 
+ #
+
 # Notes on DROP
-# 1. DROP participants are treated as retirees in the model, they do not affect the determination of new entrants. 
-# 2. Plan to model DROP participants' payroll and EEC, which are not neglectible quantitatively. 
-# 3. When assuming DROP participants are retirees, the fund pays benefits to DROP accounts. 
+  # Major concerns 
+   # effect on new entrants
+   # effect on EEC
+   # DROP participants in initial actives 
+
+   # 1. DROP participants are treated as retirees in the model, they do not affect the determination of new entrants. 
+   # 2. Plan to model DROP participants' payroll and EEC, which are not neglectible quantitatively. 
+   # 3. When assuming DROP participants are retirees, the fund pays benefits to DROP accounts. 
+  
+
+
 
 # Notes on benefit for death before retirement
 
@@ -70,7 +82,7 @@ source("Functions.R")
 Global_paramlist <- list(
   
   init.year = 2015,
-  nyear     = 10,
+  nyear     = 30,
   nsim      = 5,
   ncore     = 4,
   

@@ -348,9 +348,10 @@ penSim_results.sumTiers <- run_sim("sumTiers", AggLiab.sumTiers)
 
 
 var_display <- c("Tier", "sim", "year", "FR", "MA", "AL", 
-                 #"AL.act", "AL.act.laca", "AL.act.v", "AL.act.LSC", "AL.la", "AL.ca", "AL.term", 
+                 #"AL.act", "AL.act.laca", "AL.act.v", "AL.act.LSC", "AL.la", "AL.ca", "AL.term",
+                 "AL.act", "AL.la", "AL.ca", "AL.disb", "AL.death", "PVFB",
                  #"PVFB.laca", "PVFB.LSC", "PVFB.v", "PVFB", 
-                 "B", "B.la", "B.ca", "B.v", 
+                 # "B", "B.la", "B.ca", "B.v", 
                  "nactives", "nterms", "PR", "NC_PR", "NC")
 
 
