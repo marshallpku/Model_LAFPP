@@ -33,6 +33,7 @@ get_indivLab <- function(Tier_select_,
                          bfactor_         = bfactor,
                          mortality.post.model_ = mortality.post.model,
                          liab.ca_ = liab.ca,
+                         liab.disb.ca_ = liab.disb.ca,
                          init_terms_all_  = init_terms_all,
                          paramlist_ = paramlist,
                          Global_paramlist_ = Global_paramlist){
@@ -47,6 +48,7 @@ get_indivLab <- function(Tier_select_,
   # Tier_select_     = "t5"
   # mortality.post.model_ = mortality.post.model
   # liab.ca_         = liab.ca
+  # liab.disb.ca_ = liab.disb.ca
   # paramlist_       =  paramlist
   # Global_paramlist_ =  Global_paramlist
 
@@ -89,6 +91,7 @@ liab.active <- expand.grid(start.year = min.year:(init.year + nyear - 1) ,
   left_join(bfactor_) %>%
   left_join(mortality.post.model_ %>% filter(age == age.r) %>% select(age, ax.r.W)) %>%
   left_join(liab.ca_ %>% filter(age == age.r) %>% select(age, liab.ca.sum.1)) %>% 
+  left_join(liab.disb.ca_ %>% filter(age == age.r) %>% select(age, liab.disb.ca.sum.1 = liab.ca.sum.1)) %>% 
   group_by(start.year, ea) %>%
   
   
@@ -500,10 +503,12 @@ liab.active %<>%
                                                 0.65 * fas)), 
           
           # This is the benefit level if the employee starts to CLAIM benefit at age x, not internally retire at age x. 
-          TCx.disb = lead(Bx.disb) * qxd * lead(ax.disb) * v, # term cost of life annuity at the internal retirement age x (start to claim benefit at age x + 1)
+          TCx.disb.la = lead(Bx.disb) * qxd.la * lead(ax.disb) * v, # term cost of life annuity at the internal retirement age x (start to claim benefit at age x + 1)
+          TCx.disb.ca = lead(Bx.disb) * qxd.ca * lead(liab.disb.ca.sum.1) * v,
+          TCx.disb.laca = TCx.disb.la + TCx.disb.ca,
           
           # TCx.r = Bx.r * qxr.a * ax,
-          PVFBx.disb  = c(get_PVFB(pxT[age <= r.max], v, TCx.disb[age <= r.max]), rep(0, max.age - r.max)),
+          PVFBx.disb  = c(get_PVFB(pxT[age <= r.max], v, TCx.disb.laca[age <= r.max]), rep(0, max.age - r.max)),
           
           ## NC and AL of UC
           # TCx.r1 = gx.r * qxe * ax,  # term cost of $1's benefit
@@ -531,7 +536,7 @@ liab.active %<>%
 #                       5.2   ALs and benefits for disability benefit               #####                  
 #*************************************************************************************************************
 
-liab.disb <- rbind(
+liab.disb.la <- rbind(
   # grids for initial retirees in year 1
   # To simplified the calculation, it is assmed that all initial disabled entered the workforce at age min.age and 
   # become disabled in year 1. This assumption will cause the age of disability and yos of some of the disabled not compatible with the eligiblility rules,
@@ -555,10 +560,10 @@ liab.disb <- rbind(
 ) %>%
   data.table(key = "start.year,ea,age.disb,age")
 
-liab.disb <- liab.disb[!duplicated(liab.disb %>% select(start.year, ea, age, age.disb ))]
+liab.disb.la <- liab.disb.la[!duplicated(liab.disb.la %>% select(start.year, ea, age, age.disb ))]
 
 
-liab.disb <- merge(liab.disb,
+liab.disb.la <- merge(liab.disb.la,
                     select(liab.active, start.year, ea, age, Bx.disb, COLA.scale, gx.disb, ax.disb) %>% data.table(key = "ea,age,start.year"),
                     all.x = TRUE, 
                     by = c("ea", "age","start.year")) %>%
@@ -570,21 +575,21 @@ liab.disb <- merge(liab.disb,
 
 
 
-liab.disb %<>% as.data.frame  %>% 
+liab.disb.la %<>% as.data.frame  %>% 
   group_by(start.year, ea, age.disb) %>%
   mutate(
     year       = start.year + age - ea,
     year.disb  = start.year + age.disb - ea, # year of disability of the active
     Bx.disb    = ifelse(is.na(Bx.disb), 0, Bx.disb),  # just for safety
-    B.disb     = ifelse(year.disb <= init.year,
-                        benefit.disb[year == init.year] * COLA.scale / COLA.scale[year == init.year],  # Benefits for initial retirees
-                        Bx.disb[age == age.disb] * COLA.scale / COLA.scale[age == age.disb]),          # Benefits for disability retirees after year 1
-    ALx.disb   = B.disb * ax.disb                                                           # Liability for remaining diability benefits, PV of all future benefit adjusted with COLA
+    B.disb.la     = ifelse(year.disb <= init.year,
+                           benefit.disb[year == init.year] * COLA.scale / COLA.scale[year == init.year],  # Benefits for initial retirees
+                           Bx.disb[age == age.disb] * COLA.scale / COLA.scale[age == age.disb]),          # Benefits for disability retirees after year 1
+    ALx.disb.la   = B.disb.la * ax.disb                                                           # Liability for remaining diability benefits, PV of all future benefit adjusted with COLA
     
   ) %>% ungroup %>%
   # select(start.year, year, ea, age, year.retire, age.retire,  B.r, ALx.r)# , ax, Bx, COLA.scale, gx.r)
   filter(year %in% seq(init.year, len = nyear) ) %>%
-  select(year, ea, age, year.disb, age.disb, start.year, B.disb, ALx.disb) %>% 
+  select(year, ea, age, year.disb, age.disb, start.year, B.disb.la, ALx.disb.la) %>% 
   arrange(age.disb, start.year, ea, age)
 
 
@@ -639,7 +644,7 @@ liab.active %<>%
   # liab.term
   # B.LSC
 
-liab <- list(active = liab.active, la = liab.la, term = liab.term, death = liab.death, disb = liab.disb)
+liab <- list(active = liab.active, la = liab.la, term = liab.term, death = liab.death, disb.la = liab.disb.la)
 
 }
 

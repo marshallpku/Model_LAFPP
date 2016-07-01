@@ -95,7 +95,41 @@ pop <- get_Population()
 # 3. Actuarial liabilities and benefits for contingent annuitants and survivors ####
 #*********************************************************************************************************
 source("LAFPP_Model_ContingentAnnuity.R")
-liab.ca <- get_contingentAnnuity(Tier_select, apply_reduction = FALSE)
+
+# For service retirement
+liab.ca <- get_contingentAnnuity(Tier_select, 
+                                 tier.param[Tier_select, "factor.ca"],
+                                 paramlist$range_age.r, 
+                                 apply_reduction = FALSE)
+
+# For disability benefit
+range_age.disb <-  min(paramlist$range_age):max(paramlist$range_age.r)
+liab.disb.ca <- get_contingentAnnuity(Tier_select, 
+                                      tier.param[Tier_select, "factor.ca"],
+                                      range_age.disb, 
+                                      apply_reduction = FALSE)
+
+
+liab.ca0 <- get_contingentAnnuity(Tier_select, 
+                                 0 ,
+                                 paramlist$range_age.r, 
+                                 apply_reduction = FALSE)
+
+
+# liab.disb.ca0 <- get_contingentAnnuity(Tier_select, 
+#                                       0,
+#                                       range_age.disb, 
+#                                       apply_reduction = FALSE)
+
+# 
+ liab.ca %>% filter(age.r + 10 == age)
+ liab.ca0 %>% filter(age.r + 10 == age)
+
+
+# liab.disb.ca %>% filter(age.r + 1 == age)
+# 
+# liab.disb.ca0 %>% filter(age.r + 1 == age)
+
 
 
 

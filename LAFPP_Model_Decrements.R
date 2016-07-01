@@ -183,12 +183,14 @@ decrement.model %<>% group_by(ea) %>%
                              1 - qxt - qxm.pre - qxd, 
                              lead(qxr) * (1 - qxt - qxm.pre - qxd)), # Total probability of retirement
          qxr.la = ifelse(age == r.max, 0 , qxr * pct.la),  # Prob of opting for life annuity
-         qxr.ca = ifelse(age == r.max, 0 , qxr * pct.ca)   # Prob of opting for contingent annuity
+         qxr.ca = ifelse(age == r.max, 0 , qxr * pct.ca),   # Prob of opting for contingent annuity
+         
+         qxd.la = ifelse(age == r.max, 0 , qxd * pct.la),  # Prob of opting for life annuity
+         qxd.ca = ifelse(age == r.max, 0 , qxd * pct.ca) 
          
          
 )   
          
-
 
 ######!!!! need to construct retirement age dependent mortality for life annuitants.
   # For retired(".r"), the only target status is "dead". Note that in practice retirement mortality may differ from the regular mortality.

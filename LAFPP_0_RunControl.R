@@ -61,8 +61,6 @@ source("Functions.R")
    # 3. When assuming DROP participants are retirees, the fund pays benefits to DROP accounts. 
   
 
-
-
 # Notes on benefit for death before retirement
 
 
@@ -73,6 +71,13 @@ source("Functions.R")
   # Disability are modeled as life annuity. 
   # Plan to apply an adjustment factor to mortality after disability mortality 
   # # of disabled at age min.age(20) must be 0.
+# AS of June30 2016
+  # Model disability benefit as contingent annuity. 
+  # Modeling method is the same as that for contingent annuity for service retirement benefit. 
+  # For LAFPP, benefits for QSSs of disability retirees are simplified as a fixed proportion of disability retirees' benefit. 
+
+
+
 
 
 
@@ -185,8 +190,8 @@ paramlist$v     = with(paramlist, 1/(1 + i))
 #  Run all tiers ####
 #*********************************************************************************************************
 
-paramlist$simTiers <- "joint"  # "joint"(defult) or "separate"
-source("LAFPP_0_Master_allTiers.R")
+# paramlist$simTiers <- "joint"  # "joint"(defult) or "separate"
+# source("LAFPP_0_Master_allTiers.R")
 
  
  
@@ -202,8 +207,8 @@ source("LAFPP_0_Master_allTiers.R")
 # since the inital UAAL will not be amortized.(amort basis of the first year is overriden by the values from AV2015, which is set to zero here.)
 # (Already solved.)
 
-# Tier_select <- "t5"
-#source("LAFPP_0_Master_singleTier.R")
+ Tier_select <- "t5"
+# source("LAFPP_0_Master_singleTier.R")
 
 
 
