@@ -5,6 +5,7 @@
 get_AggLiab <- function( Tier_select_,
                          liab_,
                          liab.ca_,
+                         liab.disb.ca_,
                          pop_,
                          
                          mortality.post.model_ = mortality.post.model,
@@ -20,6 +21,7 @@ get_AggLiab <- function( Tier_select_,
      # Tier_select_ = Tier_select
      # liab_   = liab
      # liab.ca_ = liab.ca
+     # liab.disb.ca_ = liab.disb.ca
      # pop_    = pop
      # mortality.post.model_ = mortality.post.model
      # init_beneficiaries_all_  = init_beneficiaries_all
@@ -36,9 +38,7 @@ get_AggLiab <- function( Tier_select_,
      # init_beneficiaries_all_  = init_beneficiaries_all
      # paramlist_ = paramlist
      # Global_paramlist_ = Global_paramlist
-     
-  
-  
+
   
    assign_parmsList(Global_paramlist_, envir = environment())
    assign_parmsList(paramlist_,        envir = environment())
@@ -115,7 +115,7 @@ get_AggLiab <- function( Tier_select_,
   # active.agg
   
   #*************************************************************************************************************
-  #                                     ## Liabilities and benefits for retirees   ####
+  #                                     ## Liabilities and benefits for retirees (life annuitants)   ####
   #*************************************************************************************************************
   
   liab_$la  <- data.table(liab_$la, key = "ea,age,year,year.r")
@@ -164,25 +164,25 @@ get_AggLiab <- function( Tier_select_,
 
   
   #*************************************************************************************************************
-  #                                     ## Liabilities and benefits for disability benefit   ####
+  #                                     ## Liabilities and benefits for disability benefit (life annuitants)   ####
   #*************************************************************************************************************
   
-  liab_$disb  <- data.table(liab_$disb,    key = "ea,age,year,year.disb")
-  pop_$disb   <- data.table(pop_$disb,  key = "ea,age,year,year.disb")
-  liab_$disb  <- merge(pop_$disb, liab_$disb, by = c("ea", "age","year", "year.disb"), all.x = TRUE)
-  liab_$disb  <- as.data.frame(liab_$disb)
+  liab_$disb.la  <- data.table(liab_$disb.la,    key = "ea,age,year,year.disb")
+  pop_$disb.la   <- data.table(pop_$disb.la,  key = "ea,age,year,year.disb")
+  liab_$disb.la  <- merge(pop_$disb.la, liab_$disb.la, by = c("ea", "age","year", "year.disb"), all.x = TRUE)
+  liab_$disb.la  <- as.data.frame(liab_$disb.la)
   
   
-  liab_$disb %<>% 
-    mutate(ALx.disb.tot = ALx.disb * number.disb,
-           B.disb.tot   = B.disb   * number.disb,
+  liab_$disb.la %<>% 
+    mutate(ALx.disb.la.tot = ALx.disb.la * number.disb.la,
+           B.disb.la.tot   = B.disb.la   * number.disb.la,
            runname = runname)
   
-  disb.agg <- liab_$disb %>% 
+  disb.la.agg <- liab_$disb.la %>% 
     group_by(year) %>% 
-    summarise(ALx.disb.sum   = sum(ALx.disb.tot, na.rm = TRUE),
-              B.disb.sum     = sum(B.disb.tot  , na.rm = TRUE),
-              ndisb       = sum(number.disb , na.rm = TRUE)) %>% 
+    summarise(ALx.disb.la.sum   = sum(ALx.disb.la.tot, na.rm = TRUE),
+              B.disb.la.sum     = sum(B.disb.la.tot  , na.rm = TRUE),
+              ndisb.la          = sum(number.disb.la , na.rm = TRUE)) %>% 
     # mutate(runname = runname) %>% 
     as.matrix
   
@@ -217,9 +217,9 @@ get_AggLiab <- function( Tier_select_,
     as.matrix
  
 
-  #*************************************************************************************************************
-  #                                 ## Liabilities and benefits for contingent annuitants and survivors   ####
-  #*************************************************************************************************************  
+  #*******************************************************************************************************************************
+  #                                 ## Liabilities and benefits for contingent annuitants and survivors of service retirees   ####
+  #*******************************************************************************************************************************  
   
   # Initial beneficiaries
    # Assumptions about the retirement ages of initial beneficiaries:
@@ -287,9 +287,55 @@ get_AggLiab <- function( Tier_select_,
                      liab.ca.sum = liab.ca.sum + liab.ca.sum.init) %>% 
               as.matrix
   
+   # ca.agg
+   
+   
+   #*******************************************************************************************************************************
+   #      ## Liabilities and benefits for DISABILITY contingent annuitants and survivors    ####
+   #*******************************************************************************************************************************  
+   
+   range_age.disb <- min(range_age):max(range_age.r)
+   
+   disb.ca.agg <- expand.grid(year.disb = init.year:(init.year + nyear - 1), age.disb = range_age.disb, ea = range_ea, age = range_age) %>% 
+     mutate(year = year.disb + age - age.disb) %>% 
+     filter(age >= ea,
+            age >= age.disb,
+            age.disb > ea,
+            year <= max(year.disb)) %>%
+     
+     left_join(liab_$active %>% 
+                filter(age %in% range_age.disb) %>% 
+                select(year.disb = year, ea, age.disb = age, Bx.disb)) %>% 
+     left_join(pop_$new_disb.ca %>% select(year.disb = year, ea, age.disb = age, new_disb.ca)) %>% 
+     left_join(liab.disb.ca_) %>% 
+     mutate(new_disb.ca = na2zero(new_disb.ca),
+            liab.disb.ca.sum = new_disb.ca * Bx.disb * liab.ca.sum.1,
+            B.disb.ca.sum    = new_disb.ca * Bx.disb * B.ca.sum.1,
+            n.disb.R1        = new_disb.ca * (n.R1S0.1 + n.R1S1.1), # Total number of living contingent annuitants
+            n.disb.R0S1      = new_disb.ca * n.R0S1.1) %>%          # Total number of survivors
+     #filter(year.r == 2025, age.r == 50, ea == 20) %>%            
+     group_by(year) %>% 
+     summarise(ALx.disb.ca.sum  = sum(liab.disb.ca.sum, na.rm = TRUE),
+               B.disb.ca.sum    = sum(B.disb.ca.sum, na.rm = TRUE),
+               n.disb.R1        = sum(n.disb.R1, na.rm = TRUE),
+               n.disb.R0S1      = sum(n.disb.R0S1, na.rm = TRUE),
+               n.new_disb.ca    = sum(new_disb.ca, na.rm = TRUE)) %>% 
+     as.matrix
+   
+   
+
+   
+   # Combine the initial beneficiaries and new beneficiaries
+   # disb.ca.agg %<>% left_join(init.ca.agg) %>% 
+   #   colwise(na2zero)() %>% 
+   #   mutate(n.R0S1   = n.R0S1 + n.R0S1.init,
+   #          B.ca.sum = B.ca.sum + B.ca.sum.init,
+   #          liab.ca.sum = liab.ca.sum + liab.ca.sum.init) %>% 
+   #   as.matrix
+   
   
-  # 
-  # LSC.agg %>% data.frame
+   
+  
   # ca.agg %>% data.frame
   # active.agg %>% data.frame
   
@@ -299,7 +345,8 @@ get_AggLiab <- function( Tier_select_,
                    ca     = ca.agg, 
                    term   = term.agg,
                    death  = death.agg,
-                   disb   = disb.agg)
+                   disb.la = disb.la.agg,
+                   disb.ca = disb.ca.agg)
               
               # ind_active  = if(paramlist$save.indiv) .liab$active  else "Not saved", 
               # ind_retiree = if(paramlist$save.indiv) .liab$retiree else "Not saved",

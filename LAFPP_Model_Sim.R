@@ -171,9 +171,10 @@ run_sim <- function(Tier_select_,
   penSim0$AL.ca    <- AggLiab_$ca[,   "liab.ca.sum"]
   penSim0$AL.term  <- AggLiab_$term[, "ALx.v.sum"]
   penSim0$AL.death <- AggLiab_$death[,"ALx.death.sum"]
-  penSim0$AL.disb  <- AggLiab_$disb[, "ALx.disb.sum"]
+  penSim0$AL.disb.la  <- AggLiab_$disb.la[, "ALx.disb.la.sum"]
+  penSim0$AL.disb.ca  <- AggLiab_$disb.ca[, "ALx.disb.ca.sum"]
   
-  penSim0$AL       <- with(penSim0, AL.act + AL.la + AL.ca +  AL.term + AL.death + AL.disb)
+  penSim0$AL       <- with(penSim0, AL.act + AL.la + AL.ca +  AL.term + AL.death + AL.disb.la + AL.disb.ca)
   
   
   # NC(j)
@@ -196,8 +197,9 @@ run_sim <- function(Tier_select_,
   penSim0$B.ca    <- AggLiab_$ca[, "B.ca.sum"]
   penSim0$B.v     <- AggLiab_$term[, "B.v.sum"]
   penSim0$B.death <- AggLiab_$death[, "B.death.sum"]
-  penSim0$B.disb  <- AggLiab_$disb[, "B.disb.sum"]
-  penSim0$B       <- with(penSim0, B.la + B.ca + B.v + B.death + B.disb)
+  penSim0$B.disb.la  <- AggLiab_$disb.la[, "B.disb.la.sum"]
+  penSim0$B.disb.ca  <- AggLiab_$disb.ca[, "B.disb.ca.sum"]
+  penSim0$B       <- with(penSim0, B.la + B.ca + B.v + B.death + B.disb.la + B.disb.ca)
   
   # PR(j)
   penSim0$PR <- AggLiab_$active[, "PR.sum"]
@@ -209,8 +211,9 @@ run_sim <- function(Tier_select_,
   penSim0$n.ca.R0S1 <- AggLiab_$ca[, "n.R0S1"]
   penSim0$nterms    <- AggLiab_$term[, "nterms"]
   penSim0$ndeathBen <- AggLiab_$death[, "ndeathBen"]
-  penSim0$ndisb     <- AggLiab_$disb[,  "ndisb"]
-
+  penSim0$ndisb.la  <- AggLiab_$disb.la[,  "ndisb.la"]
+  penSim0$ndisb.ca.R1   <- AggLiab_$disb.ca[,  "n.disb.R1"]
+  penSim0$ndisb.ca.R0S1 <- AggLiab_$disb.ca[,  "n.disb.R0S1"]
 
   
   penSim0 <- as.list(penSim0) # Faster to extract elements from lists than frame data frames.
@@ -227,7 +230,7 @@ run_sim <- function(Tier_select_,
   #for(k in 1:nsim){
   
   penSim_results <- foreach(k = -1:nsim, .packages = c("dplyr", "tidyr")) %dopar% {
-    # k <- 1
+     # k <- 1
     # initialize
     penSim <- penSim0
     SC_amort <- SC_amort0 
@@ -237,7 +240,7 @@ run_sim <- function(Tier_select_,
     
     for (j in 1:nyear){
       
-      # j <- 1
+       # j <- 1
       # AL(j) 
       
       
@@ -269,11 +272,8 @@ run_sim <- function(Tier_select_,
       
       penSim$AA[j] <- with(penSim, ifelse(AA[j] > s.upper * MA[j], MA[j], AA[j])) 
       penSim$AA[j] <- with(penSim, ifelse(AA[j] < s.lower * MA[j], MA[j], AA[j]))
-      
-      
-      # do we need do consider interest when using asset smoothing method1? 
-      
-      
+    
+
       # UAAL(j)
       penSim$UAAL[j]    <- with(penSim, AL[j] - AA[j])
       # penSim$UAAL.MA[j] <- with(penSim, AL[j] - MA[j])

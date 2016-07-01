@@ -186,8 +186,10 @@ decrement.model %<>% group_by(ea) %>%
          qxr.ca = ifelse(age == r.max, 0 , qxr * pct.ca),   # Prob of opting for contingent annuity
          
          qxd.la = ifelse(age == r.max, 0 , qxd * pct.la),  # Prob of opting for life annuity
-         qxd.ca = ifelse(age == r.max, 0 , qxd * pct.ca) 
+         qxd.ca = ifelse(age == r.max, 0 , qxd * pct.ca)
          
+         # qxd.la = ifelse(age == r.max, 0 , qxd * 1),  # Prob of opting for life annuity
+         # qxd.ca = ifelse(age == r.max, 0 , qxd * 0)
          
 )   
          

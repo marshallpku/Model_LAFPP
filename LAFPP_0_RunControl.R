@@ -87,7 +87,7 @@ source("Functions.R")
 Global_paramlist <- list(
   
   init.year = 2015,
-  nyear     = 30,
+  nyear     = 10,
   nsim      = 5,
   ncore     = 4,
   
@@ -208,7 +208,7 @@ paramlist$v     = with(paramlist, 1/(1 + i))
 # (Already solved.)
 
  Tier_select <- "t5"
-# source("LAFPP_0_Master_singleTier.R")
+ source("LAFPP_0_Master_singleTier.R")
 
 
 

@@ -105,15 +105,22 @@ liab.ca <- get_contingentAnnuity(Tier_select,
 # For disability benefit
 range_age.disb <-  min(paramlist$range_age):max(paramlist$range_age.r)
 liab.disb.ca <- get_contingentAnnuity(Tier_select, 
-                                      tier.param[Tier_select, "factor.ca"],
+                                      tier.param[Tier_select, "factor.ca.disb"],
                                       range_age.disb, 
-                                      apply_reduction = FALSE)
+                                      apply_reduction = FALSE) %>% 
+                rename(age.disb = age.r)
 
 
-liab.ca0 <- get_contingentAnnuity(Tier_select, 
-                                 0 ,
-                                 paramlist$range_age.r, 
-                                 apply_reduction = FALSE)
+
+
+
+
+
+
+# liab.ca0 <- get_contingentAnnuity(Tier_select, 
+#                                  0 ,
+#                                  paramlist$range_age.r, 
+#                                  apply_reduction = FALSE)
 
 
 # liab.disb.ca0 <- get_contingentAnnuity(Tier_select, 
@@ -122,12 +129,15 @@ liab.ca0 <- get_contingentAnnuity(Tier_select,
 #                                       apply_reduction = FALSE)
 
 # 
- liab.ca %>% filter(age.r + 10 == age)
- liab.ca0 %>% filter(age.r + 10 == age)
-
-
-# liab.disb.ca %>% filter(age.r + 1 == age)
-# 
+ #  liab.ca %>% filter(age.r + 10 == age)
+ # # liab.ca0 %>% filter(age.r + 10 == age)
+ # 
+ # 
+ # liab.disb.ca %>% filter(age.disb + 10 == age)
+ # 
+ # liab.disb.ca %>% filter(age.disb == 30)
+ 
+ # 
 # liab.disb.ca0 %>% filter(age.r + 1 == age)
 
 
@@ -155,6 +165,7 @@ gc()
 AggLiab <- get_AggLiab(Tier_select,
                        liab,
                        liab.ca,
+                       liab.disb.ca,
                        pop) 
 
 
@@ -175,7 +186,9 @@ penSim_results <- run_sim(Tier_select, AggLiab)
 var_display <- c("Tier", "sim", "year", "FR", "MA", "AL", "AL.la", "AL.ca", 
                  #"AL.act", "AL.act.laca", "AL.act.v", "AL.act.LSC", "AL.la", "AL.ca", "AL.term", 
                  #"PVFB.laca", "PVFB.LSC", "PVFB.v", "PVFB", 
-                 "B", "B.la", "B.ca", "B.death", 
+                 # "B", "B.la", "B.ca", "B.death", 
+                 "B", "B.disb.la", "B.disb.ca",
+                 "ndisb.la", "ndisb.ca.R1", "ndisb.ca.R0S1",
                  "nactives", "nterms", "PR", "NC_PR", "NC")
 
 

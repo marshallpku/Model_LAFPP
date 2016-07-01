@@ -91,7 +91,7 @@ liab.active <- expand.grid(start.year = min.year:(init.year + nyear - 1) ,
   left_join(bfactor_) %>%
   left_join(mortality.post.model_ %>% filter(age == age.r) %>% select(age, ax.r.W)) %>%
   left_join(liab.ca_ %>% filter(age == age.r) %>% select(age, liab.ca.sum.1)) %>% 
-  left_join(liab.disb.ca_ %>% filter(age == age.r) %>% select(age, liab.disb.ca.sum.1 = liab.ca.sum.1)) %>% 
+  left_join(liab.disb.ca_ %>% filter(age == age.disb) %>% select(age, liab.disb.ca.sum.1 = liab.ca.sum.1)) %>% 
   group_by(start.year, ea) %>%
   
   
@@ -114,7 +114,7 @@ liab.active <- expand.grid(start.year = min.year:(init.year + nyear - 1) ,
 
     # actuarial present value of future benefit, for $1's benefit in the initial year. 
     ax.deathBen = get_tla(pxm.deathBen, i, COLA.scale),    # Since retirees die at max.age for sure, the life annuity with COLA is equivalent to temporary annuity with COLA up to age max.age. 
-    ax.disb     = get_tla(pxm.d, i, COLA.scale),     
+    ax.disb.la     = get_tla(pxm.d, i, COLA.scale),     
     # ax.r = get_tla(pxm.r, i, COLA.scale),       # ax calculated with mortality table for retirees. 
     
     
@@ -503,7 +503,7 @@ liab.active %<>%
                                                 0.65 * fas)), 
           
           # This is the benefit level if the employee starts to CLAIM benefit at age x, not internally retire at age x. 
-          TCx.disb.la = lead(Bx.disb) * qxd.la * lead(ax.disb) * v, # term cost of life annuity at the internal retirement age x (start to claim benefit at age x + 1)
+          TCx.disb.la = lead(Bx.disb) * qxd.la * lead(ax.disb.la) * v, # term cost of life annuity at the internal retirement age x (start to claim benefit at age x + 1)
           TCx.disb.ca = lead(Bx.disb) * qxd.ca * lead(liab.disb.ca.sum.1) * v,
           TCx.disb.laca = TCx.disb.la + TCx.disb.ca,
           
@@ -564,7 +564,7 @@ liab.disb.la <- liab.disb.la[!duplicated(liab.disb.la %>% select(start.year, ea,
 
 
 liab.disb.la <- merge(liab.disb.la,
-                    select(liab.active, start.year, ea, age, Bx.disb, COLA.scale, gx.disb, ax.disb) %>% data.table(key = "ea,age,start.year"),
+                    select(liab.active, start.year, ea, age, Bx.disb, COLA.scale, gx.disb, ax.disb.la) %>% data.table(key = "ea,age,start.year"),
                     all.x = TRUE, 
                     by = c("ea", "age","start.year")) %>%
   arrange(start.year, ea, age.disb) %>% 
@@ -584,7 +584,7 @@ liab.disb.la %<>% as.data.frame  %>%
     B.disb.la     = ifelse(year.disb <= init.year,
                            benefit.disb[year == init.year] * COLA.scale / COLA.scale[year == init.year],  # Benefits for initial retirees
                            Bx.disb[age == age.disb] * COLA.scale / COLA.scale[age == age.disb]),          # Benefits for disability retirees after year 1
-    ALx.disb.la   = B.disb.la * ax.disb                                                           # Liability for remaining diability benefits, PV of all future benefit adjusted with COLA
+    ALx.disb.la   = B.disb.la * ax.disb.la                                                                # Liability for remaining diability benefits, PV of all future benefit adjusted with COLA
     
   ) %>% ungroup %>%
   # select(start.year, year, ea, age, year.retire, age.retire,  B.r, ALx.r)# , ax, Bx, COLA.scale, gx.r)
@@ -625,7 +625,7 @@ var.names <- c("sx", ALx.laca.method, NCx.laca.method,
                      ALx.v.method, NCx.v.method, 
                      ALx.death.method, NCx.death.method,
                      ALx.disb.method, NCx.disb.method,
-                     "PVFBx.laca", "PVFBx.v", "PVFBx.death", "PVFBx.disb", "Bx.laca")
+                     "PVFBx.laca", "PVFBx.v", "PVFBx.death", "PVFBx.disb", "Bx.laca", "Bx.disb")
 liab.active %<>% 
   filter(year %in% seq(init.year, len = nyear)) %>%
   select(year, ea, age, one_of(var.names)) %>%
@@ -644,7 +644,11 @@ liab.active %<>%
   # liab.term
   # B.LSC
 
-liab <- list(active = liab.active, la = liab.la, term = liab.term, death = liab.death, disb.la = liab.disb.la)
+liab <- list(active = liab.active, 
+             la = liab.la, 
+             term = liab.term, 
+             death = liab.death, 
+             disb.la = liab.disb.la)
 
 }
 
