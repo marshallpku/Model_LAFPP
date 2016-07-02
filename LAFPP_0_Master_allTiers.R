@@ -193,13 +193,22 @@ gc()
 # 4. Actuarial liabilities and benefits for contingent annuitants and survivors ####
 #*********************************************************************************************************
 source("LAFPP_Model_ContingentAnnuity.R")
-liab.ca.t1  <- get_contingentAnnuity("t1", FALSE, decrement.model_ = decrement.model.t1)
-liab.ca.t2  <- get_contingentAnnuity("t2", FALSE, decrement.model_ = decrement.model.t2)
-liab.ca.t3  <- get_contingentAnnuity("t3", FALSE, decrement.model_ = decrement.model.t3)
-liab.ca.t4  <- get_contingentAnnuity("t4", FALSE, decrement.model_ = decrement.model.t4)
-liab.ca.t5  <- get_contingentAnnuity("t5", FALSE, decrement.model_ = decrement.model.t5)
-liab.ca.t6  <- get_contingentAnnuity("t6", FALSE, decrement.model_ = decrement.model.t6)
 
+liab.ca.t1  <- get_contingentAnnuity("t1", tier.param["t1", "factor.ca"], paramlist$range_age.r, FALSE, decrement.model_ = decrement.model.t1)
+liab.ca.t2  <- get_contingentAnnuity("t2", tier.param["t2", "factor.ca"], paramlist$range_age.r, FALSE, decrement.model_ = decrement.model.t2)
+liab.ca.t3  <- get_contingentAnnuity("t3", tier.param["t3", "factor.ca"], paramlist$range_age.r, FALSE, decrement.model_ = decrement.model.t3)
+liab.ca.t4  <- get_contingentAnnuity("t4", tier.param["t4", "factor.ca"], paramlist$range_age.r, FALSE, decrement.model_ = decrement.model.t4)
+liab.ca.t5  <- get_contingentAnnuity("t5", tier.param["t5", "factor.ca"], paramlist$range_age.r, FALSE, decrement.model_ = decrement.model.t5)
+liab.ca.t6  <- get_contingentAnnuity("t6", tier.param["t6", "factor.ca"], paramlist$range_age.r, FALSE, decrement.model_ = decrement.model.t6)
+
+
+range_age.disb <-  min(paramlist$range_age):max(paramlist$range_age.r)
+liab.disb.ca.t1  <- get_contingentAnnuity("t1", tier.param["t1", "factor.ca.disb"], paramlist$range_age.r, FALSE, decrement.model_ = decrement.model.t1) %>% rename(age.disb = age.r)
+liab.disb.ca.t2  <- get_contingentAnnuity("t2", tier.param["t2", "factor.ca.disb"], paramlist$range_age.r, FALSE, decrement.model_ = decrement.model.t2) %>% rename(age.disb = age.r)
+liab.disb.ca.t3  <- get_contingentAnnuity("t3", tier.param["t3", "factor.ca.disb"], paramlist$range_age.r, FALSE, decrement.model_ = decrement.model.t3) %>% rename(age.disb = age.r)
+liab.disb.ca.t4  <- get_contingentAnnuity("t4", tier.param["t4", "factor.ca.disb"], paramlist$range_age.r, FALSE, decrement.model_ = decrement.model.t4) %>% rename(age.disb = age.r)
+liab.disb.ca.t5  <- get_contingentAnnuity("t5", tier.param["t5", "factor.ca.disb"], paramlist$range_age.r, FALSE, decrement.model_ = decrement.model.t5) %>% rename(age.disb = age.r)
+liab.disb.ca.t6  <- get_contingentAnnuity("t6", tier.param["t6", "factor.ca.disb"], paramlist$range_age.r, FALSE, decrement.model_ = decrement.model.t6) %>% rename(age.disb = age.r)
 
 #*********************************************************************************************************
 # 3. Individual actuarial liabilities, normal costs and benenfits ####
@@ -214,7 +223,8 @@ liab.t1 <- get_indivLab("t1",
                          benefit.disb.t1,
                          bfactor.t1,
                          mortality.post.model.t1,
-                         liab.ca.t1)
+                         liab.ca.t1,
+                         liab.disb.ca.t1)
 
 liab.t2 <- get_indivLab("t2",
                         decrement.model.t2,
@@ -223,7 +233,8 @@ liab.t2 <- get_indivLab("t2",
                         benefit.disb.t2,
                         bfactor.t2,
                         mortality.post.model.t2,
-                        liab.ca.t2)
+                        liab.ca.t2,
+                        liab.disb.ca.t2)
 
 liab.t3 <- get_indivLab("t3",
                         decrement.model.t3,
@@ -232,7 +243,8 @@ liab.t3 <- get_indivLab("t3",
                         benefit.disb.t3,
                         bfactor.t3,
                         mortality.post.model.t3,
-                        liab.ca.t3)
+                        liab.ca.t3,
+                        liab.disb.ca.t3)
 
 liab.t4 <- get_indivLab("t4",
                         decrement.model.t4,
@@ -241,7 +253,8 @@ liab.t4 <- get_indivLab("t4",
                         benefit.disb.t4,
                         bfactor.t4,
                         mortality.post.model.t4,
-                        liab.ca.t4)
+                        liab.ca.t4,
+                        liab.disb.ca.t4)
 
 liab.t5 <- get_indivLab("t5",
                         decrement.model.t5,
@@ -250,7 +263,8 @@ liab.t5 <- get_indivLab("t5",
                         benefit.disb.t5,
                         bfactor.t5,
                         mortality.post.model.t5,
-                        liab.ca.t5)
+                        liab.ca.t5,
+                        liab.disb.ca.t5)
 
 liab.t6 <- get_indivLab("t6",
                         decrement.model.t6,
@@ -259,7 +273,8 @@ liab.t6 <- get_indivLab("t6",
                         benefit.disb.t6,
                         bfactor.t6,
                         mortality.post.model.t6,
-                        liab.ca.t6)
+                        liab.ca.t6,
+                        liab.disb.ca.t6)
 
 
 
@@ -275,6 +290,7 @@ gc()
 AggLiab.t1 <- get_AggLiab("t1",
                           liab.t1,
                           liab.ca.t1,
+                          liab.disb.ca.t1,
                           pop$pop.t1,
                           mortality.post.model.t1) 
 
@@ -282,6 +298,7 @@ AggLiab.t1 <- get_AggLiab("t1",
 AggLiab.t2 <- get_AggLiab("t2",
                           liab.t2,
                           liab.ca.t2,
+                          liab.disb.ca.t2,
                           pop$pop.t2,
                           mortality.post.model.t2) 
 
@@ -289,6 +306,7 @@ AggLiab.t2 <- get_AggLiab("t2",
 AggLiab.t3 <- get_AggLiab("t3",
                           liab.t3,
                           liab.ca.t3,
+                          liab.disb.ca.t3,
                           pop$pop.t3,
                           mortality.post.model.t3) 
 
@@ -296,6 +314,7 @@ AggLiab.t3 <- get_AggLiab("t3",
 AggLiab.t4 <- get_AggLiab("t4",
                           liab.t4,
                           liab.ca.t4,
+                          liab.disb.ca.t4,
                           pop$pop.t4,
                           mortality.post.model.t4) 
 
@@ -303,6 +322,7 @@ AggLiab.t4 <- get_AggLiab("t4",
 AggLiab.t5 <- get_AggLiab("t5",
                           liab.t5,
                           liab.ca.t5,
+                          liab.disb.ca.t5,
                           pop$pop.t5,
                           mortality.post.model.t5) 
 
@@ -310,6 +330,7 @@ AggLiab.t5 <- get_AggLiab("t5",
 AggLiab.t6 <- get_AggLiab("t6",
                           liab.t6,
                           liab.ca.t6,
+                          liab.disb.ca.t6,
                           pop$pop.t6,
                           mortality.post.model.t6) 
 
@@ -349,7 +370,7 @@ penSim_results.sumTiers <- run_sim("sumTiers", AggLiab.sumTiers)
 
 var_display <- c("Tier", "sim", "year", "FR", "MA", "AL", 
                  #"AL.act", "AL.act.laca", "AL.act.v", "AL.act.LSC", "AL.la", "AL.ca", "AL.term",
-                 "AL.act", "AL.la", "AL.ca", "AL.disb", "AL.death", "PVFB",
+                 "AL.act", "AL.la", "AL.ca", "AL.disb.la", "AL.death", "PVFB",
                  #"PVFB.laca", "PVFB.LSC", "PVFB.v", "PVFB", 
                  # "B", "B.la", "B.ca", "B.v", 
                  "nactives", "nterms", "PR", "NC_PR", "NC")
@@ -358,7 +379,7 @@ var_display <- c("Tier", "sim", "year", "FR", "MA", "AL",
 kable(penSim_results.sumTiers %>% filter(sim == -1) %>% select(one_of(var_display)), digits = 2) %>% print 
 
 
-
+kable(penSim_results.t2 %>% filter(sim == -1) %>% select(one_of(var_display)), digits = 2) %>% print 
 
 
 
