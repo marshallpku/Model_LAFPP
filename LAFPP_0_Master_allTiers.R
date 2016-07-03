@@ -203,12 +203,12 @@ liab.ca.t6  <- get_contingentAnnuity("t6", tier.param["t6", "factor.ca"], paraml
 
 
 range_age.disb <-  min(paramlist$range_age):max(paramlist$range_age.r)
-liab.disb.ca.t1  <- get_contingentAnnuity("t1", tier.param["t1", "factor.ca.disb"], paramlist$range_age.r, FALSE, decrement.model_ = decrement.model.t1) %>% rename(age.disb = age.r)
-liab.disb.ca.t2  <- get_contingentAnnuity("t2", tier.param["t2", "factor.ca.disb"], paramlist$range_age.r, FALSE, decrement.model_ = decrement.model.t2) %>% rename(age.disb = age.r)
-liab.disb.ca.t3  <- get_contingentAnnuity("t3", tier.param["t3", "factor.ca.disb"], paramlist$range_age.r, FALSE, decrement.model_ = decrement.model.t3) %>% rename(age.disb = age.r)
-liab.disb.ca.t4  <- get_contingentAnnuity("t4", tier.param["t4", "factor.ca.disb"], paramlist$range_age.r, FALSE, decrement.model_ = decrement.model.t4) %>% rename(age.disb = age.r)
-liab.disb.ca.t5  <- get_contingentAnnuity("t5", tier.param["t5", "factor.ca.disb"], paramlist$range_age.r, FALSE, decrement.model_ = decrement.model.t5) %>% rename(age.disb = age.r)
-liab.disb.ca.t6  <- get_contingentAnnuity("t6", tier.param["t6", "factor.ca.disb"], paramlist$range_age.r, FALSE, decrement.model_ = decrement.model.t6) %>% rename(age.disb = age.r)
+liab.disb.ca.t1  <- get_contingentAnnuity("t1", tier.param["t1", "factor.ca.disb"], range_age.disb, FALSE, decrement.model_ = decrement.model.t1) %>% rename(age.disb = age.r)
+liab.disb.ca.t2  <- get_contingentAnnuity("t2", tier.param["t2", "factor.ca.disb"], range_age.disb, FALSE, decrement.model_ = decrement.model.t2) %>% rename(age.disb = age.r)
+liab.disb.ca.t3  <- get_contingentAnnuity("t3", tier.param["t3", "factor.ca.disb"], range_age.disb, FALSE, decrement.model_ = decrement.model.t3) %>% rename(age.disb = age.r)
+liab.disb.ca.t4  <- get_contingentAnnuity("t4", tier.param["t4", "factor.ca.disb"], range_age.disb, FALSE, decrement.model_ = decrement.model.t4) %>% rename(age.disb = age.r)
+liab.disb.ca.t5  <- get_contingentAnnuity("t5", tier.param["t5", "factor.ca.disb"], range_age.disb, FALSE, decrement.model_ = decrement.model.t5) %>% rename(age.disb = age.r)
+liab.disb.ca.t6  <- get_contingentAnnuity("t6", tier.param["t6", "factor.ca.disb"], range_age.disb, FALSE, decrement.model_ = decrement.model.t6) %>% rename(age.disb = age.r)
 
 #*********************************************************************************************************
 # 3. Individual actuarial liabilities, normal costs and benenfits ####
@@ -368,18 +368,34 @@ penSim_results.sumTiers <- run_sim("sumTiers", AggLiab.sumTiers)
 #            when we simulate(do the loop) all tiers jointly. 
 
 
-var_display <- c("Tier", "sim", "year", "FR", "MA", "AL", 
+var_display1 <- c("Tier", "sim", "year", "FR", "MA", "AL", 
                  #"AL.act", "AL.act.laca", "AL.act.v", "AL.act.LSC", "AL.la", "AL.ca", "AL.term",
-                 "AL.act", "AL.la", "AL.ca", "AL.disb.la", "AL.death", "PVFB",
+                 "AL.act", "AL.la", "AL.ca", "AL.disb.la", "AL.death", # "PVFB",
                  #"PVFB.laca", "PVFB.LSC", "PVFB.v", "PVFB", 
-                 # "B", "B.la", "B.ca", "B.v", 
-                 "nactives", "nterms", "PR", "NC_PR", "NC")
+                 "B", "B.la", "B.ca", "B.disb.la","B.disb.ca", 
+                 "PR", "NC_PR", "NC")
+
+var_display2 <- c("Tier", "sim", "year", "FR", "MA", "AL", 
+                  "nactives", "nretirees", "nla", "n.ca.R1", "n.ca.R0S1", 
+                  "ndisb.la", "ndisb.ca.R1", "ndisb.ca.R0S1" )
 
 
-kable(penSim_results.sumTiers %>% filter(sim == -1) %>% select(one_of(var_display)), digits = 2) %>% print 
+
+kable(penSim_results.sumTiers %>% filter(sim == -1) %>% select(one_of(var_display1)), digits = 2) %>% print 
+kable(penSim_results.sumTiers %>% filter(sim == -1) %>% select(one_of(var_display2)), digits = 2) %>% print 
+
+# kable(penSim_results.t6 %>% filter(sim == -1) %>% select(one_of(var_display1)), digits = 2) %>% print 
 
 
-kable(penSim_results.t2 %>% filter(sim == -1) %>% select(one_of(var_display)), digits = 2) %>% print 
+save(penSim_results.sumTiers,
+     penSim_results.t1,
+     penSim_results.t2,
+     penSim_results.t3,
+     penSim_results.t4,
+     penSim_results.t5,
+     penSim_results.t6,
+     file = "Check_allTiers.RData")
+
 
 
 

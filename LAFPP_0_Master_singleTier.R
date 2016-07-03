@@ -89,8 +89,6 @@ gc()
 pop <- get_Population()
 
 
-
-
 #*********************************************************************************************************
 # 3. Actuarial liabilities and benefits for contingent annuitants and survivors ####
 #*********************************************************************************************************
@@ -109,11 +107,6 @@ liab.disb.ca <- get_contingentAnnuity(Tier_select,
                                       range_age.disb, 
                                       apply_reduction = FALSE) %>% 
                 rename(age.disb = age.r)
-
-
-
-
-
 
 
 
@@ -183,20 +176,34 @@ penSim_results <- run_sim(Tier_select, AggLiab)
 #*********************************************************************************************************
 
 
-var_display <- c("Tier", "sim", "year", "FR", "MA", "AL", "AL.la", "AL.ca", 
-                 #"AL.act", "AL.act.laca", "AL.act.v", "AL.act.LSC", "AL.la", "AL.ca", "AL.term", 
-                 #"PVFB.laca", "PVFB.LSC", "PVFB.v", "PVFB", 
-                 # "B", "B.la", "B.ca", "B.death", 
-                 "B", "B.disb.la", "B.disb.ca",
-                 "ndisb.la", "ndisb.ca.R1", "ndisb.ca.R0S1",
-                 "nactives", "nterms", "PR", "NC_PR", "NC")
+var_display1 <- c("Tier", "sim", "year", "FR", "MA", "AL", 
+                  "AL.act", "AL.act.disb", "AL.act.v", "AL.la", "AL.ca", "AL.term",
+                  # "AL.act", "AL.la", "AL.ca", "AL.disb.la", "AL.disb.ca", "AL.death", "PVFB",
+                  #"PVFB.laca", "PVFB.LSC", "PVFB.v", "PVFB", 
+                  "B", "B.la", "B.ca", "B.v", "B.disb.la","B.disb.ca", 
+                  "PR", "NC_PR", "NC")
 
 
-penSim_results %>% filter(sim == -1) %>% select(one_of(var_display)) %>% print
+var_display2 <- c("Tier", "sim", "year", "FR", "MA", "AL", 
+                  "nactives", "nretirees", "nla", "n.ca.R1", "n.ca.R0S1", 
+                  "ndisb.la", "ndisb.ca.R1", "ndisb.ca.R0S1" )
+
+
+penSim_results %>% filter(sim == -1) %>% select(one_of(var_display1)) %>% print
+penSim_results %>% filter(sim == -1) %>% select(one_of(var_display2)) %>% print
 #penSim_results %>% filter(sim == -1) %>% data.frame
 
 
 
+
+
+# load("Check_allTiers.RData")
+# 
+# penSim_results %>% filter(sim == -1) %>% select(one_of(var_display1)) %>% print
+# penSim_results.t6 %>% filter(sim == -1) %>% select(one_of(var_display1)) %>% print
+# 
+# penSim_results %>% filter(sim == -1) %>% select(one_of(var_display2)) %>% print
+# penSim_results.t6 %>% filter(sim == -1) %>% select(one_of(var_display2)) %>% print
 
 
 
