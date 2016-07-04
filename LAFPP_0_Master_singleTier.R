@@ -16,6 +16,31 @@ load("Data_inputs/LAFPP_PlanInfo.RData")    # for all tiers
 load("Data_inputs/LAFPP_MemberData.RData")  # for all tiers
 
 
+pct.init.ret.la <-  0.3
+pct.init.ret.ca  <- 1 - pct.init.ret.la
+
+pct.init.disb.la <-  0.3
+pct.init.disb.ca  <- 1 - pct.init.disb.la
+
+init_retirees.la_all <- init_retirees_all %>%
+  mutate(nretirees.la = nretirees * pct.init.ret.la) %>% 
+  select(-nretirees)
+
+init_retirees.ca_all <- init_retirees_all %>%
+  mutate(nretirees.la = nretirees * pct.init.ret.ca) %>% 
+  select(-nretirees)
+
+init_disb.la_all <- init_disb_all %>%
+  mutate(ndisb.la = ndisb * pct.init.disb.la) %>% 
+  select(-ndisb)
+
+init_disb.ca_all <- init_disb_all %>%
+  mutate(ndisb.ca = ndisb * pct.init.disb.ca) %>% 
+  select(-ndisb)
+
+
+
+
 #*********************************************************************************************************
 # 1.2 Create decrement tables ####
 #*********************************************************************************************************
@@ -69,7 +94,7 @@ source("LAFPP_Model_PrepData.R")
 salary       <- get_salary_proc(Tier_select)
 benefit      <- get_benefit_tier(Tier_select)
 benefit.disb <- get_benefit.disb_tier(Tier_select)
-init_pop <- get_initPop_tier(Tier_select)
+init_pop     <- get_initPop_tier(Tier_select)
 
 if(Tier_select == "t6"){
   entrants_dist  <- get_entrantsDist_tier("t6")} else  
@@ -97,11 +122,11 @@ source("LAFPP_Model_ContingentAnnuity.R")
 # For service retirement
 liab.ca <- get_contingentAnnuity(Tier_select, 
                                  tier.param[Tier_select, "factor.ca"],
-                                 paramlist$range_age.r, 
+                                 min(paramlist$range_age.r):100, 
                                  apply_reduction = FALSE)
 
 # For disability benefit
-range_age.disb <-  min(paramlist$range_age):max(paramlist$range_age.r)
+range_age.disb <-  min(paramlist$range_age):100   # max(paramlist$range_age.r)
 liab.disb.ca <- get_contingentAnnuity(Tier_select, 
                                       tier.param[Tier_select, "factor.ca.disb"],
                                       range_age.disb, 

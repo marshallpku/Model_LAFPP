@@ -316,10 +316,10 @@ get_initPop <- function (.actives,    #= init_actives,
   init_actives %<>% spread(age, nactives, fill = 0) %>% select(-ea) %>% as.matrix 
   
   
-  init_retirees <- .retirees %>% select(age, nretirees) %>% mutate(ea = r.min - 1) 
+  init_retirees <- .retirees %>% select(age, nretirees.la) %>% mutate(ea = r.min - 1) 
   init_retirees <- expand.grid(ea = range_ea, age = range_age) %>% left_join(init_retirees) %>% 
     #mutate(nretirees = n_init_retirees * nretirees/sum(nretirees, na.rm = TRUE)) %>% 
-    spread(age, nretirees, fill = 0) %>% select(-ea) %>% as.matrix
+    spread(age, nretirees.la, fill = 0) %>% select(-ea) %>% as.matrix
   
   
   init_terms <- .terminated %>% select(ea, age, nterms)
@@ -327,10 +327,10 @@ get_initPop <- function (.actives,    #= init_actives,
     #mutate(nactives = n_init_actives * nactives/sum(nactives, na.rm = TRUE)) %>%
     spread(age, nterms, fill = 0) %>% select(-ea) %>% as.matrix 
   
-  init_disb <- .disb %>% select(age, ndisb) %>% mutate(ea = min.age) 
+  init_disb <- .disb %>% select(age, ndisb.la) %>% mutate(ea = min.age) 
   init_disb <- expand.grid(ea = range_ea, age = range_age) %>% left_join(init_disb) %>% 
     #mutate(nretirees = n_init_retirees * nretirees/sum(nretirees, na.rm = TRUE)) %>% 
-    spread(age, ndisb, fill = 0) %>% select(-ea) %>% as.matrix
+    spread(age, ndisb.la, fill = 0) %>% select(-ea) %>% as.matrix
   
   
   return(list(actives = init_actives, retirees = init_retirees, terms = init_terms, disb = init_disb))
@@ -418,7 +418,7 @@ get_entrantsDist <- function(.actives,          #= tailored_demoData$actives,
 
 get_benefit_tier <- function(Tier_select_, grouping_ = paramlist$Grouping){
   #init_actives       <- get_tierData(init_actives_all, Tier_select_)
-  init_retirees      <- get_tierData(init_retirees_all, Tier_select_)
+  init_retirees      <- get_tierData(init_retirees.la_all, Tier_select_)
   #init_beneficiaries <- get_tierData(init_beneficiaries_all, Tier_select_)
   #init_terminated    <- init_terminated_all %>%  filter(grepl(Tier_select, planname, Tier_select_))
   
@@ -427,7 +427,7 @@ get_benefit_tier <- function(Tier_select_, grouping_ = paramlist$Grouping){
 }
 
 get_benefit.disb_tier <- function(Tier_select_, grouping_ = paramlist$Grouping){
-  init_disb      <- get_tierData(init_disb_all, Tier_select_)
+  init_disb      <- get_tierData(init_disb.la_all, Tier_select_)
 
   init_disb %>% get_benefit.disb()
 }
@@ -439,11 +439,11 @@ get_initPop_tier <- function(Tier_select_, grouping_ =  paramlist$Grouping){
   #grouping_ =  paramlist$Grouping
   
   init_actives        <- get_tierData(init_actives_all, Tier_select_)
-  init_retirees       <- get_tierData(init_retirees_all, Tier_select_)
+  init_retirees       <- get_tierData(init_retirees.la_all, Tier_select_)
   #init_beneficiaries <- get_tierData(init_beneficiaries_all, Tier_select_)
   # init_terminated     <- init_terms_all %>%  filter(grepl(Tier_select_, planname))
   init_terminated     <- get_tierData(init_terms_all, Tier_select_)
-  init_disb           <- get_tierData(init_disb_all,  Tier_select_)
+  init_disb           <- get_tierData(init_disb.la_all,  Tier_select_)
   
   get_initPop(init_actives, init_retirees, init_terminated, init_disb)
   

@@ -118,6 +118,11 @@ get_AggLiab <- function( Tier_select_,
   #                                     ## Liabilities and benefits for retirees (life annuitants)   ####
   #*************************************************************************************************************
   
+  
+  
+  
+  
+  
   liab_$la  <- data.table(liab_$la, key = "ea,age,year,year.r")
   pop_$la   <- data.table(pop_$la,  key = "ea,age,year,year.r")
   liab_$la  <- merge(pop_$la, liab_$la, by = c("ea", "age","year", "year.r"), all.x = TRUE)
