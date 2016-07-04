@@ -15,6 +15,7 @@
 gc()
 
 Tier_select <- "t2"
+Global_paramlist$nyear <- 100
 
 #*********************************************************************************************************
 # 1.1 Load data,  for all tiers ####
@@ -94,8 +95,20 @@ pop <- get_Population()
 # 3. Actuarial liabilities and benefits for contingent annuitants and survivors ####
 #*********************************************************************************************************
 source("LAFPP_Model_ContingentAnnuity.R")
-liab.ca <- get_contingentAnnuity(Tier_select, apply_reduction = FALSE)
 
+# For service retirement
+liab.ca <- get_contingentAnnuity(Tier_select, 
+                                 tier.param[Tier_select, "factor.ca"],
+                                 paramlist$range_age.r, 
+                                 apply_reduction = FALSE)
+
+# For disability benefit
+range_age.disb <-  min(paramlist$range_age):max(paramlist$range_age.r)
+liab.disb.ca <- get_contingentAnnuity(Tier_select, 
+                                      tier.param[Tier_select, "factor.ca.disb"],
+                                      range_age.disb, 
+                                      apply_reduction = FALSE) %>% 
+                rename(age.disb = age.r)
 
 
 #*********************************************************************************************************
@@ -109,26 +122,109 @@ liab <- get_indivLab(Tier_select)
 
 
 
+#*********************************************************************************************************
+# 5.   Examine demographic data ####
+#*********************************************************************************************************
+
+##  life annuitants
+demo.la <- left_join(pop$la, liab$la) %>% filter(year %in% 2015:max(year))
+demo.la %>% head
 
 
-
-
-# Examine demographic data
-
-# life annuitants
-demo.la <- pop$la %>% filter(year %in% 2015:max(year))
-
+# Average age by year
 demo.la %>% group_by(year) %>% 
-  summarize(avg.age = sum(age * number.la, na.rm = T)/sum(number.la, na.rm = T),
+  summarize(avg.age = sum(age  * number.la, na.rm = T)/sum(number.la, na.rm = T),
             nret    = 1000 * sum(number.la, na.rm = T))
 
+# distribution of age and benefit by year
+demo.la.dist <-  demo.la %>% group_by(year, age) %>% 
+  summarize(num.la = sum(number.la, na.rm = T),
+            avg.ben   = sum(B.la * number.la, na.rm = T)/sum(number.la, na.rm = T) )  %>% 
+  mutate(dist.num.la  = 100 * num.la / sum(num.la),
+         dist.ben.la =  100 * avg.ben / sum(avg.ben, na.rm = T)) 
 
-# disabled 
-demo.disb <- pop$disb %>% filter(year %in% 2015:max(year))
 
-demo.disb %>% group_by(year) %>% 
-  summarize(avg.age = sum(age * number.disb, na.rm = T)/sum(number.disb, na.rm = T),
-            ndisb   = 1000 * sum(number.disb, na.rm = T))
+
+
+# Plotting age and benefit distribution
+demo.la.dist %>% filter(year == 2064) %>%  
+                 qplot(x = age, y = dist.num.la, data =., geom = "line") +
+                 scale_x_continuous(breaks = seq(0,120,5))
+
+demo.la.dist %>% filter(year == 2064) %>%  
+                 qplot(x = age, y = dist.ben.la, data =., geom = "line") +
+                 scale_x_continuous(breaks = seq(0,120,5))
+
+
+
+
+
+
+##  Disability benefit life annuitants
+demo.disb.la <- left_join(pop$disb.la, liab$disb.la) %>% filter(year %in% 2015:max(year))
+demo.disb.la %>% head
+
+
+# Average age by year
+demo.disb.la %>% group_by(year) %>% 
+  summarize(avg.age = sum(age  * number.disb.la, na.rm = T)/sum(number.disb.la, na.rm = T),
+            n.disb.la    = 1000 * sum(number.disb.la, na.rm = T))
+
+# distribution of age and benefit by year
+demo.disb.la.dist <-  demo.disb.la %>% group_by(year, age) %>% 
+  summarize(num.disb.la = sum(number.disb.la, na.rm = T),
+            avg.ben     = sum(B.disb.la * number.disb.la, na.rm = T)/sum(number.disb.la, na.rm = T) )  %>% 
+  mutate(dist.num.disb.la  = 100 * num.disb.la / sum(num.disb.la),
+         dist.ben.disb.la =  100 * avg.ben / sum(avg.ben, na.rm = T)) 
+
+
+# Plotting age and benefit distribution
+demo.disb.la.dist %>% filter(year == 2064) %>%  
+  qplot(x = age, y = dist.num.disb.la, data =., geom = "line") +
+  scale_x_continuous(breaks = seq(0,120,5))
+
+demo.disb.la.dist %>% filter(year == 2064) %>%  
+  qplot(x = age, y = dist.ben.disb.la, data =., geom = "line") +
+  scale_x_continuous(breaks = seq(0,120,5))
+
+
+
+
+
+#*********************************************************************************************************
+# 5.   Construct distribution for initial LAFPP non-actives ####
+#*********************************************************************************************************
+
+
+## Re-organize age and benefit distribution
+
+dist_init.retirees <- 
+demo.la.dist %>% ungroup %>% 
+  filter(year == 2064, age %in% 41:100) %>% 
+  select(age, dist.num.la, dist.ben.la) %>% 
+  mutate(dist.num.la = dist.num.la / sum(dist.num.la),
+         dist.ben.la = dist.ben.la / dist.ben.la[1])
+
+dist_init.disb <- 
+demo.disb.la.dist %>% ungroup %>% 
+  filter(year == 2064, age %in% 21:100) %>% 
+  select(age, dist.num.disb.la, dist.ben.disb.la) %>% 
+  mutate(dist.num.disb.la = dist.num.disb.la / sum(dist.num.disb.la),
+         dist.ben.disb.la = dist.ben.disb.la / dist.ben.disb.la[1])
+
+
+## Missing steps:
+ # Calibrate the age distribution to match the average ages in AV 2015
+ # Age and benenfit distribution of benficiaries.
+
+
+save(dist_init.retirees, dist_init.disb, file = "Data_inputs/dist_init.nonActives.RData")
+
+
+
+
+
+
 
 
 
@@ -153,6 +249,7 @@ demo.disb %>% group_by(year) %>%
 (75*3108 + 1540*4875 + 249*3522 + 45*4525 + 120*4745 + 2*4914)/(75 + 1540 + 249 + 45 + 120 + 2)
  #4628.5
 
+
 # Beneficiaries
  # average age
 (292*84   + 1876*78.6 + 83*53   + 202*35.2 + 185*54.5 )/(292 + 1876 + 83 + 202 + 185)
@@ -175,6 +272,8 @@ demo.active %>% group_by(year, age) %>%
   summarize(nret = sum(number.a, na.rm = T))
 
 pop$active %>% filter(year == 2085) %>% summarize(n = sum(number.a))
+
+
 
 
 # #*********************************************************************************************************
