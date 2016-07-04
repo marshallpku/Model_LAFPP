@@ -16,20 +16,25 @@ load("Data_inputs/LAFPP_MemberData.RData")  # for all tiers
 pct.init.ret.la <-  0.3
 pct.init.ret.ca  <- 1 - pct.init.ret.la
 
-pct.init.disb.la <-  0.3
+pct.init.disb.la <-  1
 pct.init.disb.ca  <- 1 - pct.init.disb.la
 
-init_retirees.la_all <- init_retirees_all %>% 
-  mutate(nretiree.la = nretirees * pct.init.ret.la)
+init_retirees.la_all <- init_retirees_all %>%
+  mutate(nretirees.la = nretirees * pct.init.ret.la) %>% 
+  select(-nretirees)
 
-init_retirees.ca_all <- init_retirees_all %>% 
-  mutate(nretiree.ca = nretirees * pct.init.ret.ca)
+init_retirees.ca_all <- init_retirees_all %>%
+  mutate(nretirees.ca = nretirees * pct.init.ret.ca) %>% 
+  select(-nretirees)
 
-init_disb.la_all <- init_disb_all %>% 
-  mutate(nretiree.la = ndisb * pct.init.disb.la)
+init_disb.la_all <- init_disb_all %>%
+  mutate(ndisb.la = ndisb * pct.init.disb.la) %>% 
+  select(-ndisb)
 
-init_disb.ca_all <- init_disb_all %>% 
-  mutate(nretiree.ca = ndisb * pct.init.disb.ca)
+init_disb.ca_all <- init_disb_all %>%
+  mutate(ndisb.ca = ndisb * pct.init.disb.ca) %>% 
+  select(-ndisb)
+
 
 #*********************************************************************************************************
 # 1.2 Create decrement tables ####
@@ -210,21 +215,22 @@ gc()
 #*********************************************************************************************************
 source("LAFPP_Model_ContingentAnnuity.R")
 
-liab.ca.t1  <- get_contingentAnnuity("t1", tier.param["t1", "factor.ca"], paramlist$range_age.r, FALSE, decrement.model_ = decrement.model.t1)
-liab.ca.t2  <- get_contingentAnnuity("t2", tier.param["t2", "factor.ca"], paramlist$range_age.r, FALSE, decrement.model_ = decrement.model.t2)
-liab.ca.t3  <- get_contingentAnnuity("t3", tier.param["t3", "factor.ca"], paramlist$range_age.r, FALSE, decrement.model_ = decrement.model.t3)
-liab.ca.t4  <- get_contingentAnnuity("t4", tier.param["t4", "factor.ca"], paramlist$range_age.r, FALSE, decrement.model_ = decrement.model.t4)
-liab.ca.t5  <- get_contingentAnnuity("t5", tier.param["t5", "factor.ca"], paramlist$range_age.r, FALSE, decrement.model_ = decrement.model.t5)
-liab.ca.t6  <- get_contingentAnnuity("t6", tier.param["t6", "factor.ca"], paramlist$range_age.r, FALSE, decrement.model_ = decrement.model.t6)
+range_age.r.ca <- min(paramlist$range_age.r):100
+liab.ca.t1  <- get_contingentAnnuity("t1", tier.param["t1", "factor.ca"], range_age.r.ca, FALSE, decrement.model_ = decrement.model.t1)
+liab.ca.t2  <- get_contingentAnnuity("t2", tier.param["t2", "factor.ca"], range_age.r.ca, FALSE, decrement.model_ = decrement.model.t2)
+liab.ca.t3  <- get_contingentAnnuity("t3", tier.param["t3", "factor.ca"], range_age.r.ca, FALSE, decrement.model_ = decrement.model.t3)
+liab.ca.t4  <- get_contingentAnnuity("t4", tier.param["t4", "factor.ca"], range_age.r.ca, FALSE, decrement.model_ = decrement.model.t4)
+liab.ca.t5  <- get_contingentAnnuity("t5", tier.param["t5", "factor.ca"], range_age.r.ca, FALSE, decrement.model_ = decrement.model.t5)
+liab.ca.t6  <- get_contingentAnnuity("t6", tier.param["t6", "factor.ca"], range_age.r.ca, FALSE, decrement.model_ = decrement.model.t6)
 
 
-range_age.disb <-  min(paramlist$range_age):max(paramlist$range_age.r)
-liab.disb.ca.t1  <- get_contingentAnnuity("t1", tier.param["t1", "factor.ca.disb"], range_age.disb, FALSE, decrement.model_ = decrement.model.t1) %>% rename(age.disb = age.r)
-liab.disb.ca.t2  <- get_contingentAnnuity("t2", tier.param["t2", "factor.ca.disb"], range_age.disb, FALSE, decrement.model_ = decrement.model.t2) %>% rename(age.disb = age.r)
-liab.disb.ca.t3  <- get_contingentAnnuity("t3", tier.param["t3", "factor.ca.disb"], range_age.disb, FALSE, decrement.model_ = decrement.model.t3) %>% rename(age.disb = age.r)
-liab.disb.ca.t4  <- get_contingentAnnuity("t4", tier.param["t4", "factor.ca.disb"], range_age.disb, FALSE, decrement.model_ = decrement.model.t4) %>% rename(age.disb = age.r)
-liab.disb.ca.t5  <- get_contingentAnnuity("t5", tier.param["t5", "factor.ca.disb"], range_age.disb, FALSE, decrement.model_ = decrement.model.t5) %>% rename(age.disb = age.r)
-liab.disb.ca.t6  <- get_contingentAnnuity("t6", tier.param["t6", "factor.ca.disb"], range_age.disb, FALSE, decrement.model_ = decrement.model.t6) %>% rename(age.disb = age.r)
+range_age.disb.ca <-  min(paramlist$range_age): 100 #max(paramlist$range_age.r)
+liab.disb.ca.t1  <- get_contingentAnnuity("t1", tier.param["t1", "factor.ca.disb"], range_age.disb.ca, FALSE, decrement.model_ = decrement.model.t1) %>% rename(age.disb = age.r)
+liab.disb.ca.t2  <- get_contingentAnnuity("t2", tier.param["t2", "factor.ca.disb"], range_age.disb.ca, FALSE, decrement.model_ = decrement.model.t2) %>% rename(age.disb = age.r)
+liab.disb.ca.t3  <- get_contingentAnnuity("t3", tier.param["t3", "factor.ca.disb"], range_age.disb.ca, FALSE, decrement.model_ = decrement.model.t3) %>% rename(age.disb = age.r)
+liab.disb.ca.t4  <- get_contingentAnnuity("t4", tier.param["t4", "factor.ca.disb"], range_age.disb.ca, FALSE, decrement.model_ = decrement.model.t4) %>% rename(age.disb = age.r)
+liab.disb.ca.t5  <- get_contingentAnnuity("t5", tier.param["t5", "factor.ca.disb"], range_age.disb.ca, FALSE, decrement.model_ = decrement.model.t5) %>% rename(age.disb = age.r)
+liab.disb.ca.t6  <- get_contingentAnnuity("t6", tier.param["t6", "factor.ca.disb"], range_age.disb.ca, FALSE, decrement.model_ = decrement.model.t6) %>% rename(age.disb = age.r)
 
 #*********************************************************************************************************
 # 3. Individual actuarial liabilities, normal costs and benenfits ####
@@ -387,7 +393,7 @@ penSim_results.sumTiers <- run_sim("sumTiers", AggLiab.sumTiers)
 var_display1 <- c("Tier", "sim", "year", "FR", "MA", "AL", 
                  #"AL.act", "AL.act.laca", "AL.act.v", "AL.act.LSC", "AL.la", "AL.ca", "AL.term",
                  "AL.act", "AL.la", "AL.ca", "AL.disb.la", "AL.death", # "PVFB",
-                 #"PVFB.laca", "PVFB.LSC", "PVFB.v", "PVFB", 
+                 "PVFB", 
                  "B", "B.la", "B.ca", "B.disb.la","B.disb.ca", 
                  "PR", "NC_PR", "NC")
 
@@ -400,7 +406,7 @@ var_display2 <- c("Tier", "sim", "year", "FR", "MA", "AL",
 kable(penSim_results.sumTiers %>% filter(sim == -1) %>% select(one_of(var_display1)), digits = 2) %>% print 
 kable(penSim_results.sumTiers %>% filter(sim == -1) %>% select(one_of(var_display2)), digits = 2) %>% print 
 
-# kable(penSim_results.t6 %>% filter(sim == -1) %>% select(one_of(var_display1)), digits = 2) %>% print 
+kable(penSim_results.t5 %>% filter(sim == -1) %>% select(one_of(var_display1)), digits = 2) %>% print 
 
 
 save(penSim_results.sumTiers,

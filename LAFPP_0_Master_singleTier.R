@@ -27,7 +27,7 @@ init_retirees.la_all <- init_retirees_all %>%
   select(-nretirees)
 
 init_retirees.ca_all <- init_retirees_all %>%
-  mutate(nretirees.la = nretirees * pct.init.ret.ca) %>% 
+  mutate(nretirees.ca = nretirees * pct.init.ret.ca) %>% 
   select(-nretirees)
 
 init_disb.la_all <- init_disb_all %>%
