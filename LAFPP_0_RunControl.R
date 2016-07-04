@@ -190,8 +190,8 @@ paramlist$v     = with(paramlist, 1/(1 + i))
 #  Run all tiers ####
 #*********************************************************************************************************
 
-# paramlist$simTiers <- "separate"  # "joint"(defult) or "separate"
-# source("LAFPP_0_Master_allTiers.R")
+paramlist$simTiers <- "separate"  # "joint"(defult) or "separate"
+source("LAFPP_0_Master_allTiers.R")
 
  
  
