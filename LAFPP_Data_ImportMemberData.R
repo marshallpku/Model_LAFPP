@@ -19,6 +19,11 @@
 
 load("Data_inputs/dist_init.nonActives.RData")              
 
+simDist_retirees <- TRUE
+simDist_disb     <- TRUE
+simDist_benenficiaries <- TRUE
+
+
 #****************************************************************************************************
 #                    Global constants ####
 #****************************************************************************************************
@@ -342,6 +347,50 @@ fillin.retirees <- function(list_data) {
 
 
 
+
+#*************************************************************************************************************
+#                     Importing summary measures of initial non-actives                                  #####                  
+#*************************************************************************************************************
+get_init.nonActives.info <- function(file, sheet, cellStart = "B2", cellEnd = "B3"){
+  
+  # file <- file_memberData
+  # sheet <-   "Other_t2"
+  # planname <- "t2"
+  # cellStart <- "B2"
+  # cellEnd <- "B3"
+  
+  range <- xlrange(file, sheet, cellStart, cellEnd)
+  
+  df <- readWorksheetFromFile(file, sheet = sheet, header=TRUE, region= range, colTypes="character")
+}
+
+init.nonActives.info <- get_init.nonActives.info(file_memberData, "nonActives_allTiers") %>%
+  mutate_each(funs(as.numeric),  -tier)
+
+init.nonActives.info
+glimpse(init.nonActives.info)
+
+init.nonActives.info.singleTier <-
+  init.nonActives.info %>%
+  summarize(retirees.n   = sum(retirees.n.tot),
+            retirees.avg.age = sum(retirees.avg.age * retirees.n.tot)/sum(retirees.n.tot),
+            retirees.ben.mon = sum(retirees.ben.mon * retirees.n.tot)/sum(retirees.n.tot),
+            
+            disb.n   = sum(disb.n.tot),
+            disb.avg.age = sum(disb.avg.age * disb.n.tot)/sum(disb.n.tot),
+            disb.ben.mon = sum(disb.ben.mon * disb.n.tot)/sum(disb.n.tot),
+            
+            beneficiaries.n   = sum(beneficiaries.n.tot),
+            beneficiaries.avg.age = sum(beneficiaries.avg.age * beneficiaries.n.tot)/sum(beneficiaries.n.tot),
+            beneficiaries.ben.mon = sum(beneficiaries.ben.mon * beneficiaries.n.tot)/sum(beneficiaries.n.tot),
+            
+            terms.n   = sum(terms.n.tot),
+            terms.avg.age = sum(terms.avg.age * terms.n.tot)/sum(terms.n.tot),
+            terms.ben50.mon = sum(terms.ben50.mon * terms.n.tot)/sum(terms.n.tot))
+
+
+
+
 #*************************************************************************************************************
 #                                       Importing Data for initial actives                               #####                  
 #*************************************************************************************************************
@@ -406,6 +455,7 @@ init_actives_all <- bind_rows(df_t1,
 # There is no breakdown of initial retirees by age in the AV. For now, the total number of retirees are evenly spread
 # over age 41 - 80.
 
+if(!simDist_retirees){
 get_init.ret.temp <- function(file, sheet, planname, cellStart = "B2", cellEnd = "B3"){
 
 # file <- file_memberData
@@ -438,76 +488,38 @@ init_retirees_all <- bind_rows(
   get_init.ret.temp(file_memberData, "Other_t6_noHPP", "Retirees_t6_noHPP"),
   get_init.ret.temp(file_memberData, "Other_t6_HPP",   "Retirees_t6_HPP")
 )
+  # init_retirees_all
 
-init_retirees_all
+
+} else {
 
 
-# get_init.nonActives.info <- function(file, sheet, cellStart = "B2", cellEnd = "B3"){
-# 
-#   # file <- file_memberData
-#   # sheet <-   "Other_t2"
-#   # planname <- "t2"
-#   # cellStart <- "B2"
-#   # cellEnd <- "B3"
-# 
-#   range <- xlrange(file, sheet, cellStart, cellEnd)
-# 
-#   df <- readWorksheetFromFile(file, sheet = sheet, header=TRUE, region= range, colTypes="character")
-# }
-# 
-# init.nonActives.info <- get_init.nonActives.info(file_memberData, "nonActives_allTiers") %>%
-#   mutate_each(funs(as.numeric),  -tier)
-# 
-# init.nonActives.info
-# glimpse(init.nonActives.info)
-# 
-# init.nonActives.info.singleTier <-
-#   init.nonActives.info %>%
-#   summarize(retirees.n   = sum(retirees.n.tot),
-#             retirees.avg.age = sum(retirees.avg.age * retirees.n.tot)/sum(retirees.n.tot),
-#             retirees.ben.mon = sum(retirees.ben.mon * retirees.n.tot)/sum(retirees.n.tot),
-# 
-#             disb.n   = sum(disb.n.tot),
-#             disb.avg.age = sum(disb.avg.age * disb.n.tot)/sum(disb.n.tot),
-#             disb.ben.mon = sum(disb.ben.mon * disb.n.tot)/sum(disb.n.tot),
-# 
-#             beneficiaries.n   = sum(beneficiaries.n.tot),
-#             beneficiaries.avg.age = sum(beneficiaries.avg.age * beneficiaries.n.tot)/sum(beneficiaries.n.tot),
-#             beneficiaries.ben.mon = sum(beneficiaries.ben.mon * beneficiaries.n.tot)/sum(beneficiaries.n.tot),
-# 
-#             terms.n   = sum(terms.n.tot),
-#             terms.avg.age = sum(terms.avg.age * terms.n.tot)/sum(terms.n.tot),
-#             terms.ben50.mon = sum(terms.ben50.mon * terms.n.tot)/sum(terms.n.tot))
-# 
-# 
-# 
-# # Assume all initial retirees are in Tier 5
-# init_retirees_t5 <-  expand.grid(planname = "Retirees_t5", age = 41:100) %>%
-#   left_join(dist_init.retirees) %>%
-#   mutate(nretirees = dist.num.la * init.nonActives.info.singleTier[1,"retirees.n"])
-# 
-# 
-# ben.factor.retirees <- as.numeric(init.nonActives.info.singleTier[1,"retirees.ben.mon"] * 12) /
-#   as.numeric(init_retirees_t5 %>% summarise(ben.tot = sum(nretirees * dist.ben.la)/sum(nretirees)))
-# 
-# 
-# init_retirees_t5 %<>% mutate(benefit = dist.ben.la * ben.factor.retirees) %>%
-#   select(planname, age, nretirees, benefit)
-# 
-# 
-# 
-# # double check
-# init.nonActives.info.singleTier
-# init_retirees_t5 %>% summarize(avg.ben = sum(benefit * nretirees)/sum(nretirees)/12,
-#                                avg.age = sum(age * nretirees)/sum(nretirees),
-#                                n.tot = sum(nretirees))
-# 
-# 
-# init_retirees_all <-  expand.grid(age = 41:100, planname = paste0("Retirees_", paste0("t", 1:6))) %>%
-#   left_join(init_retirees_t5) %>%
-#   mutate_each(funs(na2zero), -age, -planname) %>%
-#   mutate(planname = paste0(planname, "_fillin"))
+# Assume all initial retirees are in Tier 5
+init_retirees_t5 <-  expand.grid(planname = "Retirees_t5", age = 41:100) %>%
+  left_join(dist_init.retirees) %>%
+  mutate(nretirees = dist.num.la * init.nonActives.info.singleTier[1,"retirees.n"])
 
+
+ben.factor.retirees <- as.numeric(init.nonActives.info.singleTier[1,"retirees.ben.mon"] * 12) /
+  as.numeric(init_retirees_t5 %>% summarise(ben.tot = sum(nretirees * dist.ben.la)/sum(nretirees)))
+
+
+init_retirees_t5 %<>% mutate(benefit = dist.ben.la * ben.factor.retirees) %>%
+  select(planname, age, nretirees, benefit)
+
+
+# double check
+init.nonActives.info.singleTier
+init_retirees_t5 %>% summarize(avg.ben = sum(benefit * nretirees)/sum(nretirees)/12,
+                               avg.age = sum(age * nretirees)/sum(nretirees),
+                               n.tot = sum(nretirees))
+
+
+init_retirees_all <-  expand.grid(age = 41:100, planname = paste0("Retirees_", paste0("t", 1:6))) %>%
+  left_join(init_retirees_t5) %>%
+  mutate_each(funs(na2zero), -age, -planname) %>%
+  mutate(planname = paste0(planname, "_fillin"))
+}
 
 
 #*************************************************************************************************************
@@ -559,6 +571,8 @@ init_beneficiaries_all
 #                             Importing initial disabled (Temporary)                                #####                  
 #*************************************************************************************************************
 
+if(!simDist_disb){
+
 get_init.disb.temp <- function(file, sheet, planname, age_spread, cellStart = "B2", cellEnd = "B3"){
   
   # file <- file_memberData
@@ -593,6 +607,37 @@ init_disb_all <- bind_rows(
 )
 
 init_disb_all
+
+} else {
+
+# Assume all initial retirees are in Tier 5
+init_disb_t5 <-  expand.grid(planname = "Disb_t5", age = 21:100) %>%
+  left_join(dist_init.disb) %>%
+  mutate(ndisb = dist.num.disb.la * init.nonActives.info.singleTier[1,"disb.n"])
+
+
+ben.factor.disb <- as.numeric(init.nonActives.info.singleTier[1,"disb.ben.mon"] * 12) /
+  as.numeric(init_disb_t5 %>% summarise(ben.tot = sum(ndisb * dist.ben.disb.la)/sum(ndisb)))
+
+
+init_disb_t5 %<>% mutate(benefit = dist.ben.disb.la * ben.factor.disb) %>%
+  select(planname, age, ndisb, benefit)
+
+
+# double check
+init.nonActives.info.singleTier
+init_disb_t5 %>% summarize(avg.ben = sum(benefit * ndisb)/sum(ndisb)/12,
+                               avg.age = sum(age * ndisb)/sum(ndisb),
+                               n.tot = sum(ndisb))
+
+
+init_disb_all <-  expand.grid(age = 21:100, planname = paste0("Disb_", paste0("t", 1:6))) %>%
+  left_join(init_disb_t5) %>%
+  mutate_each(funs(na2zero), -age, -planname) %>%
+  mutate(planname = paste0(planname, "_fillin"))
+
+}
+
 
 
 #*************************************************************************************************************
@@ -671,9 +716,9 @@ df_out <- bind_rows(df_nonHPP, df_HPP) %>%
 }
 
  
-init_retirees_all      %<>% integrate_HPP()
+if(!simDist_retirees) init_retirees_all %<>% integrate_HPP()
+if(!simDist_disb)     init_disb_all     %<>% integrate_HPP()
 init_beneficiaries_all %<>% integrate_HPP()
-init_disb_all          %<>% integrate_HPP()
 init_terms_all         %<>% integrate_HPP()
 
 
