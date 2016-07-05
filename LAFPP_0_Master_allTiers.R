@@ -7,7 +7,7 @@ gc()
 
 # Plan information
 # source("LAFPP_Data_RP2000.R")
-# source("LAFPP_Data_PlanInfo.R")
+source("LAFPP_Data_PlanInfo.R")
 source("LAFPP_Data_ImportMemberData.R")
 
 load("Data_inputs/LAFPP_PlanInfo.RData")    # for all tiers
@@ -391,13 +391,13 @@ penSim_results.sumTiers <- run_sim("sumTiers", AggLiab.sumTiers)
 
 
 var_display1 <- c("Tier", "sim", "year", "FR", "MA", "AL", 
-                 #"AL.act", "AL.act.laca", "AL.act.v", "AL.act.LSC", "AL.la", "AL.ca", "AL.term",
-                 "AL.act", "AL.la", "AL.ca", "AL.disb.la", "AL.death", # "PVFB",
-                 "PVFB", 
+                 "AL.act", "AL.act.laca", "NC", "NC.laca",   #"AL.act.v", "AL.la", "AL.ca", "AL.term",
+                 "AL.act", "AL.la", "AL.ca", "AL.disb.la", "AL.disb.ca", "AL.death", # "PVFB",
+                 # "PVFB", 
                  "B", "B.la", "B.ca", "B.disb.la","B.disb.ca", 
                  "PR", "NC_PR", "NC")
 
-var_display2 <- c("Tier", "sim", "year", "FR", "MA", "AL", 
+var_display2 <- c("Tier", "sim", "year", "FR", "MA", "AL", "NC", "PR", 
                   "nactives", "nretirees", "nla", "n.ca.R1", "n.ca.R0S1", 
                   "ndisb.la", "ndisb.ca.R1", "ndisb.ca.R0S1" )
 
@@ -406,7 +406,7 @@ var_display2 <- c("Tier", "sim", "year", "FR", "MA", "AL",
 kable(penSim_results.sumTiers %>% filter(sim == -1) %>% select(one_of(var_display1)), digits = 2) %>% print 
 kable(penSim_results.sumTiers %>% filter(sim == -1) %>% select(one_of(var_display2)), digits = 2) %>% print 
 
-kable(penSim_results.t5 %>% filter(sim == -1) %>% select(one_of(var_display1)), digits = 2) %>% print 
+# kable(penSim_results.t5 %>% filter(sim == -1) %>% select(one_of(var_display1)), digits = 2) %>% print 
 
 
 save(penSim_results.sumTiers,

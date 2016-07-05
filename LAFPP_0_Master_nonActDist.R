@@ -15,7 +15,7 @@
 gc()
 
 Tier_select <- "t2"
-Global_paramlist$nyear <- 100
+Global_paramlist$nyear <- 60
 
 #*********************************************************************************************************
 # 1.1 Load data,  for all tiers ####
@@ -29,6 +29,27 @@ Global_paramlist$nyear <- 100
 load("Data_inputs/LAFPP_PlanInfo.RData")    # for all tiers
 load("Data_inputs/LAFPP_MemberData.RData")  # for all tiers
 
+pct.init.ret.la <-  1
+pct.init.ret.ca  <- 1 - pct.init.ret.la
+
+pct.init.disb.la <-  1
+pct.init.disb.ca  <- 1 - pct.init.disb.la
+
+init_retirees.la_all <- init_retirees_all %>%
+  mutate(nretirees.la = nretirees * pct.init.ret.la) %>% 
+  select(-nretirees)
+
+init_retirees.ca_all <- init_retirees_all %>%
+  mutate(nretirees.ca = nretirees * pct.init.ret.ca) %>% 
+  select(-nretirees)
+
+init_disb.la_all <- init_disb_all %>%
+  mutate(ndisb.la = ndisb * pct.init.disb.la) %>% 
+  select(-ndisb)
+
+init_disb.ca_all <- init_disb_all %>%
+  mutate(ndisb.ca = ndisb * pct.init.disb.ca) %>% 
+  select(-ndisb)
 
 #*********************************************************************************************************
 # 1.2 Create decrement tables ####
@@ -73,7 +94,7 @@ bfactor %<>% select(yos, matches(Tier_select)) %>%
 #init_actives_all %<>% mutate(nactives = 0) 
 init_retirees_all %<>% mutate(nretirees = 0)
 init_beneficiaries_all %<>% mutate(nbeneficiaries = 0)
-init_terminated_all %<>% mutate(nterm = 0)
+init_terms_all %<>% mutate(nterm = 0)
 init_disb_all %<>% mutate(ndisb = 0)
 
 init_pop     <- get_initPop_tier(Tier_select)
@@ -99,11 +120,11 @@ source("LAFPP_Model_ContingentAnnuity.R")
 # For service retirement
 liab.ca <- get_contingentAnnuity(Tier_select, 
                                  tier.param[Tier_select, "factor.ca"],
-                                 paramlist$range_age.r, 
+                                 min(paramlist$range_age.r):100, 
                                  apply_reduction = FALSE)
 
 # For disability benefit
-range_age.disb <-  min(paramlist$range_age):max(paramlist$range_age.r)
+range_age.disb <-  min(paramlist$range_age):100
 liab.disb.ca <- get_contingentAnnuity(Tier_select, 
                                       tier.param[Tier_select, "factor.ca.disb"],
                                       range_age.disb, 
@@ -145,7 +166,6 @@ demo.la.dist <-  demo.la %>% group_by(year, age) %>%
 
 
 
-
 # Plotting age and benefit distribution
 demo.la.dist %>% filter(year == 2064) %>%  
                  qplot(x = age, y = dist.num.la, data =., geom = "line") +
@@ -160,7 +180,7 @@ demo.la.dist %>% filter(year == 2064) %>%
 
 
 
-##  Disability benefit life annuitants
+##  Disability life annuitants
 demo.disb.la <- left_join(pop$disb.la, liab$disb.la) %>% filter(year %in% 2015:max(year))
 demo.disb.la %>% head
 
@@ -186,6 +206,10 @@ demo.disb.la.dist %>% filter(year == 2064) %>%
 demo.disb.la.dist %>% filter(year == 2064) %>%  
   qplot(x = age, y = dist.ben.disb.la, data =., geom = "line") +
   scale_x_continuous(breaks = seq(0,120,5))
+
+
+
+## Service retireeBeneficiaries
 
 
 

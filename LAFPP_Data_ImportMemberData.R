@@ -21,7 +21,7 @@ load("Data_inputs/dist_init.nonActives.RData")
 
 simDist_retirees <- TRUE
 simDist_disb     <- TRUE
-simDist_benenficiaries <- TRUE
+simDist_benenficiaries <- F
 
 
 #****************************************************************************************************
@@ -529,6 +529,8 @@ init_retirees_all <-  expand.grid(age = 41:100, planname = paste0("Retirees_", p
 # There is no breakdown of initial retirees by age in the AV. For now, the total number of retirees are evenly spread 
 # over age 41 - 80. 
 
+if(!simDist_benenficiaries){
+
 get_init.beneficiaries.temp <- function(file, sheet, planname, cellStart = "B2", cellEnd = "B3"){
   
   # file <- file_memberData
@@ -562,8 +564,38 @@ init_beneficiaries_all <- bind_rows(
   get_init.beneficiaries.temp(file_memberData, "Other_t6_HPP",   "Beneficiaries_t6_HPP")
 )
 
-init_beneficiaries_all
+ init_beneficiaries_all
 
+} else {
+  
+  # Assume all initial retirees are in Tier 5
+  # For now, use the simulated distribution for service retirement life annuitants. 
+  
+  init_beneficiaries_t5 <-  expand.grid(planname = "Beneficiaries_t5", age = 41:100) %>%
+    left_join(dist_init.retirees) %>%
+    mutate(nbeneficiaries = dist.num.la * init.nonActives.info.singleTier[1,"beneficiaries.n"])
+  
+  
+  ben.factor.beneficiaries <- as.numeric(init.nonActives.info.singleTier[1,"beneficiaries.ben.mon"] * 12) /
+    as.numeric(init_beneficiaries_t5 %>% summarise(ben.tot = sum(nbeneficiaries * dist.ben.la)/sum(nbeneficiaries)))
+  
+  
+  init_beneficiaries_t5 %<>% mutate(benefit = dist.ben.la * ben.factor.beneficiaries) %>%
+    select(planname, age, nbeneficiaries, benefit)
+  
+  
+  # double check
+  init.nonActives.info.singleTier
+  init_beneficiaries_t5 %>% summarize(avg.ben = sum(benefit * nbeneficiaries)/sum(nbeneficiaries)/12,
+                                 avg.age = sum(age * nbeneficiaries)/sum(nbeneficiaries),
+                                 n.tot = sum(nbeneficiaries))
+  
+  
+  init_beneficiaries_all <-  expand.grid(age = 41:100, planname = paste0("Beneficiaries_", paste0("t", 1:6))) %>%
+    left_join(init_beneficiaries_t5) %>%
+    mutate_each(funs(na2zero), -age, -planname) %>%
+    mutate(planname = paste0(planname, "_fillin"))
+}
 
 
 
@@ -716,9 +748,9 @@ df_out <- bind_rows(df_nonHPP, df_HPP) %>%
 }
 
  
-if(!simDist_retirees) init_retirees_all %<>% integrate_HPP()
-if(!simDist_disb)     init_disb_all     %<>% integrate_HPP()
-init_beneficiaries_all %<>% integrate_HPP()
+if(!simDist_retirees)        init_retirees_all %<>% integrate_HPP()
+if(!simDist_disb)            init_disb_all     %<>% integrate_HPP()
+if(!simDist_benenficiaries)  init_beneficiaries_all %<>% integrate_HPP()
 init_terms_all         %<>% integrate_HPP()
 
 
