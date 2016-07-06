@@ -24,6 +24,24 @@
  # 2. Benefits foer vested terms are currently modeled as life annuity. Later we may want to model it as contingent annuity. 
 
 
+# Notes on LAFPP employer contribution rate 
+ # Tier 1/2 
+  # 6% if yos <=30
+  # 0% if yos > 30
+ # Tier 3/4
+  # 8% if yos <=30
+  # 0% if yos > 30
+ # Tier 5
+  # 9% if yos <=33
+  # 0% if yos > 33
+  # City of LA pays 1% of the 9% if funded ratio >=100% (EEC rate 8%)
+ # Tier 6 
+  # 11% if yos <=33
+  #  0% if yos > 33
+
+
+
+
 
 get_indivLab <- function(Tier_select_,
                          decrement.model_ = decrement.model,
@@ -63,6 +81,8 @@ r.yos    <- tier.param[Tier_select_, "r.yos"]
 r.age    <- tier.param[Tier_select_, "r.age"]
 v.yos    <- tier.param[Tier_select_, "v.yos"]
 cola     <- tier.param[Tier_select_, "cola"]
+EEC.rate <- tier.param[Tier_select_, "EEC.rate"]
+EEC.exempt.yos <- tier.param[Tier_select_, "EEC.exempt.yos"]
 
 init_terminated_ <-  get_tierData(init_terms_all_, Tier_select_)
 
@@ -103,8 +123,14 @@ liab.active <- expand.grid(start.year = min.year:(init.year + nyear - 1) ,
   
   # Calculate salary and benefits
   mutate(
+    yos= age - ea,
+    
+    # EEC, LAFPP specific
+    EEC = ifelse(yos > EEC.exempt.yos, 0, sx * EEC.rate),
+    
+    # years of service
     Sx = ifelse(age == min(age), 0, lag(cumsum(sx))),  # Cumulative salary
-    yos= age - min(age),                               # years of service
+
     n  = pmin(yos, fasyears),                          # years used to compute fas
     fas= ifelse(yos < fasyears, Sx/n, (Sx - lag(Sx, fasyears))/n), # final average salary
     fas= ifelse(age == min(age), 0, fas),
@@ -625,7 +651,7 @@ var.names <- c("sx", ALx.laca.method, NCx.laca.method,
                      ALx.v.method, NCx.v.method, 
                      ALx.death.method, NCx.death.method,
                      ALx.disb.method, NCx.disb.method,
-                     "PVFBx.laca", "PVFBx.v", "PVFBx.death", "PVFBx.disb", "Bx.laca", "Bx.disb")
+                     "PVFBx.laca", "PVFBx.v", "PVFBx.death", "PVFBx.disb", "Bx.laca", "Bx.disb", "EEC")
 liab.active %<>% 
   filter(year %in% seq(init.year, len = nyear)) %>%
   select(year, ea, age, one_of(var.names)) %>%

@@ -21,7 +21,7 @@ load("Data_inputs/dist_init.nonActives.RData")
 
 simDist_retirees <- TRUE
 simDist_disb     <- TRUE
-simDist_benenficiaries <- F
+simDist_benenficiaries <- TRUE
 
 
 #****************************************************************************************************

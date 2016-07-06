@@ -16,7 +16,7 @@ load("Data_inputs/LAFPP_MemberData.RData")  # for all tiers
 pct.init.ret.la <-  0.3
 pct.init.ret.ca  <- 1 - pct.init.ret.la
 
-pct.init.disb.la <-  1
+pct.init.disb.la <-  0.3
 pct.init.disb.ca  <- 1 - pct.init.disb.la
 
 init_retirees.la_all <- init_retirees_all %>%
@@ -393,11 +393,11 @@ penSim_results.sumTiers <- run_sim("sumTiers", AggLiab.sumTiers)
 var_display1 <- c("Tier", "sim", "year", "FR", "MA", "AL", 
                  "AL.act", "AL.act.laca", "NC", "NC.laca",   #"AL.act.v", "AL.la", "AL.ca", "AL.term",
                  "AL.act", "AL.la", "AL.ca", "AL.disb.la", "AL.disb.ca", "AL.death", # "PVFB",
-                 # "PVFB", 
-                 "B", "B.la", "B.ca", "B.disb.la","B.disb.ca", 
+                 "PVFB", 
+                 # "B", "B.la", "B.ca", "B.disb.la","B.disb.ca", 
                  "PR", "NC_PR", "NC")
 
-var_display2 <- c("Tier", "sim", "year", "FR", "MA", "AL", "NC", "PR", 
+var_display2 <- c("Tier", "sim", "year", "FR", "MA", "AL", "NC", "PR", "EEC","ERC", "ERC_PR",
                   "nactives", "nretirees", "nla", "n.ca.R1", "n.ca.R0S1", 
                   "ndisb.la", "ndisb.ca.R1", "ndisb.ca.R0S1" )
 
@@ -465,6 +465,9 @@ save(penSim_results.sumTiers,
 #write.xlsx2(penSim_results_sumTiers %>% filter(sim == -1), file = "Data/detective_constant_wf.xlsx", sheet = "Total")
 
 
+init_actives_all %>% summarise(avg.age = sum(age * nactives)/sum(nactives),
+                               avg.yos = sum(yos * nactives)/sum(nactives),
+                               avg.sal = sum(salary * nactives)/sum(nactives))
 
 
 

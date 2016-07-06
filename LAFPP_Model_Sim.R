@@ -204,6 +204,10 @@ run_sim <- function(Tier_select_,
   # PR(j)
   penSim0$PR <- AggLiab_$active[, "PR.sum"]
   
+  # EEC(j) (LAFPP sepcific)
+  penSim0$EEC <- AggLiab_$active[, "EEC.sum"]
+  
+  
   # nactives, nretirees, nterms
   penSim0$nactives  <- AggLiab_$active[,  "nactives"]
   penSim0$nla       <- AggLiab_$la[, "nla"]
@@ -314,7 +318,9 @@ run_sim <- function(Tier_select_,
       
       
       # Employee contribution, based on payroll. May be adjusted later. 
-      penSim$EEC[j] <- with(penSim, PR[j] * EEC_rate)
+      # penSim$EEC[j] <- with(penSim, PR[j] * EEC_rate)
+      # penSim$EEC[j] <- with(penSim, EEC[j])
+      
       
       # ADC(j)
       
