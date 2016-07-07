@@ -145,15 +145,27 @@ row.names(tier.param) <- tier.param$tier
 
 init_amort_raw <- read_ExcelRange(file_planInfo, sheet = "Init_amort", colTypes="character")
   
-names(init_amort_raw) <-  c("Type", "year.est", "m.init", "amount.init", "amount.annual", "year.remaining", "Balance")
-
 init_amort_raw %<>% 
   mutate(year.est = year(year.est)) %>% 
-  mutate_each(funs(as.numeric), -Type)
+  mutate_each(funs(as.numeric), -tier,  -type, -amort.method)
 
-# init_amort_raw %>% str
+# init_amort_raw #%>% str
 
 
+# Need to guess the assumed payroll growth rate. 
+# It looks 4% works very well. 
+# amort_cp(45090011, 0.075, 9, 0.04)
+# amort_cp(62698016, 0.075, 3, 0.04)
+# 
+# x <- mapply(amort_cp, p = init_amort_raw$balance, m = init_amort_raw$year.remaining,
+#        MoreArgs = list(i = 0.075, g = 0.04))
+# 
+# pay1 <- numeric(length(x)) 
+# for (i in 1:length(pay1)) pay1[i] <- x[[i]][1]
+# 
+# data.frame(pay1.AV = init_amort_raw$annual.payment, 
+#            pay1.calc = pay1) %>% 
+#   mutate(diff.pct = 100*pay1.calc/pay1.AV - 100)
 
 
 save(mortality_LAFPP, retRates, termRates, disbRates, bfactor, salgrowth, tier.param, init_amort_raw,

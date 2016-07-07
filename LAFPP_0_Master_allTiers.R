@@ -397,7 +397,7 @@ var_display1 <- c("Tier", "sim", "year", "FR", "MA", "AL",
                  # "B", "B.la", "B.ca", "B.disb.la","B.disb.ca", 
                  "PR", "NC_PR", "NC")
 
-var_display2 <- c("Tier", "sim", "year", "FR", "MA", "AL", "NC", "PR", "EEC","ERC", "ERC_PR",
+var_display2 <- c("Tier", "sim", "year", "FR", "MA", "AL", "NC", "SC", "PR", "EEC","ERC", "ERC_PR", "ADC",
                   "nactives", "nretirees", "nla", "n.ca.R1", "n.ca.R0S1", 
                   "ndisb.la", "ndisb.ca.R1", "ndisb.ca.R0S1" )
 
@@ -405,6 +405,11 @@ var_display2 <- c("Tier", "sim", "year", "FR", "MA", "AL", "NC", "PR", "EEC","ER
 
 kable(penSim_results.sumTiers %>% filter(sim == -1) %>% select(one_of(var_display1)), digits = 2) %>% print 
 kable(penSim_results.sumTiers %>% filter(sim == -1) %>% select(one_of(var_display2)), digits = 2) %>% print 
+
+
+kable(penSim_results.sumTiers %>% filter(sim == 1) %>% select(one_of(var_display1)), digits = 2) %>% print 
+kable(penSim_results.sumTiers %>% filter(sim == 1) %>% select(one_of(var_display2)), digits = 2) %>% print 
+
 
 # kable(penSim_results.t5 %>% filter(sim == -1) %>% select(one_of(var_display1)), digits = 2) %>% print 
 
@@ -465,9 +470,16 @@ save(penSim_results.sumTiers,
 #write.xlsx2(penSim_results_sumTiers %>% filter(sim == -1), file = "Data/detective_constant_wf.xlsx", sheet = "Total")
 
 
-init_actives_all %>% summarise(avg.age = sum(age * nactives)/sum(nactives),
-                               avg.yos = sum(yos * nactives)/sum(nactives),
-                               avg.sal = sum(salary * nactives)/sum(nactives))
+# init_actives_all %>% summarise(avg.age = sum(age * nactives)/sum(nactives),
+#                                avg.yos = sum(yos * nactives)/sum(nactives),
+#                                avg.sal = sum(salary * nactives)/sum(nactives))
+# 
+# init_actives_all %>% 
+#   group_by(planname) %>% 
+#   summarise(avg.age = sum(age * nactives)/sum(nactives),
+#                                avg.yos = sum(yos * nactives)/sum(nactives),
+#                                avg.sal = sum(salary * nactives)/sum(nactives))
+
 
 
 

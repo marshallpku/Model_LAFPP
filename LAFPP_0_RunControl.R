@@ -108,7 +108,7 @@ paramlist <- list(
   runname = "LAFPP",
   #Tier_select = "t76",
   simTiers = "joint",
-  useAVamort  = F, 
+  useAVamort  = T, 
   useExtFund  = F,
   
   Grouping    = "fillin",
@@ -154,16 +154,16 @@ paramlist <- list(
   # Investment returns
   seed = 1234,
   ir.mean = 0.075,
-  ir.sd   = 0.12,
+  ir.sd   = 0,  # 0.12,
   
   
   init_MA = "AL_pct",
-  MA_0_pct = 0.8069,
+  MA_0_pct = 0.946,  # AV2015 pdf page 12
   init_EAA = "MA",
   
   
   smooth_method = "method1",
-  salgrowth_amort = 0,
+  salgrowth_amort = 0.04,
   amort_method = "cp",
   amort_type = "closed",
   nonNegC = "FALSE",

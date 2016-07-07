@@ -5,21 +5,24 @@
 run_sim <- function(Tier_select_,
                     AggLiab_,
                     i.r_ = i.r,
-                    # init_amort_raw_ = init_amort_raw, # amount.annual, year.remaining 
+                    init_amort_raw_ = init_amort_raw, # amount.annual, year.remaining 
                     paramlist_ = paramlist,
                     Global_paramlist_ = Global_paramlist){
 
   # Run the section below when developing new features.
-      # Tier_select_ = Tier_select
+      # Tier_select_ =  "sumTiers" #  Tier_select
       # i.r_ = i.r
-      # AggLiab_        = AggLiab
-      # # init_amort_raw_ = init_amort_raw
+      # AggLiab_        = AggLiab.sumTiers
+      # init_amort_raw_ = init_amort_raw
       # paramlist_      = paramlist
       # Global_paramlist_ = Global_paramlist
 
 
   assign_parmsList(Global_paramlist_, envir = environment())
   assign_parmsList(paramlist_,        envir = environment())
+  
+  
+  if(Tier_select_ != "sumTiers") init_amort_raw_ %<>% filter(tier == Tier_select_) 
 
   
   #*************************************************************************************************************
@@ -136,25 +139,30 @@ run_sim <- function(Tier_select_,
   #                                  Setting up initial amortization payments ####
   #*************************************************************************************************************  
   # matrix representation of amortization: better visualization but larger size
-  SC_amort0 <- matrix(0, nyear + m, nyear + m)
+  m.max <- max(init_amort_raw_$year.remaining)
+  SC_amort0 <- matrix(0, nyear + m.max, nyear + m.max)
   # SC_amort0
   # data frame representation of amortization: much smaller size, can be used in real model later.
   # SC_amort <- expand.grid(year = 1:(nyear + m), start = 1:(nyear + m))
   
   
+
   # Amortization payment amounts for all prior years. 
-  SC_amort.init <- matrix(0, nrow(init_amort_raw), nyear + m)
+  SC_amort.init <- matrix(0, nrow(init_amort_raw_), nyear + m.max)
+  
+  SC_amort.init.list <- mapply(amort_LG, p = init_amort_raw_$balance, m = init_amort_raw_$year.remaining, method = init_amort_raw_$amort.method,
+                               MoreArgs = list(i = i, g = salgrowth_amort, end = FALSE), SIMPLIFY = F)
+  
   
   for(j in 1:nrow(SC_amort.init)){
-    SC_amort.init[j, 1:init_amort_raw$year.remaining[j]] <-init_amort_raw$amount.annual[j] 
+    SC_amort.init[j, 1:init_amort_raw_$year.remaining[j]] <- SC_amort.init.list[[j]]
   }
   
   nrow.initAmort <- nrow(SC_amort.init)
   
   SC_amort0 <- rbind(SC_amort.init, SC_amort0)
   # The amortization basis of year j should be placed in row nrow.initAmort + j - 1. 
-  
- 
+
   
   #*************************************************************************************************************
   #                                 Defining variables in simulation  ####
