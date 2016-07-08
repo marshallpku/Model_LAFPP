@@ -115,7 +115,6 @@ folder_save <- "Results/"
 #*********************************************************************************************************
 # 
 
-
 for(runName in runList$runname ){
   
   #runName <- "RS1.closed"
@@ -264,12 +263,12 @@ for(runName in runList$runname ){
     #ir.sd   <- 0,  # 0.12,
     
     
-  paramlist$init_MA <- "AL_pct"
-  paramlist$init_AA <- "AL_pct"
-  
-  paramlist$MA_0_pct <- 0.946  # AV2015 pdf page 12
-  paramlist$AA_0_pct <- 0.915  # AV2015 pdf page 12
-  
+  # paramlist$init_MA <- "AL_pct"
+  # paramlist$init_AA <- "AL_pct"  # Later we may want to allow it to be "MA" (equal to MA), "AL" (equal to AL), "AA0"(preset AA value)
+  # 
+  # paramlist$MA_0_pct <- 0.946  # AV2015 pdf page 12
+  # paramlist$AA_0_pct <- 0.915  # AV2015 pdf page 12
+  # 
   paramlist$init_EAA <- "MA"
     
     

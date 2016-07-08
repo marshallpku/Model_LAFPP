@@ -368,14 +368,14 @@ AggLiab.sumTiers <- get_AggLiab_sumTiers(AggLiab.t1, AggLiab.t2, AggLiab.t3,
 #*********************************************************************************************************
 source("LAFPP_Model_Sim.R")
 
-if(paramlist$simTiers == "separate"){
-  penSim_results.t1  <- run_sim("t1",  AggLiab.t1)
-  penSim_results.t2  <- run_sim("t2",  AggLiab.t2)
-  penSim_results.t3  <- run_sim("t3",  AggLiab.t3)
-  penSim_results.t4  <- run_sim("t4",  AggLiab.t4)
-  penSim_results.t5  <- run_sim("t5",  AggLiab.t5)
-  penSim_results.t6  <- run_sim("t6",  AggLiab.t6)
-}
+# if(paramlist$simTiers == "separate"){
+#   penSim_results.t1  <- run_sim("t1",  AggLiab.t1)
+#   penSim_results.t2  <- run_sim("t2",  AggLiab.t2)
+#   penSim_results.t3  <- run_sim("t3",  AggLiab.t3)
+#   penSim_results.t4  <- run_sim("t4",  AggLiab.t4)
+#   penSim_results.t5  <- run_sim("t5",  AggLiab.t5)
+#   penSim_results.t6  <- run_sim("t6",  AggLiab.t6)
+# }
  
 penSim_results.sumTiers <- run_sim("sumTiers", AggLiab.sumTiers)
 
@@ -390,12 +390,13 @@ penSim_results.sumTiers <- run_sim("sumTiers", AggLiab.sumTiers)
 #            when we simulate(do the loop) all tiers jointly. 
 
 
-var_display1 <- c("Tier", "sim", "year", "FR", "MA", "AL", 
-                 "AL.act", "AL.act.laca", "NC", "NC.laca",   #"AL.act.v", "AL.la", "AL.ca", "AL.term",
-                 #"AL.act", "AL.la", "AL.ca", "AL.disb.la", "AL.disb.ca", "AL.death", # "PVFB",
+var_display1 <- c("Tier", "sim", "year", "FR", "MA", "AA", 
+                 "AL", "AL.act", "AL.act.laca", 
+                 "NC", "NC.laca",   #"AL.act.v", "AL.la", "AL.ca", "AL.term",
                  "PVFB", 
-                  "B", "C",   # "B.la", "B.ca", "B.disb.la","B.disb.ca", 
-                 "PR", "NC_PR", "NC")
+                 "B", # "B.la", "B.ca", "B.disb.la","B.disb.ca", 
+                 "C",   
+                 "PR", "NC_PR")
 
 var_display2 <- c("Tier", "sim", "year", "FR", "MA", "AL", "NC", "SC", "C", "B", "I.r", "PR", "EEC","ERC", "ERC_PR", "ADC","Amort_basis")
 
@@ -407,26 +408,26 @@ kable(penSim_results.sumTiers %>% filter(sim == -1) %>% select(one_of(var_displa
 kable(penSim_results.sumTiers %>% filter(sim == -1) %>% select(one_of(var_display2)), digits = 2) %>% print 
 
 
-kable(penSim_results.sumTiers %>% filter(sim == 0) %>% select(one_of(var_display1)), digits = 2) %>% print 
+kable(penSim_results.sumTiers %>% filter(sim == 0) %>% select(one_of(var_display1)) %>% mutate(FR.AA = 100 * AA/AL) , digits = 2) %>% print 
 kable(penSim_results.sumTiers %>% filter(sim == 0) %>% select(one_of(var_display2)), digits = 2) %>% print 
 
 kable(penSim_results.sumTiers %>% filter(sim == 1) %>% select(one_of(var_display1)), digits = 2) %>% print 
 kable(penSim_results.sumTiers %>% filter(sim == 1) %>% select(one_of(var_display2)) %>% mutate(ExF = C - B, 
                                                                                                ExF_MA = 100 * ExF/MA), digits = 2)  %>%  print 
 
-
-1493679418/1.695558e+10
+# 17085208040 - 7537531159
+# 1493679418/1.695558e+10
 # kable(penSim_results.t5 %>% filter(sim == -1) %>% select(one_of(var_display1)), digits = 2) %>% print 
 
 
-save(penSim_results.sumTiers,
-     penSim_results.t1,
-     penSim_results.t2,
-     penSim_results.t3,
-     penSim_results.t4,
-     penSim_results.t5,
-     penSim_results.t6,
-     file = "Check_allTiers.RData")
+# save(penSim_results.sumTiers,
+#      penSim_results.t1,
+#      penSim_results.t2,
+#      penSim_results.t3,
+#      penSim_results.t4,
+#      penSim_results.t5,
+#      penSim_results.t6,
+#      file = "Check_allTiers.RData")
 
 
 
@@ -487,28 +488,29 @@ save(penSim_results.sumTiers,
 
 
 
-npv <- function(x, i){
-  sum(x * (1/(1 + i))^(seq_along(x) - 1))
-}
-
-
-p.cp <- amort_cp(967866035, 0.075, 20, 0.04)
-npv(p.cp, 0.075)
-
-
-x <- colSums(SC_amort.init)
-npv(x, 0.075) #  1526077697
-              #  1561332747
-
-
-
-SC_amort.init
-
-init_amort_raw$balance %>% sum
-
-
-(607 - 546)/607
-(919 - 798)/919
+# npv <- function(x, i){
+#   sum(x * (1/(1 + i))^(seq_along(x) - 1))
+# }
+# 
+# 
+# p.cp <- amort_cp(967866035, 0.075, 20, 0.04)
+# npv(p.cp, 0.075)
+# 
+# 
+# x <- colSums(SC_amort.init)
+# npv(x, 0.075) #  1526077697
+#               #  1561332747
+# 
+# 
+# 
+# SC_amort.init
+# 
+# init_amort_raw$balance %>% sum
+# 
+# 
+# (607 - 546)/607
+# (919 - 798)/919
+i.r
 
 
 

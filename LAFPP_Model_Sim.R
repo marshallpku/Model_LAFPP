@@ -6,6 +6,7 @@ run_sim <- function(Tier_select_,
                     AggLiab_,
                     i.r_ = i.r,
                     init_amort_raw_ = init_amort_raw, # amount.annual, year.remaining 
+                    init_unrecReturns.unadj_ = init_unrecReturns.unadj,
                     paramlist_ = paramlist,
                     Global_paramlist_ = Global_paramlist){
 
@@ -14,16 +15,15 @@ run_sim <- function(Tier_select_,
       # i.r_ = i.r
       # AggLiab_        = AggLiab.sumTiers
       # init_amort_raw_ = init_amort_raw
+      # init_unrecReturns.unadj_ = init_unrecReturns.unadj
       # paramlist_      = paramlist
       # Global_paramlist_ = Global_paramlist
-
 
   assign_parmsList(Global_paramlist_, envir = environment())
   assign_parmsList(paramlist_,        envir = environment())
   
   if(Tier_select_ != "sumTiers") init_amort_raw_ %<>% filter(tier == Tier_select_) 
 
-  
   #*************************************************************************************************************
   #                                     Defining variables in simulation ####
   #*************************************************************************************************************  
@@ -134,35 +134,6 @@ run_sim <- function(Tier_select_,
   #              mutate(extFund = na2zero(extFund))
 
   
-  #*************************************************************************************************************
-  #                                  Setting up initial amortization payments ####
-  #*************************************************************************************************************  
-  # matrix representation of amortization: better visualization but larger size
-  m.max <- max(init_amort_raw_$year.remaining)
-  SC_amort0 <- matrix(0, nyear + m.max, nyear + m.max)
-  # SC_amort0
-  # data frame representation of amortization: much smaller size, can be used in real model later.
-  # SC_amort <- expand.grid(year = 1:(nyear + m), start = 1:(nyear + m))
-  
-  # Amortization payment amounts for all prior years. 
-  SC_amort.init <- matrix(0, nrow(init_amort_raw_), nyear + m.max)
-  
-  
-  if(useAVamort){
-    SC_amort.init.list <- mapply(amort_LG, p = init_amort_raw_$balance * 0.9774199 , m = init_amort_raw_$year.remaining, method = init_amort_raw_$amort.method,
-                                 MoreArgs = list(i = i, g = salgrowth_amort, end = FALSE), SIMPLIFY = F)
-    
-    for(j in 1:nrow(SC_amort.init)){
-      SC_amort.init[j, 1:init_amort_raw_$year.remaining[j]] <- SC_amort.init.list[[j]]
-    }
-  }
-  
-
-  
-  nrow.initAmort <- nrow(SC_amort.init)
-  
-  SC_amort0 <- rbind(SC_amort.init, SC_amort0)
-  # The amortization basis of year j should be placed in row nrow.initAmort + j - 1. 
   
   
   
@@ -233,6 +204,50 @@ run_sim <- function(Tier_select_,
   penSim0 <- as.list(penSim0) # Faster to extract elements from lists than frame data frames.
   
   
+  
+  #*************************************************************************************************************
+  #                                  Setting up initial amortization payments ####
+  #*************************************************************************************************************  
+  # matrix representation of amortization: better visualization but larger size
+  m.max <- max(init_amort_raw_$year.remaining)
+  SC_amort0 <- matrix(0, nyear + m.max, nyear + m.max)
+  # SC_amort0
+  # data frame representation of amortization: much smaller size, can be used in real model later.
+  # SC_amort <- expand.grid(year = 1:(nyear + m), start = 1:(nyear + m))
+  
+  # Amortization payment amounts for all prior years. 
+  SC_amort.init <- matrix(0, nrow(init_amort_raw_), nyear + m.max)
+  
+  
+  # Adjustment factor for initial amortization payments (LAFPP specific)
+    # Factor is defined as the initial model UAAL as a proportion of UAAL in AV2015.
+    # CAUTION: the following formula only works when init_AA =  AL_pct, which is the case for LAFPP
+  
+  factor.initAmort <- penSim0$AL[1]/ 18337507075
+  
+  
+  
+  
+  if(useAVamort){
+    SC_amort.init.list <- mapply(amort_LG, p = init_amort_raw_$balance * factor.initAmort , m = init_amort_raw_$year.remaining, method = init_amort_raw_$amort.method,
+                                 MoreArgs = list(i = i, g = salgrowth_amort, end = FALSE), SIMPLIFY = F)
+    
+    for(j in 1:nrow(SC_amort.init)){
+      SC_amort.init[j, 1:init_amort_raw_$year.remaining[j]] <- SC_amort.init.list[[j]]
+    }
+  }
+  
+  #17085208040/18337507075
+  
+  nrow.initAmort <- nrow(SC_amort.init)
+  
+  SC_amort0 <- rbind(SC_amort.init, SC_amort0)
+  # The amortization basis of year j should be placed in row nrow.initAmort + j - 1. 
+  
+  
+  
+  
+  
   #*************************************************************************************************************
   #                                       Simuation  ####
   #*************************************************************************************************************
@@ -240,11 +255,9 @@ run_sim <- function(Tier_select_,
   cl <- makeCluster(ncore) 
   registerDoParallel(cl)
   
-  #penSim_results <- list()
-  #for(k in 1:nsim){
   
   penSim_results <- foreach(k = -1:nsim, .packages = c("dplyr", "tidyr")) %dopar% {
-     # k <- 1
+    # k <- 0
     # initialize
     penSim <- penSim0
     SC_amort <- SC_amort0
@@ -257,10 +270,9 @@ run_sim <- function(Tier_select_,
     
     for (j in 1:nyear){
       
-       # j <- 1
-      # AL(j) 
-      
-      
+        #j <- 2
+
+
       # MA(j) and EAA(j) 
       if(j == 1) {penSim$MA[j]  <- ifelse(k == -1, penSim$AL[j],                   # k = -1 is for testing model consistency
                                           switch(init_MA, 
@@ -287,6 +299,22 @@ run_sim <- function(Tier_select_,
                                 method2 = with(penSim, (1 - w) * EAA[j] + w * MA[j]) 
         )
       }
+      
+      
+      ## Initial unrecognized returns
+      if((init_AA %in% c("AL_pct", "AA0")) & useAVunrecReturn & k != -1 & tier == "sumTiers"){
+
+        # Adjusting initila unrecognized returns
+        init_unrecReturns.adj <-  mutate(init_unrecReturns.unadj_, DeferredReturn = DeferredReturn * (penSim$MA[1] - penSim$AA[1])/sum(DeferredReturn) )
+
+        # Adjust AA for inital unrecognized returns
+        #mm <- j - 1
+        if((j - 1 + init.year) %in% init_unrecReturns.adj$year) penSim$AA[j] <- penSim$AA[j] + with(init_unrecReturns.adj, DeferredReturn[year == (j - 1 + init.year)])
+            
+           # init_unrecReturns.adj[init_unrecReturns.adj$year - init.year + 1 == j, "DeferredReturn"] #  )
+
+      }
+        
       
       ## Apply corridor for MA, MA must not deviate from AA by more than 40%. 
       

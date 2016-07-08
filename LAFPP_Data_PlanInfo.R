@@ -168,7 +168,15 @@ init_amort_raw %<>%
 #   mutate(diff.pct = 100*pay1.calc/pay1.AV - 100)
 
 
-save(mortality_LAFPP, retRates, termRates, disbRates, bfactor, salgrowth, tier.param, init_amort_raw,
+
+#*********************************************************************************************************
+#                      ## Initial unrecognized return  ####
+#*********************************************************************************************************
+
+init_unrecReturns.unadj <- read_ExcelRange(file_planInfo, sheet = "Init_unrecReturn", colTypes="numeric") 
+
+
+save(mortality_LAFPP, retRates, termRates, disbRates, bfactor, salgrowth, tier.param, init_amort_raw, init_unrecReturns.unadj,
      file  = "Data_inputs/LAFPP_PlanInfo.RData")
 
 
