@@ -21,7 +21,6 @@ run_sim <- function(Tier_select_,
   assign_parmsList(Global_paramlist_, envir = environment())
   assign_parmsList(paramlist_,        envir = environment())
   
-  
   if(Tier_select_ != "sumTiers") init_amort_raw_ %<>% filter(tier == Tier_select_) 
 
   
@@ -145,24 +144,27 @@ run_sim <- function(Tier_select_,
   # data frame representation of amortization: much smaller size, can be used in real model later.
   # SC_amort <- expand.grid(year = 1:(nyear + m), start = 1:(nyear + m))
   
-  
-
   # Amortization payment amounts for all prior years. 
   SC_amort.init <- matrix(0, nrow(init_amort_raw_), nyear + m.max)
   
-  SC_amort.init.list <- mapply(amort_LG, p = init_amort_raw_$balance, m = init_amort_raw_$year.remaining, method = init_amort_raw_$amort.method,
-                               MoreArgs = list(i = i, g = salgrowth_amort, end = FALSE), SIMPLIFY = F)
   
-  
-  for(j in 1:nrow(SC_amort.init)){
-    SC_amort.init[j, 1:init_amort_raw_$year.remaining[j]] <- SC_amort.init.list[[j]]
+  if(useAVamort){
+    SC_amort.init.list <- mapply(amort_LG, p = init_amort_raw_$balance * 0.9774199 , m = init_amort_raw_$year.remaining, method = init_amort_raw_$amort.method,
+                                 MoreArgs = list(i = i, g = salgrowth_amort, end = FALSE), SIMPLIFY = F)
+    
+    for(j in 1:nrow(SC_amort.init)){
+      SC_amort.init[j, 1:init_amort_raw_$year.remaining[j]] <- SC_amort.init.list[[j]]
+    }
   }
+  
+
   
   nrow.initAmort <- nrow(SC_amort.init)
   
   SC_amort0 <- rbind(SC_amort.init, SC_amort0)
   # The amortization basis of year j should be placed in row nrow.initAmort + j - 1. 
-
+  
+  
   
   #*************************************************************************************************************
   #                                 Defining variables in simulation  ####
@@ -245,7 +247,10 @@ run_sim <- function(Tier_select_,
      # k <- 1
     # initialize
     penSim <- penSim0
-    SC_amort <- SC_amort0 
+    SC_amort <- SC_amort0
+    
+    if(k == -1) SC_amort[,] <- 0
+    
     penSim[["i.r"]] <- i.r_[, as.character(k)]
     
     source("Functions.R")
@@ -267,9 +272,12 @@ run_sim <- function(Tier_select_,
                                          AL = EAA_0,                       # Use preset value 
                                          MA = penSim$MA[j])                # Assume inital EAA equals inital market value.
                  
-                 penSim$AA[j]  <- switch(smooth_method,
-                                         method1 =  with(penSim, MA[j]),   # we may want to allow for a preset initial AA.
-                                         method2 =  with(penSim, (1 - w) * EAA[j] + w * MA[j])
+                 penSim$AA[j]  <- ifelse(init_AA == "AL_pct" & k != -1, 
+                                          penSim$AL[j] * AA_0_pct,
+                                          switch(smooth_method,
+                                                 method1 =  with(penSim, MA[j]),   # we may want to allow for a preset initial AA.
+                                                 method2 =  with(penSim, (1 - w) * EAA[j] + w * MA[j])
+                                          )
       )
       } else {
         penSim$MA[j]  <- with(penSim, MA[j - 1] + I.r[j - 1] + C[j - 1] - B[j - 1])

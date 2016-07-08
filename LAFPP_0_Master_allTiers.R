@@ -392,25 +392,30 @@ penSim_results.sumTiers <- run_sim("sumTiers", AggLiab.sumTiers)
 
 var_display1 <- c("Tier", "sim", "year", "FR", "MA", "AL", 
                  "AL.act", "AL.act.laca", "NC", "NC.laca",   #"AL.act.v", "AL.la", "AL.ca", "AL.term",
-                 "AL.act", "AL.la", "AL.ca", "AL.disb.la", "AL.disb.ca", "AL.death", # "PVFB",
+                 #"AL.act", "AL.la", "AL.ca", "AL.disb.la", "AL.disb.ca", "AL.death", # "PVFB",
                  "PVFB", 
-                 # "B", "B.la", "B.ca", "B.disb.la","B.disb.ca", 
+                  "B", "C",   # "B.la", "B.ca", "B.disb.la","B.disb.ca", 
                  "PR", "NC_PR", "NC")
 
-var_display2 <- c("Tier", "sim", "year", "FR", "MA", "AL", "NC", "SC", "PR", "EEC","ERC", "ERC_PR", "ADC",
-                  "nactives", "nretirees", "nla", "n.ca.R1", "n.ca.R0S1", 
-                  "ndisb.la", "ndisb.ca.R1", "ndisb.ca.R0S1" )
+var_display2 <- c("Tier", "sim", "year", "FR", "MA", "AL", "NC", "SC", "C", "B", "I.r", "PR", "EEC","ERC", "ERC_PR", "ADC","Amort_basis")
 
+var_display3 <- c("nactives", "nretirees", "nla", "n.ca.R1", "n.ca.R0S1", 
+                  "ndisb.la", "ndisb.ca.R1", "ndisb.ca.R0S1")
 
 
 kable(penSim_results.sumTiers %>% filter(sim == -1) %>% select(one_of(var_display1)), digits = 2) %>% print 
 kable(penSim_results.sumTiers %>% filter(sim == -1) %>% select(one_of(var_display2)), digits = 2) %>% print 
 
 
+kable(penSim_results.sumTiers %>% filter(sim == 0) %>% select(one_of(var_display1)), digits = 2) %>% print 
+kable(penSim_results.sumTiers %>% filter(sim == 0) %>% select(one_of(var_display2)), digits = 2) %>% print 
+
 kable(penSim_results.sumTiers %>% filter(sim == 1) %>% select(one_of(var_display1)), digits = 2) %>% print 
-kable(penSim_results.sumTiers %>% filter(sim == 1) %>% select(one_of(var_display2)), digits = 2) %>% print 
+kable(penSim_results.sumTiers %>% filter(sim == 1) %>% select(one_of(var_display2)) %>% mutate(ExF = C - B, 
+                                                                                               ExF_MA = 100 * ExF/MA), digits = 2)  %>%  print 
 
 
+1493679418/1.695558e+10
 # kable(penSim_results.t5 %>% filter(sim == -1) %>% select(one_of(var_display1)), digits = 2) %>% print 
 
 
@@ -482,13 +487,28 @@ save(penSim_results.sumTiers,
 
 
 
+npv <- function(x, i){
+  sum(x * (1/(1 + i))^(seq_along(x) - 1))
+}
+
+
+p.cp <- amort_cp(967866035, 0.075, 20, 0.04)
+npv(p.cp, 0.075)
+
+
+x <- colSums(SC_amort.init)
+npv(x, 0.075) #  1526077697
+              #  1561332747
 
 
 
+SC_amort.init
+
+init_amort_raw$balance %>% sum
 
 
-
-
+(607 - 546)/607
+(919 - 798)/919
 
 
 
