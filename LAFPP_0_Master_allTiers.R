@@ -396,7 +396,7 @@ var_display1 <- c("runname",  "Tier", "sim", "year", "FR", "MA", "AA",
                  "PVFB", 
                  "B", # "B.la", "B.ca", "B.disb.la","B.disb.ca", 
                  "C",   
-                 "PR", "NC_PR")
+                 "PR", "NC_PR", "ERC_PR")
 
 var_display2 <- c("Tier", "sim", "year", "FR", "MA", "AL", "NC", "SC", "C", "B", "I.r", "PR", "EEC","ERC", "ERC_PR", "ADC","Amort_basis")
 
