@@ -9,8 +9,8 @@ gc()
 
 # Plan information
 # source("LAFPP_Data_RP2000.R")
-# source("LAFPP_Data_PlanInfo.R")
-# source("LAFPP_Data_ImportMemberData.R")
+ source("LAFPP_Data_PlanInfo.R")
+ source("LAFPP_Data_ImportMemberData.R")
 
 load("Data_inputs/LAFPP_PlanInfo.RData")    # for all tiers
 load("Data_inputs/LAFPP_MemberData.RData")  # for all tiers

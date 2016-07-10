@@ -82,6 +82,10 @@ source("Functions.R")
   # For LAFPP, benefits for QSSs of disability retirees are simplified as a fixed proportion of disability retirees' benefit. 
 
 
+# Notes on initial service retirees and disability retirees
+  # A proportion of them are assumed to be life annuitants while the rest contingent annuitants.
+  # As of 7/9/2016, the proportion of life annuitants is 20%. 
+
 
 
 
@@ -111,9 +115,9 @@ folder_save <- "Results/"
 
 
 
-#  Run all tiers ####
+#####  Run Model ####
 #*********************************************************************************************************
-# 
+
 
 for(runName in runList$runname ){
   
@@ -290,18 +294,16 @@ for(runName in runList$runname ){
   # paramlist$m.max = with(paramlist, max(m.UAAL0, m.UAAL1, m.surplus0, m.surplus1))
   paramlist$v     = with(paramlist, 1/(1 + i))
   
-  
-  
-  
+
   
   if(paramlist$tier == "sumTiers"){
     source("LAFPP_0_Master_allTiers.R")
-    save(penSim_results.sumTiers, file = paste0(folder_save, "results_",  paramlist$Tier, runName, ".RData"))
+    save(penSim_results.sumTiers, file = paste0(folder_save, "results_",  paramlist$tier, "_", runName, ".RData"))
     
   } else {
     Tier_select <- paramlist$tier
     source("LAFPP_0_Master_singleTier.R")
-    save(penSim_results, file = paste0(folder_save, "results_",  paramlist$Tier, runName, ".RData"))
+    save(penSim_results, file = paste0(folder_save, "results_",  paramlist$tier, runName, ".RData"))
   }
 }
 
@@ -310,21 +312,7 @@ for(runName in runList$runname ){
 
 
 
-# Run a single tier ####
-#*********************************************************************************************************
-
-# Only useful for the purposes of checking model consistency and looking at liability/benefit dynamics.
-# External funding, initial amort payments are not available for single tiers. 
-
-
-# When running this, initial amortization payments must be set to zero. And results are meaningful only when intial FR = 100, 
-# since the inital UAAL will not be amortized.(amort basis of the first year is overriden by the values from AV2015, which is set to zero here.)
-# (Already solved.)
-
- # Tier_select <- "t5"
- # source("LAFPP_0_Master_singleTier.R")
-
-
+paramlist$Tier
 
 
 
@@ -337,12 +325,12 @@ for(runName in runList$runname ){
 # source("Test_0_Master_singleTier.R")
 
 
-
-
-
-166987857/16955579066
-
-(16955579066 + 541456502 - 798249899)*0.04
+# 
+# 
+# 
+# 166987857/16955579066
+# 
+# (16955579066 + 541456502 - 798249899)*0.04
 
 
 

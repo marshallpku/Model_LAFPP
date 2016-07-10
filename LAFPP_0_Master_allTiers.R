@@ -13,10 +13,10 @@ source("LAFPP_Data_ImportMemberData.R")
 load("Data_inputs/LAFPP_PlanInfo.RData")    # for all tiers
 load("Data_inputs/LAFPP_MemberData.RData")  # for all tiers
 
-pct.init.ret.la <-  0.3
+pct.init.ret.la <-  0.2
 pct.init.ret.ca  <- 1 - pct.init.ret.la
 
-pct.init.disb.la <-  0.3
+pct.init.disb.la <-  0.2
 pct.init.disb.ca  <- 1 - pct.init.disb.la
 
 init_retirees.la_all <- init_retirees_all %>%
@@ -390,7 +390,7 @@ penSim_results.sumTiers <- run_sim("sumTiers", AggLiab.sumTiers)
 #            when we simulate(do the loop) all tiers jointly. 
 
 
-var_display1 <- c("Tier", "sim", "year", "FR", "MA", "AA", 
+var_display1 <- c("runname",  "Tier", "sim", "year", "FR", "MA", "AA", 
                  "AL", "AL.act", "AL.act.laca", 
                  "NC", "NC.laca",   #"AL.act.v", "AL.la", "AL.ca", "AL.term",
                  "PVFB", 
