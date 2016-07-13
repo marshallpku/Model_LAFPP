@@ -311,14 +311,8 @@ for(runName in runList$runname ){
 
 
 
+#paramlist$Tier
 
-paramlist$Tier
-
-
-
-
-   
-   
 # Checking the importance of death benefit
 
 # Tier_select <- "t5"
