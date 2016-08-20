@@ -67,8 +67,6 @@ source("Functions.R")
 
 
 
-
-
 # Notes on disability benefits
 # As of June26 2016
   # all disabilities are assumed as service connected (90% in the AV)

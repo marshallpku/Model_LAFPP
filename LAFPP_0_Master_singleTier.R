@@ -15,7 +15,7 @@ gc()
 load("Data_inputs/LAFPP_PlanInfo.RData")    # for all tiers
 load("Data_inputs/LAFPP_MemberData.RData")  # for all tiers
 
-salgrowth %<>% mutate(salgrowth = salgrowth * 1.1)
+# salgrowth %<>% mutate(salgrowth = salgrowth * 1.1)
 
 pct.init.ret.la <-  0.3
 pct.init.ret.ca  <- 1 - pct.init.ret.la
