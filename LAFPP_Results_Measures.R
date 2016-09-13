@@ -21,10 +21,11 @@ library("XLConnect") # slow but convenient because it reads ranges; NOTE: I had 
 # library(xlsx)
 library("btools")
 
-
+source("Functions.R")
 
 
 path.resultFile <- "Results/"
+
 
 
 #********************************************************
@@ -265,40 +266,42 @@ df_FR.qts %>% data.frame
 #   Making exploratory graphs ####  
 #*******************************************************
 
+g.FR.pctless <- 
 df_FR.pctless %>% gather(var, value, -runname, -year) %>% 
   ggplot(aes(x = year, y = value, color = runname)) + theme_bw() + facet_grid(.~var) + 
   geom_point() + 
   geom_line() + 
   scale_x_continuous(breaks = seq(2015, 2100, 5))
 
+g.ERCsharpRise <- 
 df_ERCsharpRise %>% gather(var, value, -runname, -year) %>% 
   ggplot(aes(x = year, y = value, color = runname)) + theme_bw() + facet_grid(.~var) + 
   geom_point() + 
   geom_line() + 
   scale_x_continuous(breaks = seq(2015, 2100, 5))
 
-
+g.highERC <- 
 df_highERC %>% gather(var, value, -runname, -year) %>% 
   ggplot(aes(x = year, y = value, color = runname)) + theme_bw() + facet_grid(.~var) + 
   geom_point() + 
   geom_line() + 
   scale_x_continuous(breaks = seq(2015, 2100, 5))
 
-
+g.FR.pctmore <-
 df_FR.pctmore %>% gather(var, value, -runname, -year) %>% 
   ggplot(aes(x = year, y = value, color = runname)) + theme_bw() + facet_grid(.~var) + 
   geom_point() + 
   geom_line() + 
   scale_x_continuous(breaks = seq(2015, 2100, 5))
 
-  
+g.FR.qts <- 
 df_FR.qts %>% gather(var, value, -runname, -year) %>% 
   ggplot(aes(x = year, y = value, color = var)) + theme_bw() + facet_grid(.~runname) + 
   geom_point() + 
   geom_line() + 
   scale_x_continuous(breaks = seq(2015, 2100, 5))
 
-
+g.ERC_PR.qts <- 
 df_ERC_PR.qts %>% gather(var, value, -runname, -year) %>% 
   ggplot(aes(x = year, y = value, color = var)) + theme_bw() + facet_grid(.~runname) + 
   geom_point() + 
@@ -306,8 +309,15 @@ df_ERC_PR.qts %>% gather(var, value, -runname, -year) %>%
   scale_x_continuous(breaks = seq(2015, 2100, 5)) +
   scale_y_continuous(breaks = seq(0, 100, 10))
 
+path.resultFile
 
+ggsave(g.FR.pctless,   file = paste0(path.resultFile, "g.FR.pctless.png"), width  = 10, height = 5)
+ggsave(g.ERCsharpRise, file = paste0(path.resultFile, "g.ERCsharpRise.png"), width  = 10, height = 5)
+ggsave(g.highERC,      file = paste0(path.resultFile, "g.highERC.png"), width  = 10, height = 5)
+ggsave(g.FR.pctmore,   file = paste0(path.resultFile, "g.FR.pctmore.png"), width  = 10, height = 5)
 
+ggsave(g.FR.qts,     file = paste0(path.resultFile, "g.FR.qts.png"), width  = 15, height = 5)
+ggsave(g.ERC_PR.qts, file = paste0(path.resultFile, "g.ERC_PR.qts.png"), width  = 15, height = 5)
 
 
 
