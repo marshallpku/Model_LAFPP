@@ -137,15 +137,19 @@ get_AggLiab <- function( Tier_select_,
   
   
   liab_$la %<>% 
-    mutate(ALx.la.tot = ALx.la * number.la,
-           B.la.tot   = B.la   * number.la,
-           runname = runname)
+    mutate(ALx.la.tot      = ALx.la * number.la,
+           B.la.tot        = B.la   * number.la,
+           EEC_DROP.la.tot = EEC_DROP.la * number.la,
+           sx_DROP.la.tot  = sx_DROP.la * number.la,
+           runname         = runname)
   
   la.agg <- liab_$la %>% 
     group_by(year) %>% 
-    summarise(ALx.la.sum   = sum(ALx.la.tot, na.rm = TRUE),
-              B.la.sum     = sum(B.la.tot  , na.rm = TRUE),
-              nla          = sum(number.la , na.rm = TRUE)) %>% 
+    summarise(ALx.la.sum      = sum(ALx.la.tot, na.rm = TRUE),
+              B.la.sum        = sum(B.la.tot  , na.rm = TRUE),
+              EEC_DROP.la.sum = sum(EEC_DROP.la.tot, na.rm = TRUE),
+              sx_DROP.la.sum  = sum(sx_DROP.la.tot, na.rm = TRUE),
+              nla             = sum(number.la , na.rm = TRUE)) %>% 
     # mutate(runname = runname) %>% 
     as.matrix
   
@@ -306,21 +310,26 @@ get_AggLiab <- function( Tier_select_,
                    age.r > ea,
                    year <= max(year.r)) %>%
 
-            left_join(liab_$active %>% filter(age %in% range_age.r) %>% select(year.r = year, ea, age.r = age, Bx.laca)) %>% 
+            left_join(liab_$active %>% filter(age %in% range_age.r) %>% select(year.r = year, ea, age.r = age, Bx.laca, sx)) %>% 
             left_join(pop_$new_ca %>% select(year.r = year, ea, age.r = age, new_ca)) %>% 
             left_join(liab.ca_) %>% 
             mutate(new_ca = na2zero(new_ca),
                    liab.ca.sum = new_ca * Bx.laca * liab.ca.sum.1,
                    B.ca.sum    = new_ca * Bx.laca * B.ca.sum.1,
                    n.R1        = new_ca * (n.R1S0.1 + n.R1S1.1), # Total number of living contingent annuitants
-                   n.R0S1      = new_ca * n.R0S1.1) %>%          # Total number of survivors
+                   n.R0S1      = new_ca * n.R0S1.1,              # Total number of survivors
+                   EEC_DROP.ca.sum = new_ca * sx * EEC_DROP.ca.sum.1,  # LAFPP DROP
+                   sx_DROP.ca.sum  = new_ca * sx * sx_DROP.ca.sum.1
+                   ) %>%          
                    #filter(year.r == 2025, age.r == 50, ea == 20) %>%            
             group_by(year) %>% 
             summarise(liab.ca.sum = sum(liab.ca.sum, na.rm = TRUE),
                       B.ca.sum    = sum(B.ca.sum, na.rm = TRUE),
                       n.R1        = sum(n.R1, na.rm = TRUE),
                       n.R0S1      = sum(n.R0S1, na.rm = TRUE),
-                      n.new_ca    = sum(new_ca, na.rm = TRUE)) 
+                      n.new_ca    = sum(new_ca, na.rm = TRUE),
+                      EEC_DROP.ca.sum = sum(EEC_DROP.ca.sum, na.rm = TRUE),
+                      sx_DROP.ca.sum  = sum(sx_DROP.ca.sum, na.rm = TRUE)) 
   
  
   

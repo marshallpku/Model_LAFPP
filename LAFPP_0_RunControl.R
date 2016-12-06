@@ -61,6 +61,8 @@ source("Functions.R")
    # 2. Plan to model DROP participants' payroll and EEC, which are not neglectible quantitatively. 
    # 3. When assuming DROP participants are retirees, the fund pays benefits to DROP accounts. 
   
+   # 4. Salary growth rate for DROP participants is fixed at 4.75%.
+   # 5. No EEC exemption age for contingent annuitants
 
 # Notes on benefit for death before retirement
 
@@ -83,6 +85,33 @@ source("Functions.R")
 # Notes on initial service retirees and disability retirees
   # A proportion of them are assumed to be life annuitants while the rest contingent annuitants.
   # As of 7/9/2016, the proportion of life annuitants is 20%. 
+
+
+# Notes on modeling the ERC cap proposed in initiatives.
+ # Descriptions in the initiatives:
+
+ # "Government Pension Cap Act of 2016 (#15-0077)"
+    # Limits government employers from making retirement benefit contributions of more than 13% of base compensation for new public safety employees, 
+    # and not more than 11% for new general employees. All other costs, including unfunded liability costs, are the responsibility of the new employee, 
+      # unless voters establish a new limit. New employees are considered those hired on or after 1/1/2019.
+    # Limits government employers from paying more than 1/2 of the total cost of retirement benefits for new employees, unless voters approve a higher proportion.
+
+ # "Voter Empowerment Act of 2016 (#15-0076)"
+    # Limits government employers from paying more than 1/2 of the total cost of retirement benefits for new employees, unless voters approve a higher proportion.
+
+ # How we interpret and model the provisions
+    # All new Tier 6 employers are considered as a new tier, Tier 7, with its own fund that operate independently of other tiers. 
+    # The ERC cap is determined by the smaller one of:
+      # 13% of the total payroll of Tier 7. 
+      # 50% of the total normal cost. (we interpret the "total cost of retirement benefits" as the the total normal cost.)
+    # When the limit is triggered, the EEC of Tier 7 is calculated as the total ADC minus the capped ERC. 
+
+    # Since we are not sure about our interpretation of "Total cost of retirement benefits", we will use a parameter to control whether this limit will be implemented. 
+
+
+
+
+
 
 
 
@@ -119,7 +148,7 @@ folder_save <- "Results/"
 
 for(runName in runList$runname ){
   
-  #runName <- "RS1.closed"
+  #runName <- "RS1"
   
   paramlist <- get_parmsList(runList, runName)
   
@@ -293,15 +322,14 @@ for(runName in runList$runname ){
   paramlist$v     = with(paramlist, 1/(1 + i))
   
 
-  
   if(paramlist$tier == "sumTiers"){
     source("LAFPP_0_Master_allTiers.R")
-    save(penSim_results.sumTiers, file = paste0(folder_save, "results_",  paramlist$tier, "_", runName, ".RData"))
-    
+    save(outputs_list, file = paste0(folder_save, "results_",  paramlist$tier, "_", runName, ".RData"))
+
   } else {
     Tier_select <- paramlist$tier
     source("LAFPP_0_Master_singleTier.R")
-    save(penSim_results, file = paste0(folder_save, "results_",  paramlist$tier, runName, ".RData"))
+    save(outputs_list, file = paste0(folder_save, "results_",  paramlist$tier, runName, ".RData"))
   }
 }
 

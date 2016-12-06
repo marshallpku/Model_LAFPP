@@ -70,7 +70,20 @@ get_indivLab <- function(Tier_select_,
   # paramlist_       =  paramlist
   # Global_paramlist_ =  Global_paramlist
 
-
+  # Tier_select_ = "t5"
+  # decrement.model_ = decrement.model.t5
+  # salary_          = salary.t5
+  # benefit_         = benefit.t5
+  # benefit.disb_    = benefit.disb.t5
+  # bfactor_         = bfactor.t5
+  # mortality.post.model_ = mortality.post.model.t5
+  # liab.ca_ = liab.ca.t5
+  # liab.disb.ca_ = liab.disb.ca.t5
+  # init_terms_all_  = init_terms_all
+  # paramlist_ = paramlist
+  # Global_paramlist_ = Global_paramlist
+  
+  
 assign_parmsList(Global_paramlist_, envir = environment()) # environment() returns the local environment of the function.
 assign_parmsList(paramlist_,        envir = environment())
 
@@ -241,13 +254,15 @@ liab.la <- liab.la[!duplicated(liab.la %>% select(start.year, ea, age, age.r ))]
  
  
 liab.la <- merge(liab.la,
-                 select(liab.active, start.year, ea, age, Bx.laca, COLA.scale, gx.laca) %>% data.table(key = "ea,age,start.year"),
+                 select(liab.active, start.year, ea, age, Bx.laca, COLA.scale, gx.laca, sx) %>% data.table(key = "ea,age,start.year"),
                  all.x = TRUE, 
                  by = c("ea", "age","start.year")) %>%
            arrange(start.year, ea, age.r) %>% 
            as.data.frame %>% 
            left_join(select(mortality.post.model_, age, age.r, ax.r.W.ret = ax.r.W)) %>%  #  load present value of annuity for all retirement ages, ax.r.W in liab.active cannot be used anymore. 
            left_join(benefit_)
+
+liab.la %>% filter(start.year == 1990, ea == 35, age.r == 62)
 
 
 liab.la %<>% as.data.frame  %>% # filter(start.year == -41, ea == 21, age.retire == 65) %>%
@@ -260,12 +275,19 @@ liab.la %<>% as.data.frame  %>% # filter(start.year == -41, ea == 21, age.retire
     B.la   = ifelse(year.r <= init.year,
                     benefit[year == init.year] * COLA.scale / COLA.scale[year == init.year],      # Benefits for initial retirees
                     Bx.laca[age == age.r] * COLA.scale / COLA.scale[age == age.r]),               # Benefits for retirees after year 1
-    ALx.la = B.la * ax.r.W.ret                                                                    # Liability for remaining retirement benefits, PV of all future benefit adjusted with COLA
+    ALx.la = B.la * ax.r.W.ret,                                                                    # Liability for remaining retirement benefits, PV of all future benefit adjusted with COLA
 
+    # LAFPP specific: DROP contribution (CAUTION: note that the numbers are hard coded currently)
+    # Retirees make contributions in the five years after retirement based on the salary they would receive had they not retired.
+    sx = ifelse(age <= 64, sx, sx[age == 64] * (1 + 0.0475)^(age - 64)),
+    year.postRet = age - age.r,
+    EEC_DROP.la = ifelse((year.postRet < 5) & (age - ea <= EEC.exempt.yos & year > init.year), sx * EEC.rate, 0),
+    sx_DROP.la  = ifelse((year.postRet < 5) & year > init.year, sx, 0)
+    
   ) %>% ungroup %>%
   # select(start.year, year, ea, age, year.retire, age.retire,  B.r, ALx.r)# , ax, Bx, COLA.scale, gx.r)
   filter(year %in% seq(init.year, len = nyear) ) %>%
-  select(year, ea, age, year.r, age.r, start.year, B.la, ALx.la) %>% 
+  select(year, ea, age, year.r, age.r, start.year, B.la, ALx.la, EEC_DROP.la, sx_DROP.la, sx) %>% 
   arrange(age.r, start.year, ea, age)
 
 
@@ -599,12 +621,15 @@ liab.disb.la <- merge(liab.disb.la,
 #%>% 
 # left_join(select(mortality.post.model_, age, age.r, ax.r.W.ret = ax.r.W)) %>%  #  load present value of annuity for all retirement ages, ax.r.W in liab.active cannot be used anymore. 
 
+liab.disb.la %>% as.data.frame %>% mutate(year = start.year + age - ea) %>% 
+  filter(year == 2015, age.disb == age)
 
 
 liab.disb.la %<>% as.data.frame  %>% 
   group_by(start.year, ea, age.disb) %>%
   mutate(
     year       = start.year + age - ea,
+    COLA.scale = (1 + cola)^(age - min(age)),  # COLA.scale in liab.active does not trace back long enough
     year.disb  = start.year + age.disb - ea, # year of disability of the active
     Bx.disb    = ifelse(is.na(Bx.disb), 0, Bx.disb),  # just for safety
     B.disb.la     = ifelse(year.disb <= init.year,

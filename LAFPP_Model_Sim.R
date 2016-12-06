@@ -184,10 +184,14 @@ run_sim <- function(Tier_select_,
   
   # PR(j)
   penSim0$PR <- AggLiab_$active[, "PR.sum"]
+  penSim0$PR_DROP <- (AggLiab_$la[, "sx_DROP.la.sum"] + AggLiab_$ca[, "sx_DROP.ca.sum"])*0.9  # payroll for DROP participants (LAFPP sepcific)
   
   # EEC(j) (LAFPP sepcific)
-  penSim0$EEC <- AggLiab_$active[, "EEC.sum"]
+  penSim0$EEC      <- AggLiab_$active[,  "EEC.sum"]
+  penSim0$EEC_DROP <- (AggLiab_$la[, "EEC_DROP.la.sum"] + AggLiab_$ca[, "EEC_DROP.ca.sum"]) * 0.9
   
+  if(EEC_DROP){penSim0$EEC <- penSim0$EEC + penSim0$EEC_DROP
+               penSim0$PR  <- penSim0$PR + penSim0$PR_DROP}
   
   # nactives, nretirees, nterms
   penSim0$nactives  <- AggLiab_$active[,  "nactives"]
@@ -203,6 +207,45 @@ run_sim <- function(Tier_select_,
   
   penSim0 <- as.list(penSim0) # Faster to extract elements from lists than frame data frames.
   
+  
+  #*************************************************************************************************************
+  #                                  Adjust Benefit payments for DROP (LAFPP specific) ####
+  #*************************************************************************************************************  
+
+  B.model <- data.frame(year = 2015:2023, B = penSim0$B[1:9]) 
+  B.model$B
+  
+  B.GASB <- data.frame(year = 2015:2023,
+                       B    = 1e6*c(970,
+                                    1104,
+                                    1050,
+                                    1149,
+                                    1267,
+                                    1212,
+                                    1283,
+                                    1350,
+                                    1416))
+  
+  # restriction 1: PVFB for 2015-2023
+  R1.PVFB <- sum(B.model$B / (1 + i)^(2015:2023 - 2015))
+  
+  # restriction 2: Schedule of payments from GASB projection
+  R2.GASB_scale <- B.GASB$B/B.GASB$B[1]
+  
+  # Adjustment factor
+  adj.factor <- R1.PVFB/sum(R2.GASB_scale / (1 + i)^(2015:2023 - 2015))
+  
+  # Adjusted Benefits
+  B.adj <-  data.frame(year = 2015:2023, 
+                       B.adj1 = R2.GASB_scale* adj.factor)
+  
+  # Extra benefits: approximate DROP balance accumulated before 2015
+  B.extra <- 1369*3*6132*12
+  
+  B.adj %<>% mutate(B.extra = ifelse(year - 2015 < 5, B.extra/5, 0),
+                    B.adj2  = B.adj1 + B.extra)
+  
+  #if(Adj.benDROP) penSim0$B[1:9] <- B.adj$B.adj2
   
   
   #*************************************************************************************************************
@@ -263,6 +306,8 @@ run_sim <- function(Tier_select_,
     SC_amort <- SC_amort0
     
     if(k == -1) SC_amort[,] <- 0
+    
+    if(Adj.benDROP & k!= -1) penSim$B[1:9] <- B.adj$B.adj2  # Adjust benefit payments for DROP
     
     penSim[["i.r"]] <- i.r_[, as.character(k)]
     

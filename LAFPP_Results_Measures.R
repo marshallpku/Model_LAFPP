@@ -25,6 +25,7 @@ source("Functions.R")
 
 
 path.resultFile <- "Results/"
+path.outputs    <- "Results/Graphs_exploratory/"
 
 
 
@@ -196,6 +197,7 @@ path.resultFile <- "Results/"
   }
   
   # Extract a risk measure from each model run
+  
   get_measure <- function(measureName, measureList){
     
     # measureList <- RiskMeasures_list
@@ -251,6 +253,10 @@ RiskMeasures_list <- list(
 )
 
 
+RiskMeasures
+
+
+
 df_FR.pctless <- get_measure("prob.FR.pctless", RiskMeasures_list)
 df_ERCsharpRise <- get_measure("prob.ERCsharpRise", RiskMeasures_list)
 df_highERC <- get_measure("prob.highERC", RiskMeasures_list)
@@ -299,6 +305,7 @@ df_FR.qts %>% gather(var, value, -runname, -year) %>%
   ggplot(aes(x = year, y = value, color = var)) + theme_bw() + facet_grid(.~runname) + 
   geom_point() + 
   geom_line() + 
+  geom_hline(yintercept = 100, linetype = 2) + 
   scale_x_continuous(breaks = seq(2015, 2100, 5))
 
 g.ERC_PR.qts <- 
@@ -311,13 +318,13 @@ df_ERC_PR.qts %>% gather(var, value, -runname, -year) %>%
 
 path.resultFile
 
-ggsave(g.FR.pctless,   file = paste0(path.resultFile, "g.FR.pctless.png"), width  = 10, height = 5)
-ggsave(g.ERCsharpRise, file = paste0(path.resultFile, "g.ERCsharpRise.png"), width  = 10, height = 5)
-ggsave(g.highERC,      file = paste0(path.resultFile, "g.highERC.png"), width  = 10, height = 5)
-ggsave(g.FR.pctmore,   file = paste0(path.resultFile, "g.FR.pctmore.png"), width  = 10, height = 5)
+ggsave(g.FR.pctless,   file = paste0(path.outputs, "g.FR.pctless.png"), width  = 10, height = 5)
+ggsave(g.ERCsharpRise, file = paste0(path.outputs, "g.ERCsharpRise.png"), width  = 10, height = 5)
+ggsave(g.highERC,      file = paste0(path.outputs, "g.highERC.png"), width  = 10, height = 5)
+ggsave(g.FR.pctmore,   file = paste0(path.outputs, "g.FR.pctmore.png"), width  = 10, height = 5)
 
-ggsave(g.FR.qts,     file = paste0(path.resultFile, "g.FR.qts.png"), width  = 15, height = 5)
-ggsave(g.ERC_PR.qts, file = paste0(path.resultFile, "g.ERC_PR.qts.png"), width  = 15, height = 5)
+ggsave(g.FR.qts,     file = paste0(path.outputs, "g.FR.qts.png"), width  = 15, height = 5)
+ggsave(g.ERC_PR.qts, file = paste0(path.outputs, "g.ERC_PR.qts.png"), width  = 15, height = 5)
 
 
 

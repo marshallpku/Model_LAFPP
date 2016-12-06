@@ -121,6 +121,31 @@ mortality.post.model.t6 <- list.decrements.t6$mortality.post.model
   # 
 
 
+### Calibration:
+
+# 1. PVFB.retirees
+  # By calibrating benefit factor for survivors   
+
+calibFactor_factor.ca <- 1.1
+tier.param %<>% mutate(factor.ca = pmin(1.1, factor.ca * calibFactor_factor.ca))
+row.names(tier.param) <- tier.param$tier
+
+
+# 2. PVFB.act
+  # By calibrating benefit factor for service retirees
+
+calibFactor_bfactor <- 1.072
+bfactor %<>% mutate_each(funs(pmin(1, .*calibFactor_bfactor)), -yos )
+bfactor
+
+# 3. EEC
+calibFactor_EEC.rate <- 1.0984
+tier.param %<>% mutate(EEC.rate = pmin(1.1, EEC.rate * calibFactor_EEC.rate))
+row.names(tier.param) <- tier.param$tier
+
+
+
+
 #*********************************************************************************************************
 # 1.3  Actual investment return, for all tiers ####
 #*********************************************************************************************************
@@ -232,6 +257,9 @@ liab.disb.ca.t4  <- get_contingentAnnuity("t4", tier.param["t4", "factor.ca.disb
 liab.disb.ca.t5  <- get_contingentAnnuity("t5", tier.param["t5", "factor.ca.disb"], range_age.disb.ca, FALSE, decrement.model_ = decrement.model.t5) %>% rename(age.disb = age.r)
 liab.disb.ca.t6  <- get_contingentAnnuity("t6", tier.param["t6", "factor.ca.disb"], range_age.disb.ca, FALSE, decrement.model_ = decrement.model.t6) %>% rename(age.disb = age.r)
 
+
+liab.ca.t5
+
 #*********************************************************************************************************
 # 3. Individual actuarial liabilities, normal costs and benenfits ####
 #*********************************************************************************************************
@@ -299,8 +327,8 @@ liab.t6 <- get_indivLab("t6",
                         liab.disb.ca.t6)
 
 
-
-
+liab.t5$disb.la %>% filter(year == 2015, !is.na(B.disb.la), B.disb.la !=0, age.disb == age)
+init_disb.la_all
 
 #*********************************************************************************************************
 # 5. Aggregate actuarial liabilities, normal costs and benenfits ####
@@ -380,6 +408,26 @@ source("LAFPP_Model_Sim.R")
 penSim_results.sumTiers <- run_sim("sumTiers", AggLiab.sumTiers)
 
 
+outputs_list <- list(paramlist = paramlist, 
+                     Global_paramlist = Global_paramlist,
+                     
+                     #decrement = decrement,
+                     
+                     results     = penSim_results.sumTiers
+                     
+                     #ind_active  = AggLiab$ind_active, 
+                     #ind_retiree = AggLiab$ind_retiree,
+                     #ind_term    = AggLiab$ind_term,
+                     #demo_summary= pop$demo_summary,
+                     
+                     #liab  = if(paramlist$save.liab) liab else "Not saved",
+                     #demo  = if(paramlist$save.demo) pop else "Not saved",
+                     
+                     #entrant_dist = entrants_dist
+)
+
+
+
 #*********************************************************************************************************
 # 7.1  Showing results: Joint simulation of all tiers ####
 #*********************************************************************************************************
@@ -398,22 +446,28 @@ var_display1 <- c("runname",  "Tier", "sim", "year", "FR", "MA", "AA",
                  "C",   
                  "PR", "NC_PR", "ERC_PR")
 
-var_display2 <- c("Tier", "sim", "year", "FR", "MA", "AL", "NC", "SC", "C", "B", "I.r", "PR", "EEC","ERC", "ERC_PR", "ADC","Amort_basis")
+var_display2 <- c("Tier", "sim", "year", "FR", "MA", "AL", "AL.act", "NC", "SC", "C", "B", "EEC","ERC","PR", "PR_DROP", "EEC_DROP", "ERC_PR" ) # , "ADC") # ,"Amort_basis")
 
 var_display3 <- c("nactives", "nretirees", "nla", "n.ca.R1", "n.ca.R0S1", 
                   "ndisb.la", "ndisb.ca.R1", "ndisb.ca.R0S1")
 
 
 kable(penSim_results.sumTiers %>% filter(sim == -1) %>% select(one_of(var_display1)), digits = 2) %>% print 
-kable(penSim_results.sumTiers %>% filter(sim == -1) %>% select(one_of(var_display2)), digits = 2) %>% print 
-
+#kable(penSim_results.sumTiers %>% filter(sim == -1) %>% select(one_of(var_display2)), digits = 2) %>% print 
 
 kable(penSim_results.sumTiers %>% filter(sim == 0) %>% select(one_of(var_display1)) %>% mutate(FR.AA = 100 * AA/AL) , digits = 2) %>% print 
-kable(penSim_results.sumTiers %>% filter(sim == 0) %>% select(one_of(var_display2)), digits = 2) %>% print 
+#kable(penSim_results.sumTiers %>% filter(sim == 0) %>% select(one_of(var_display2)), digits = 2) %>% print 
 
 kable(penSim_results.sumTiers %>% filter(sim == 1) %>% select(one_of(var_display1)), digits = 2) %>% print 
-kable(penSim_results.sumTiers %>% filter(sim == 1) %>% select(one_of(var_display2)) %>% mutate(ExF = C - B, 
-                                                                                               ExF_MA = 100 * ExF/MA), digits = 2)  %>%  print 
+kable(penSim_results.sumTiers %>% filter(sim == 1) %>% select(one_of(var_display2)) %>% mutate(#ExF = C - B, 
+                                                                                               #ExF_MA = 100 * ExF/MA,
+                                                                                               #PVFB.nonact = AL - AL.act,
+                                                                                               DROP.PR   = PR_DROP/PR,
+                                                                                               DROP.rate = EEC_DROP/EEC), digits = 2)  %>%  print 
+
+
+kable(penSim_results.sumTiers %>% filter(sim == 1) %>% select(year, starts_with("B")))
+kable(penSim_results.sumTiers %>% filter(sim == 1) %>% select(one_of(var_display3)))
 
 # 17085208040 - 7537531159
 # 1493679418/1.695558e+10
@@ -510,7 +564,7 @@ kable(penSim_results.sumTiers %>% filter(sim == 1) %>% select(one_of(var_display
 # 
 # (607 - 546)/607
 # (919 - 798)/919
-i.r
+
 
 
 

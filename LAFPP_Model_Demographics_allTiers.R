@@ -125,7 +125,7 @@ wf_dim.deathBen      <- c(length(range_ea), length(range_age), nyear, nyear)
 wf_dimnames.deathBen <- list(range_ea, range_age, init.year:(init.year + nyear - 1), init.year:(init.year + nyear - 1))
 
 
-# The array of disability retirees has 4 dimensions: ea x age x year x year of death(of the active)
+# The array of disability retirees has 4 dimensions: ea x age x year x year of disability(of the active)
 wf_dim.disb.la      <- c(length(range_ea), length(range_age), nyear, nyear)
 wf_dimnames.disb.la <- list(range_ea, range_age, init.year:(init.year + nyear - 1), init.year:(init.year + nyear - 1))
 
