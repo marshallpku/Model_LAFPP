@@ -50,6 +50,7 @@ list.decrements.t4 <- get_decrements("t4")
 list.decrements.t5 <- get_decrements("t5")
 list.decrements.t6 <- get_decrements("t6")
 
+
 decrement.model.t1      <- list.decrements.t1$decrement.model
 mortality.post.model.t1 <- list.decrements.t1$mortality.post.model
 
@@ -70,6 +71,12 @@ decrement.model.t6      <- list.decrements.t6$decrement.model
 mortality.post.model.t6 <- list.decrements.t6$mortality.post.model
 
 
+# Modeling ERC cap: new hires of t6
+list.decrements.t7      <- get_decrements("t6")
+decrement.model.t7      <- list.decrements.t6$decrement.model
+mortality.post.model.t7 <- list.decrements.t6$mortality.post.model
+
+decrement.model.t7 
 
 #*****************************************************
 ##   Calibration and Modification of initial data ####
@@ -210,6 +217,20 @@ bfactor.t6 <- get_tier.bfactor("t6")
 
 
 
+# Modeling ERC cap: new hires of t6
+
+if (paramlist$ERC_cap.initiatives){
+ salary.t7  <- get_salary_proc("t6")
+ benefit.t7 <- get_benefit_tier("t6")
+ benefit.disb.t7 <- get_benefit.disb_tier("t6")
+ bfactor.t6 <- get_tier.bfactor("t6")
+ 
+ entrants_dist.t7  <- get_entrantsDist_tier("t6")
+ entrants_dist.t6  <- numeric(length(paramlist$range_ea))
+ 
+ init_pop.t7       <- get_initPop_tier("t6")
+ for (z in 1:length(init_pop.t7)) init_pop.t7[[z]][ , ] <- 0
+ }
 
 # # Chnange variable names
 # make_tierDec <- function(Tier_select_, df = decrement.ucrp){
