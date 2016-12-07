@@ -1,8 +1,12 @@
-# This script conducts the simulation of the finance of UCRP
+# This script conducts the simulation of the finance of new hires of tier 6 members in LAFPP after 2019
+ # Key differences from "LAFPP_Model_Sim.R":
+  # 
 
 
 
-run_sim <- function(Tier_select_,
+
+
+run_sim_t7 <- function(Tier_select_,
                     AggLiab_,
                     i.r_ = i.r,
                     init_amort_raw_ = init_amort_raw, # amount.annual, year.remaining 
@@ -19,14 +23,6 @@ run_sim <- function(Tier_select_,
       # paramlist_      = paramlist
       # Global_paramlist_ = Global_paramlist
 
-      # Tier_select_ =  "t7" #  Tier_select
-      # i.r_ = i.r
-      # AggLiab_        = AggLiab.t7
-      # init_amort_raw_ = init_amort_raw %<>% mutate(balance = 0, annual.payment = 0)
-      # init_unrecReturns.unadj_ = init_unrecReturns.unadj %<>% mutate(DeferredReturn = 0)
-      # paramlist_      = paramlist
-      # Global_paramlist_ = Global_paramlist
-  
   assign_parmsList(Global_paramlist_, envir = environment())
   assign_parmsList(paramlist_,        envir = environment())
   
@@ -308,23 +304,22 @@ run_sim <- function(Tier_select_,
   
   
   penSim_results <- foreach(k = -1:nsim, .packages = c("dplyr", "tidyr")) %dopar% {
-    # k <- 1
+    # k <- 0
     # initialize
     penSim <- penSim0
     SC_amort <- SC_amort0
     
     if(k == -1) SC_amort[,] <- 0
     
-    if(Tier_select_ != "t7" & Adj.benDROP & k!= -1) penSim$B[1:9] <- B.adj$B.adj2  # Adjust benefit payments for DROP
+    if(Adj.benDROP & k!= -1) penSim$B[1:9] <- B.adj$B.adj2  # Adjust benefit payments for DROP
     
     penSim[["i.r"]] <- i.r_[, as.character(k)]
     
     source("Functions.R")
     
     for (j in 1:nyear){
-        
-        # j <- 1
-        # j <- 2
+      
+        #j <- 2
 
 
       # MA(j) and EAA(j) 
@@ -356,7 +351,7 @@ run_sim <- function(Tier_select_,
       
       
       ## Initial unrecognized returns
-      if((init_AA %in% c("AL_pct", "AA0")) & useAVunrecReturn & k != -1 & Tier_select_ == "sumTiers"){
+      if((init_AA %in% c("AL_pct", "AA0")) & useAVunrecReturn & k != -1 & tier == "sumTiers"){
 
         # Adjusting initila unrecognized returns
         init_unrecReturns.adj <-  mutate(init_unrecReturns.unadj_, DeferredReturn = DeferredReturn * (penSim$MA[1] - penSim$AA[1])/sum(DeferredReturn) )
@@ -372,8 +367,8 @@ run_sim <- function(Tier_select_,
       
       ## Apply corridor for MA, MA must not deviate from AA by more than 40%. 
       
-      penSim$AA[j] <- with(penSim, ifelse(AA[j] > s.upper * MA[j], MA[j], AA[j])) 
-      penSim$AA[j] <- with(penSim, ifelse(AA[j] < s.lower * MA[j], MA[j], AA[j]))
+      penSim$AA[j] <- with(penSim, ifelse(AA[j] > s.upper * MA[j], MA[j] * s.upper, AA[j])) 
+      penSim$AA[j] <- with(penSim, ifelse(AA[j] < s.lower * MA[j], MA[j] * s.lower, AA[j]))
     
 
       # UAAL(j)
@@ -468,8 +463,6 @@ run_sim <- function(Tier_select_,
       penSim$C[j] <- with(penSim, EEC[j] + ERC[j])
       
       
-      
-      
       # ERC cap for LAFPP
       
       # The ERC cap is determined by the smaller one of:
@@ -480,11 +473,10 @@ run_sim <- function(Tier_select_,
       if(ERC_cap_NC50) penSim$ERC_cap[j] <- min(0.13 * penSim$PR[j], 0.5 * penSim$NC[j]) else
                        penSim$ERC_cap[j] <- 0.13 * penSim$PR[j]
       
-      if(ERC_cap.initiatives & Tier_select_ == "t7"){
+      if(ERC_cap.initiatives){
         penSim$ERC[j] <- with(penSim, ifelse(ERC[j] > ERC_cap[j], ERC_cap[j], ERC[j]))
         penSim$EEC[j] <- with(penSim, C[j] - ERC[j])
       }
-      
       
       # C(j) - ADC(j)
       penSim$C_ADC[j] <- with(penSim, C[j] - ADC[j])
@@ -542,7 +534,6 @@ run_sim <- function(Tier_select_,
            NC.v_PR   = 100 * NC.v / PR,
            SC_PR   = 100 * SC / PR, 
            ERC_PR  = 100 * ERC / PR, 
-           EEC_PR  = 100 * EEC / PR, 
            C_PR    = 100 * C / PR,
            B_PR    = 100 * B / PR,
            ExF     = C - B,

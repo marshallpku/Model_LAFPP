@@ -322,15 +322,15 @@ for(runName in runList$runname ){
   paramlist$v     = with(paramlist, 1/(1 + i))
   
 
-  # if(paramlist$tier == "sumTiers"){
-  #   source("LAFPP_0_Master_allTiers.R")
-  #   save(outputs_list, file = paste0(folder_save, "results_",  paramlist$tier, "_", runName, ".RData"))
-  # 
-  # } else {
-  #   Tier_select <- paramlist$tier
-  #   source("LAFPP_0_Master_singleTier.R")
-  #   save(outputs_list, file = paste0(folder_save, "results_",  paramlist$tier, runName, ".RData"))
-  # }
+  if(paramlist$tier == "sumTiers"){
+    source("LAFPP_0_Master_allTiers.R")
+    save(outputs_list, file = paste0(folder_save, "results_",  paramlist$tier, "_", runName, ".RData"))
+
+  } else {
+    Tier_select <- paramlist$tier
+    source("LAFPP_0_Master_singleTier.R")
+    save(outputs_list, file = paste0(folder_save, "results_",  paramlist$tier, runName, ".RData"))
+  }
 }
 
 

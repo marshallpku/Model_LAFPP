@@ -223,13 +223,16 @@ if (paramlist$ERC_cap.initiatives){
  salary.t7  <- get_salary_proc("t6")
  benefit.t7 <- get_benefit_tier("t6")
  benefit.disb.t7 <- get_benefit.disb_tier("t6")
- bfactor.t6 <- get_tier.bfactor("t6")
+ bfactor.t7 <- get_tier.bfactor("t6")
  
  entrants_dist.t7  <- get_entrantsDist_tier("t6")
- entrants_dist.t6  <- numeric(length(paramlist$range_ea))
+ #entrants_dist.t6  <- numeric(length(paramlist$range_ea))
  
  init_pop.t7       <- get_initPop_tier("t6")
  for (z in 1:length(init_pop.t7)) init_pop.t7[[z]][ , ] <- 0
+ 
+ paramlist$newEnt_byTier_before2019 <- c(t1 = 0, t2 = 0, t3 = 0, t4 = 0, t5 = 0, t6 = 1, t7 = 0)
+ paramlist$newEnt_byTier_after2019  <- c(t1 = 0, t2 = 0, t3 = 0, t4 = 0, t5 = 0, t6 = 0, t7 = 1)
  }
 
 # # Chnange variable names
@@ -250,10 +253,20 @@ if (paramlist$ERC_cap.initiatives){
 #*********************************************************************************************************
 # 2. Demographics ####
 #*********************************************************************************************************
-source("LAFPP_Model_Demographics_allTiers.R")
-pop <- get_Population_allTiers_LAFPP()
-gc()
 
+if (!paramlist$ERC_cap.initiatives){
+  
+  source("LAFPP_Model_Demographics_allTiers.R")
+  pop <- get_Population_allTiers_LAFPP()
+  } else {
+  
+  source("LAFPP_Model_Demographics_allTiers.ERC_cap.R")
+  pop <- get_Population_allTiers_LAFPP()
+  
+  
+}
+
+ gc()
 
 
 #*********************************************************************************************************
@@ -279,7 +292,12 @@ liab.disb.ca.t5  <- get_contingentAnnuity("t5", tier.param["t5", "factor.ca.disb
 liab.disb.ca.t6  <- get_contingentAnnuity("t6", tier.param["t6", "factor.ca.disb"], range_age.disb.ca, FALSE, decrement.model_ = decrement.model.t6) %>% rename(age.disb = age.r)
 
 
-liab.ca.t5
+if (paramlist$ERC_cap.initiatives){
+  liab.ca.t7       <- get_contingentAnnuity("t7", tier.param["t7", "factor.ca"], range_age.r.ca, FALSE, decrement.model_ = decrement.model.t7)
+  liab.disb.ca.t7  <- get_contingentAnnuity("t7", tier.param["t7", "factor.ca.disb"], range_age.disb.ca, FALSE, decrement.model_ = decrement.model.t7) %>% rename(age.disb = age.r)
+  
+}
+
 
 #*********************************************************************************************************
 # 3. Individual actuarial liabilities, normal costs and benenfits ####
@@ -347,9 +365,20 @@ liab.t6 <- get_indivLab("t6",
                         liab.ca.t6,
                         liab.disb.ca.t6)
 
+liab.t7 <- get_indivLab("t7",
+                        decrement.model.t7,
+                        salary.t7,
+                        benefit.t7,
+                        benefit.disb.t7,
+                        bfactor.t7,
+                        mortality.post.model.t7,
+                        liab.ca.t7,
+                        liab.disb.ca.t7)
 
-liab.t5$disb.la %>% filter(year == 2015, !is.na(B.disb.la), B.disb.la !=0, age.disb == age)
-init_disb.la_all
+
+
+# liab.t5$disb.la %>% filter(year == 2015, !is.na(B.disb.la), B.disb.la !=0, age.disb == age)
+# init_disb.la_all
 
 #*********************************************************************************************************
 # 5. Aggregate actuarial liabilities, normal costs and benenfits ####
@@ -403,7 +432,15 @@ AggLiab.t6 <- get_AggLiab("t6",
                           liab.ca.t6,
                           liab.disb.ca.t6,
                           pop$pop.t6,
-                          mortality.post.model.t6) 
+                          mortality.post.model.t6)
+
+
+AggLiab.t7 <- get_AggLiab("t7",
+                          liab.t7,
+                          liab.ca.t7,
+                          liab.disb.ca.t7,
+                          pop$pop.t7,
+                          mortality.post.model.t7)
 
 
 
@@ -416,6 +453,7 @@ AggLiab.sumTiers <- get_AggLiab_sumTiers(AggLiab.t1, AggLiab.t2, AggLiab.t3,
 # 6.  Simulation ####
 #*********************************************************************************************************
 source("LAFPP_Model_Sim.R")
+#source("LAFPP_Model_Sim_t7.R")
 
 # if(paramlist$simTiers == "separate"){
 #   penSim_results.t1  <- run_sim("t1",  AggLiab.t1)
@@ -426,7 +464,65 @@ source("LAFPP_Model_Sim.R")
 #   penSim_results.t6  <- run_sim("t6",  AggLiab.t6)
 # }
  
-penSim_results.sumTiers <- run_sim("sumTiers", AggLiab.sumTiers)
+penSim_results.sumTiers <- run_sim("sumTiers", AggLiab.sumTiers) %>% 
+                           mutate(Tier = "xt7") %>% 
+                           select(runname, sim, year, Tier, everything())
+
+# penSim_results.sumTiers %>% filter(sim == 1)
+# penSim_results.xt7 %>% filter(sim == 1)
+# penSim_results.t7 %>% filter(sim == 1)
+
+if(paramlist$ERC_cap.initiatives){
+  
+  penSim_results.xt7 <- penSim_results.sumTiers
+  
+  penSim_results.t7 <- run_sim("t7", 
+                                AggLiab.t7,
+                                init_amort_raw_ = init_amort_raw %>% mutate(balance = 0, annual.payment = 0), 
+                                init_unrecReturns.unadj_ = init_unrecReturns.unadj %>% mutate(DeferredReturn = 0)
+                                ) %>%
+                       mutate_all(funs(ifelse(is.nan(.), 0, .))) %>% 
+                       select(runname, sim, year, Tier, everything())
+
+  
+  penSim_results.sumTiers <- 
+    bind_rows(penSim_results.xt7, penSim_results.t7) %>% 
+    select(runname, sim, year, Tier, everything())   %>% 
+    group_by(runname, sim, year) %>% 
+    summarise_at(c(5:(ncol(penSim_results.sumTiers))),  funs(sum(., na.rm = TRUE))) %>% 
+    mutate(Tier    = "sumTiers",
+           FR      = 100 * AA / exp(log(AL)),
+           FR_MA   = 100 * MA / exp(log(AL)),
+           UAAL_PR = 100 * UAAL / PR,
+           MA_PR   = 100 * MA / PR,
+           AA_PR   = 100 * AA / PR,
+           AL_PR   = 100 * AL / PR,
+           AL.act_PR    = 100 * AL.act / PR,
+           AL.la_PR    = 100 * AL.la / PR, 
+           AL.ca_PR    = 100 * AL.ca / PR, 
+           AL.term_PR   = 100 * AL.term / PR, 
+           #AL._PR    = 100 * AL.Ben / PR,
+           ADC_PR  = 100 * ADC / PR,
+           NC_PR   = 100 * NC / PR,
+           NC.laca_PR    = 100 * NC.laca / PR,
+           NC.v_PR   = 100 * NC.v / PR,
+           SC_PR   = 100 * SC / PR, 
+           ERC_PR  = 100 * ERC / PR,
+           EEC_PR  = 100 * EEC / PR, 
+           C_PR    = 100 * C / PR,
+           B_PR    = 100 * B / PR,
+           ExF     = C - B,
+           ExF_PR  = 100 * ExF / PR,
+           ExF_MA  = 100 * ExF / MA,
+           PR.growth = ifelse(year > 1, 100 * (PR / lag(PR) - 1), NA)) %>%
+    select(runname, sim, year, Tier, everything())
+  
+  }
+
+
+# penSim_results.t7 %>% filter(sim == -1)
+# penSim_results.sumTiers%>% filter(sim == -1)
+# penSim_results.sumTiers1%>% filter(sim == -1)
 
 
 outputs_list <- list(paramlist = paramlist, 
@@ -447,7 +543,23 @@ outputs_list <- list(paramlist = paramlist,
                      #entrant_dist = entrants_dist
 )
 
-
+if(paramlist$ERC_cap.initiatives){
+  outputs_list$results.xt7 <- penSim_results.xt7
+  outputs_list$results.t7  <- penSim_results.t7
+}
+  
+# x <- outputs_list
+# x$results
+# 
+# load("./Results/results_sumTiers_RS1.RData")
+# 
+# outputs_list$results %>% filter(sim == 0) %>% mutate(EEC_PR = 100*EEC/PR) %>%  select(runname, sim, year, AL, MA, FR, ERC_PR, EEC_PR, ERC, PR, C_PR)
+# 
+# x$results %>% filter(sim == 1) %>% select(runname, sim, year, AL, MA, FR, ERC_PR, EEC_PR,ERC, PR, C_PR)
+# x$results.xt7 %>% filter(sim == 0) %>% select(runname, sim, year, AL, MA, FR, ERC_PR, EEC_PR, ERC, PR, C_PR)
+# x$results.t7 %>% filter(sim == 1) %>% select(runname, sim, year, AL, MA, FR, ERC_PR, EEC_PR, ERC, PR, C_PR)
+# 
+# x$results.t7 %>% filter(sim == 1)
 
 #*********************************************************************************************************
 # 7.1  Showing results: Joint simulation of all tiers ####
