@@ -817,7 +817,7 @@ for (j in 1:(nyear - 1)){
   out_active.t7   <- active2term.t7 + active2disb.t7 + active2retired.t7 + active2dead.t7
   
   
-  if(j <= 4) {
+  if(j < 4) {
   new_entrants_allTiers <- 
   calc_entrants_allTiers(wf_active.t1[, , j], 
                          wf_active.t2[, , j], 
