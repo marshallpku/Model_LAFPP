@@ -154,31 +154,67 @@ df_all.stch %<>%
             ERC_PR.q90 = quantile(ERC_PR, 0.9, na.rm = T)
   ) %>% 
   ungroup() %>%
-  mutate(runname = factor(runname, 
-                          levels = runs_all, 
-                          labels = runs_all_labels))
-
-
-df_all.stch
+  mutate(runname.lab = factor(runname, 
+                              levels = runs_all, 
+                              labels = runs_all_labels))
 
 
 
+df_t7.stch <- results_all  %>% 
+  filter(runname %in% runs_all, Tier %in% c("xt7", "t7"), sim >= 0, year <= 2044)
 
 
-x <- results_all %>% filter(runname %in% c("RS1", "RS1_cap"), sim == 0, year<=2025) %>%
-  select(runname, Tier,  sim, year, AL, MA, AA, B, C, nactives, NC, SC, AL.act, AL.act.death, NC.death, ndeathBen, B.death)
+df_t7.stch %<>%   
+  select(runname, Tier, sim, year, AL, MA, ERC_PR, EEC_PR) %>% 
+  group_by(runname, sim, Tier) %>% 
+  mutate(FR_MA     = 100 * MA / AL,
+         FR40less  = cumany(FR_MA <= 40),
+         FR100more  = cumany(FR_MA >= 100),
+         FR100more2 = FR_MA >= 100,
+         ERC_high  = cumany(ERC_PR >= 50), 
+         ERC_hike  = cumany(na2zero(ERC_PR - lag(ERC_PR, 5) >= 10)),
+         EEC_high  = cumany(EEC_PR >= 15)) %>% 
+  group_by(runname, Tier, year) %>% 
+  summarize(FR40less = 100 * sum(FR40less, na.rm = T)/n(),
+            FR100more = 100 * sum(FR100more, na.rm = T)/n(),
+            FR100more2= 100 * sum(FR100more2, na.rm = T)/n(),
+            ERC_high = 100 * sum(ERC_high, na.rm = T)/n(),
+            ERC_hike = 100 * sum(ERC_hike, na.rm = T)/n(),
+            EEC_high = 100 * sum(EEC_high, na.rm = T)/n(),
+            
+            FR.q10   = quantile(FR_MA, 0.1,na.rm = T),
+            FR.q25   = quantile(FR_MA, 0.25, na.rm = T),
+            FR.q50   = quantile(FR_MA, 0.5, na.rm = T),
+            FR.q75   = quantile(FR_MA, 0.75, na.rm = T),
+            FR.q90   = quantile(FR_MA, 0.9, na.rm = T),
+            
+            ERC_PR.q10 = quantile(ERC_PR, 0.1, na.rm = T),
+            ERC_PR.q25 = quantile(ERC_PR, 0.25, na.rm = T),
+            ERC_PR.q50 = quantile(ERC_PR, 0.5, na.rm = T),
+            ERC_PR.q75 = quantile(ERC_PR, 0.75, na.rm = T),
+            ERC_PR.q90 = quantile(ERC_PR, 0.9, na.rm = T),
+            
+            EEC_PR.q10 = quantile(EEC_PR, 0.1, na.rm = T),
+            EEC_PR.q25 = quantile(EEC_PR, 0.25, na.rm = T),
+            EEC_PR.q50 = quantile(EEC_PR, 0.5, na.rm = T),
+            EEC_PR.q75 = quantile(EEC_PR, 0.75, na.rm = T),
+            EEC_PR.q90 = quantile(EEC_PR, 0.9, na.rm = T)
+  ) %>% 
+  ungroup() %>%
+  mutate(runname.lab = factor(runname, 
+                              levels = runs_all, 
+                              labels = runs_all_labels))
+
+df_t7.stch
 
 
 
 
 
-
-
-
-
-
-
-
+# df_all.stch
+# 
+# x <- results_all %>% filter(runname %in% c("RS1", "RS1_cap"), sim == 0, year<=2025) %>%
+#   select(runname, Tier,  sim, year, AL, MA, AA, B, C, nactives, NC, SC, AL.act, AL.act.death, NC.death, ndeathBen, B.death)
 
 
 #*****************************************************
@@ -189,15 +225,673 @@ df_det <- results_all  %>%
   filter(runname == "RS1", sim == 0, year <= 2044) %>% 
   select(year, AL, MA, B, C, ERC, EEC, ExF, FR_MA, ERC_PR, ExF_MA, MA_PR) %>% 
   mutate_at(vars(-year, -FR_MA, -ERC_PR, -ExF_MA, -MA_PR), funs(./1e6)) %>% 
-  mutate(MA_PR = MA_PR/100) %>% 
-  filter(year %in% c(seq(2015, 2040, 5), 2044))
+  mutate(MA_PR = MA_PR/100) 
+
+
+df_det.short <- df_det %>% filter(year %in% c(seq(2015, 2040, 5), 2044))
   
 df_det
+df_det.short
 
 
 #*****************************************************
-## Deterministic run  ####
+## Stochastic run: assumption achieved  ####
 #*****************************************************
+
+# Distribution of 30-year compound returns
+
+fig_distReturn <- results_all %>% 
+  filter(runname == "RS1", sim > 0) %>% 
+  group_by(sim) %>% 
+  summarize(geoReturn = get_geoReturn(i.r)) %>% 
+  ggplot(aes(100*geoReturn)) + theme_bw() + 
+  geom_histogram(color = "black", fill = RIG.blue, binwidth = 0.5, boundary = 0) + 
+  geom_vline(xintercept = 0.075 * 100, color = RIG.red) + 
+  scale_x_continuous(breaks = seq(0,20,1))+
+  labs(title = "Distribution of 30-year compound annual return over 2,000 simulations",
+       x = "%",
+       y = "Simulatoin count") + 
+  RIG.theme()
+
+fig_distReturn
+
+
+fig_stchDet.FR40less <- df_all.stch %>% filter(runname == "RS1") %>% 
+  select(year, FR40less) %>% 
+  mutate(FR40less.det = 0) %>% 
+  gather(variable, value, - year) %>% 
+  ggplot(aes(x = year, y = value, color = variable)) + theme_bw() + 
+  geom_point() + geom_line() + 
+  coord_cartesian(ylim = c(0,5)) + 
+  scale_y_continuous(breaks = seq(0,200, 1)) +
+  scale_color_manual(values = c(RIG.red,"black"),  name = "", 
+                     label  = c("Stochastic run", "Deterministic run")) + 
+  labs(title = "Probability of funded ratio below 40% \nin a given year",
+       x = NULL, y = "Probability (%)") + 
+  RIG.theme()
+
+
+
+
+fig.title <- "Probability of employer contribution rising more than 10% of payroll \nin a 5-year period at any time prior to and including the given year"
+fig_stchDet.ERChike <- df_all.stch %>% filter(runname == "RS1") %>% 
+  select(year, ERC_hike) %>% 
+  mutate(ERChike.det = 0) %>% 
+  gather(variable, value, - year) %>% 
+  ggplot(aes(x = year, y = value, color = variable)) + theme_bw() + 
+  geom_point() + geom_line() + 
+  coord_cartesian(ylim = c(0,100)) + 
+  scale_y_continuous(breaks = seq(0,200, 10)) +
+  scale_color_manual(values = c(RIG.red,"black"),  name = "", 
+                     label  = c("Stochastic run", "Deterministic run")) + 
+  labs(title = fig.title ,
+       x = NULL, y = "Probability (%)") + 
+  RIG.theme()
+fig_stchDet.ERChike
+
+
+
+fig.title <- "Probability of ERC above 50% of payroll \nat any time prior to and including the given year \nunder different funding approaches"
+fig_stchDet.ERChigh <- df_all.stch %>% filter(runname == "RS1") %>% 
+  select(year, ERC_high) %>% 
+  mutate(ERChigh.det = 0) %>% 
+  gather(variable, value, - year) %>% 
+  ggplot(aes(x = year, y = value, color = variable)) + theme_bw() + 
+  geom_point() + geom_line() + 
+  coord_cartesian(ylim = c(0,100)) + 
+  scale_y_continuous(breaks = seq(0,200, 10)) +
+  scale_color_manual(values = c(RIG.red,"black"),  name = "", 
+                     label  = c("Stochastic run", "Deterministic run")) + 
+  labs(title = fig.title ,
+       x = NULL, y = "Probability (%)") + 
+  RIG.theme()
+fig_stchDet.ERChigh
+
+
+
+
+fig.levels <- c("FR40less", "ERC_hike", "ERC_high")
+fig.lvl.labs <- c("Probability of funded ratio below 40% \nin a given year",
+                  "Probability of employer contribution \nrising more than 10% of payroll in a 5-year period \nat any time prior to and including the given year",
+                  "Probability of ERC above 50% of payroll \nat any time prior to and including the given year \nunder different funding approaches")
+fig.title <- 'Measures of risks under scenario "Assumption achieved: deterministic" \n and scenario "Assumption achieved: stochastic" '
+df_all.stch %>% filter(runname == "RS1") %>% 
+  select(year, FR40less, ERC_hike, ERC_high) %>% 
+  gather(variable, value, -year) %>% 
+  # mutate(FR40less.det = 0, 
+  #        ERChike.det  = 0,
+  #        ERChigh.det  = 0) %>% 
+  mutate(value.det = 0) %>%
+  gather(Var, value, -year, -variable) %>% 
+  mutate(variable = factor(variable, levels = fig.levels, labels = fig.lvl.labs )) %>% 
+  ggplot(aes(x = year, y = value, color = Var)) + facet_grid(.~variable) +  theme_bw() + 
+  geom_point() + geom_line() + 
+  coord_cartesian(ylim = c(0,70)) + 
+  scale_y_continuous(breaks = seq(0,200, 10)) +
+  scale_x_continuous(breaks = seq(2015,2050, 5)) +
+  scale_color_manual(values = c(RIG.red,"black"),  name = "", 
+                     label  = c("Stochastic run", "Deterministic run")) + 
+  labs(title = fig.title ,
+       x = NULL, y = "Probability (%)") + 
+  RIG.theme()
+
+
+
+#*****************************************************
+## Comparing funding policies: proposed ERC cap ####
+#*****************************************************
+
+# Distribution of funded ratio 
+
+fig_policy.FRdist <- df_all.stch %>% filter(runname %in% c("RS1", "RS1_cap"), Tier == "sumTiers") %>% 
+  mutate(runname = factor(runname, levels = c("RS1", "RS1_cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
+  select(runname, year, FR.q25, FR.q50, FR.q75) %>% 
+  gather(type, value, -runname, -year) %>% 
+  ggplot(aes(x = year, y = value,
+             color = factor(type, levels = c("FR.q75", "FR.q50", "FR.q25"))
+  )) + theme_bw() + facet_grid(.~runname) + 
+  geom_line() + 
+  geom_point() + 
+  geom_hline(yintercept = 100, linetype = 2, size = 1) +
+  coord_cartesian(ylim = c(50,180)) + 
+  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_y_continuous(breaks = seq(0, 500, 20)) + 
+  scale_color_manual(values = c(RIG.green, RIG.blue, RIG.red),  name = NULL, 
+                     label  = c("75th percentile", "median", "25th percentile")) + 
+  labs(title = "Distribution of funded ratios across simulations under different funding approaches",
+       x = NULL, y = "Percent") + 
+  theme(axis.text.x = element_text(size = 8)) + 
+  RIG.theme()
+
+fig_policy.FRdist
+
+
+# Distribution of ERC rate
+fig_policy.ERCdist <- df_all.stch %>% filter(runname %in% c("RS1", "RS1_cap"), Tier == "sumTiers") %>% 
+  mutate(runname = factor(runname, levels = c("RS1", "RS1_cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
+  select(runname, year, ERC_PR.q25, ERC_PR.q50, ERC_PR.q75) %>% 
+  gather(type, value, -runname, -year) %>% 
+  ggplot(aes(x = year, y = value,
+             color = factor(type, levels = c("ERC_PR.q75", "ERC_PR.q50", "ERC_PR.q25")))) + 
+  theme_bw() + facet_grid(.~runname) + 
+  geom_line() + 
+  geom_point() + 
+  geom_hline(yintercept = 100, linetype = 2, size = 1) +
+  coord_cartesian(ylim = c(0,50)) + 
+  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_y_continuous(breaks = seq(0, 500, 5)) + 
+  scale_color_manual(values = c(RIG.red, RIG.blue, RIG.green),  name = NULL, 
+                     label  = c("75th percentile", "median", "25th percentile")) + 
+  labs(title = "Distribution of employer contribution rates across simulations under different funding approaches",
+       x = NULL, y = "Percent") + 
+  theme(axis.text.x = element_text(size = 8)) + 
+  RIG.theme()
+fig_policy.ERCdist
+
+
+# Risk of high ERC
+fig.title <-  "Probability of ERC above 50% of payroll \nat any time prior to and including the given year \nunder different funding approaches"
+fig_policy.ERChigh <- df_all.stch %>% filter(runname %in% c("RS1", "RS1_cap"), Tier == "sumTiers") %>%
+  ggplot(aes(x = year, y = ERC_high, color = factor(runname, levels = c("RS1", "RS1_cap")))) + theme_bw() + 
+  geom_line() + geom_point() + 
+  coord_cartesian(ylim = c(0, 40)) + 
+  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_y_continuous(breaks = seq(0,100, 5)) +
+  scale_color_manual(values = c(RIG.blue, RIG.green),  name = "Contribution \napproaches", 
+                     label  = c("without ERC cap", "with ERC cap")) + 
+  labs(title = fig.title,
+       x = NULL, y = "Probability (%)") + 
+  RIG.theme()
+fig_policy.ERChigh
+
+# Risk of sharp ERC increase
+fig.title <- "Probability of ERC rising by more than 10% of payroll \nin any 5-year period up to the given year \nunder different funding approaches"
+fig_policy.ERChike <- df_all.stch %>% filter(runname %in% c("RS1", "RS1_cap"), Tier == "sumTiers") %>%
+  ggplot(aes(x = year, y = ERC_hike, color = factor(runname, levels = c("RS1", "RS1_cap")))) + theme_bw() + 
+  geom_line() + geom_point() + 
+  coord_cartesian(ylim = c(0, 80)) + 
+  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_y_continuous(breaks = seq(0,100, 10)) +
+  scale_color_manual(values = c(RIG.blue, RIG.green),  name = "Contribution \napproaches", 
+                     label  = c("without ERC cap", "with ERC cap")) + 
+  labs(title = fig.title,
+       x = NULL, y = "Probability (%)") + 
+  RIG.theme()
+fig_policy.ERChike
+
+
+# Impact on EEC rates of new hires after Jan 2019
+
+# Distribution of EEC rates of t7 members 
+
+
+# Distribution of EEC rate
+fig_policy.EECdist.t7 <- df_t7.stch %>% filter(runname %in% c("RS1_cap"), Tier == "t7") %>% 
+  #mutate(runname = factor(runname, levels = c("RS1", "RS1_cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
+  select(runname, year, EEC_PR.q10, EEC_PR.q25, EEC_PR.q50, EEC_PR.q75, EEC_PR.q90) %>% 
+  gather(type, value, -runname, -year) %>% 
+  ggplot(aes(x = year, y = value,
+             color = factor(type, levels = c("EEC_PR.q90", "EEC_PR.q75", "EEC_PR.q50", "EEC_PR.q25", "EEC_PR.q10")))) + 
+  theme_bw() + 
+  #facet_grid(.~runname) + 
+  geom_line() + 
+  geom_point() + 
+  geom_hline(yintercept = 100, linetype = 2, size = 1) +
+  coord_cartesian(ylim = c(0,20)) + 
+  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_y_continuous(breaks = seq(0, 500, 2.5)) + 
+  scale_color_manual(values = c(RIG.yellow.dark,RIG.red, RIG.blue, RIG.green, "green"),  name = NULL, 
+                     label  = c("90th percentile", "75th percentile", "median", "25th percentile", "10th percentile")) + 
+  labs(title = "Distribution of employee contribution for new hires after Jan 2019",
+       x = NULL, y = "Percent") + 
+  theme(axis.text.x = element_text(size = 8)) + 
+  RIG.theme()
+fig_policy.EECdist.t7
+
+
+
+# Risk of high EEC rate (15%) for t7
+fig.title <-  "Probability of employee contribution above 15% of payroll \nat any time prior to and including the given year \nunder different funding approaches"
+fig_policy.EEChigh.t7 <- df_t7.stch %>% 
+  filter(runname %in% c("RS1_cap"), Tier == "t7") %>%
+  ggplot(aes(x = year, y = EEC_high)) + 
+  theme_bw() + 
+  geom_line() + geom_point() + 
+  coord_cartesian(ylim = c(0, 55)) + 
+  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_y_continuous(breaks = seq(0,100, 5)) +
+  #scale_color_manual(values = c(RIG.blue, RIG.green),  name = "Contribution \napproaches", 
+  #                   label  = c("without ERC cap", "with ERC cap")) + 
+  labs(title = fig.title,
+       x = NULL, y = "Probability (%)") + 
+  RIG.theme()
+fig_policy.EEChigh.t7
+
+
+
+
+#*************************************************************
+## Comparing return scenarios: low returns in early years ####
+#*************************************************************
+
+runs.compareRS1 <- c("RS1", "RS1_cap",
+                     "RS2", "RS2_cap",
+                     "RS3", "RS3_cap")
+
+fig.labels.lowReturns <- c("Scenario 2: \nAssumption achieved \nstochastic", 
+                           "Scenario 3: \n5 years of low returns", 
+                           "Scenario 4: \n15 years of low returns")
+
+# Risk of high ERC
+fig.title <-  "Probability of ERC above 50% of payroll \nat any time prior to and including the given year \nunder different return scenarios"
+
+fig.labels.lowReturns <- c("Scenario 2: \nAssumption achieved \nstochastic", 
+                           "Scenario 3: \n5 years of low returns", 
+                           "Scenario 4: \n15 years of low returns")
+
+fig_compareRS1.ERChigh <- df_all.stch %>% filter(runname %in% runs.compareRS1, Tier == "sumTiers") %>% 
+  select(runname, year, ERC_high) %>% 
+  gather(variable, value, -year, -runname) %>% 
+  mutate(value = as.numeric(value),
+         RS = str_sub(runname, 1, 3),
+         policy = str_sub(runname, 5),
+         policy = ifelse(policy == "cap", policy, "no_cap" ),
+         policy = factor(policy, levels = c("no_cap", "cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
+  ggplot(aes(x = year, y = value, color = factor(RS, levels = c("RS1", "RS2", "RS3")))) + theme_bw() + 
+  facet_grid(. ~ policy) + 
+  geom_line() + geom_point() + 
+  coord_cartesian(ylim = c(0, 55)) + 
+  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_y_continuous(breaks = seq(0,100, 5)) +
+  scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
+                     label  = fig.labels.lowReturns) + 
+  labs(title = fig.title,
+       x = NULL, y = "Probability (%)") + 
+  guides(color = guide_legend(keywidth = 1.5, keyheight = 3)) + 
+  RIG.theme()
+fig_compareRS1.ERChigh
+
+
+
+# Risk of sharp ERC increase
+fig.title <- "Probability of ERC rising by more than 10% of payroll \nin any 5-year period up to the given year \nunder different return scenarios"
+
+fig.labels.lowReturns <- c("Scenario 2: \nAssumption achieved \nstochastic", 
+                           "Scenario 3: \n5 years of low returns", 
+                           "Scenario 4: \n15 years of low returns")
+
+fig_compareRS1.ERChike <- df_all.stch %>% filter(runname %in% runs.compareRS1, Tier == "sumTiers") %>% 
+  select(runname, year, ERC_hike) %>% 
+  gather(variable, value, -year, -runname) %>% 
+  mutate(value = as.numeric(value),
+         RS = str_sub(runname, 1, 3),
+         policy = str_sub(runname, 5),
+         policy = ifelse(policy == "cap", policy, "no_cap" ),
+         policy = factor(policy, levels = c("no_cap", "cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
+  ggplot(aes(x = year, y = value, color = factor(RS, levels = c("RS1", "RS2", "RS3")))) + theme_bw() + 
+  facet_grid(. ~ policy) + 
+  geom_line() + geom_point() + 
+  coord_cartesian(ylim = c(0, 100)) + 
+  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_y_continuous(breaks = seq(0,100, 10)) +
+  scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
+                     label  = fig.labels.lowReturns) + 
+  labs(title = fig.title,
+       x = NULL, y = "Probability (%)") + 
+  guides(color = guide_legend(keywidth = 1.5, keyheight = 3)) + 
+  RIG.theme()
+fig_compareRS1.ERChike
+
+
+# Risk of low FR
+fig.title <- "Probability of funded ratio below 40% \nat any time prior to and including the given year \nunder different return scenarios and funding approaches"
+
+fig.labels.lowReturns <- c("Scenario 2: \nAssumption achieved \nstochastic", 
+                           "Scenario 3: \n5 years of low returns", 
+                           "Scenario 4: \n15 years of low returns")
+
+fig_compareRS1.FR40less <- df_all.stch %>% filter(runname %in% runs.compareRS1, Tier == "sumTiers") %>% 
+  select(runname, year, FR40less) %>% 
+  gather(variable, value, -year, -runname) %>% 
+  mutate(value = as.numeric(value),
+         RS = str_sub(runname, 1, 3),
+         policy = str_sub(runname, 5),
+         policy = ifelse(policy == "cap", policy, "no_cap" ),
+         policy = factor(policy, levels = c("no_cap", "cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
+  ggplot(aes(x = year, y = value, color = factor(RS, levels = c("RS1", "RS2", "RS3")))) + theme_bw() + 
+  facet_grid(. ~ policy) + 
+  geom_line() + geom_point() + 
+  coord_cartesian(ylim = c(0, 10)) + 
+  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_y_continuous(breaks = seq(0,100, 1)) +
+  scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
+                     label  = fig.labels.lowReturns) + 
+  labs(title = fig.title,
+       x = NULL, y = "Probability (%)") + 
+  guides(color = guide_legend(keywidth = 1.5, keyheight = 3)) + 
+  RIG.theme()
+fig_compareRS1.FR40less
+
+
+
+
+# Median ERC rate
+fig.title <- "Median employer contribution rates \nunder different return scenarios and funding approaches"
+
+fig.labels.lowReturns <- c("Scenario 2: \nAssumption achieved \nstochastic", 
+                           "Scenario 3: \n5 years of low returns", 
+                           "Scenario 4: \n15 years of low returns")
+
+fig_compareRS1.MedERC <- df_all.stch %>% filter(runname %in% runs.compareRS1, Tier == "sumTiers") %>% 
+  select(runname, year, ERC_PR.q50) %>% 
+  gather(variable, value, -year, -runname) %>% 
+  mutate(value = as.numeric(value),
+         RS = str_sub(runname, 1, 3),
+         policy = str_sub(runname, 5),
+         policy = ifelse(policy == "cap", policy, "no_cap" ),
+         policy = factor(policy, levels = c("no_cap", "cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
+  ggplot(aes(x = year, y = value, color = factor(RS, levels = c("RS1", "RS2", "RS3")))) + theme_bw() + 
+  facet_grid(. ~ policy) + 
+  geom_line() + geom_point() + 
+  coord_cartesian(ylim = c(0, 50)) + 
+  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_y_continuous(breaks = seq(0,100, 10)) +
+  scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
+                     label  = fig.labels.lowReturns) + 
+  labs(title = fig.title,
+       x = NULL, y = "Percent of payroll (%)") + 
+  guides(color = guide_legend(keywidth = 1.5, keyheight = 3)) + 
+  RIG.theme()
+fig_compareRS1.MedERC
+
+
+
+# Median  FR
+fig.title <- "Median funded ratios \nunder different return scenarios and funding approaches"
+
+fig.labels.lowReturns <- c("Scenario 2: \nAssumption achieved \nstochastic", 
+                           "Scenario 3: \n5 years of low returns", 
+                           "Scenario 4: \n15 years of low returns")
+
+fig_compareRS1.MedFR <- df_all.stch %>% filter(runname %in% runs.compareRS1, Tier == "sumTiers") %>% 
+  select(runname, year, FR.q50) %>% 
+  gather(variable, value, -year, -runname) %>% 
+  mutate(value = as.numeric(value),
+         RS = str_sub(runname, 1, 3),
+         policy = str_sub(runname, 5),
+         policy = ifelse(policy == "cap", policy, "no_cap" ),
+         policy = factor(policy, levels = c("no_cap", "cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
+  ggplot(aes(x = year, y = value, color = factor(RS, levels = c("RS1", "RS2", "RS3")))) + theme_bw() + 
+  facet_grid(. ~ policy) + 
+  geom_line() + geom_point() + 
+  geom_hline(yintercept = 100, linetype = 2, size = 1) + 
+  coord_cartesian(ylim = c(0, 150)) + 
+  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_y_continuous(breaks = seq(0,500, 20)) +
+  scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
+                     label  = fig.labels.lowReturns) + 
+  labs(title = fig.title,
+       x = NULL, y = "Percent of payroll (%)") + 
+  guides(color = guide_legend(keywidth = 1.5, keyheight = 3)) + 
+  RIG.theme()
+fig_compareRS1.MedFR 
+
+
+
+
+# Impact on EEC rates of new hires after 2019
+
+df_t7.stch.RS1 <- df_t7.stch %>% filter(runname %in% c("RS1_cap", "RS2_cap", "RS3_cap"), Tier == "t7") %>% 
+  mutate(runname = factor(runname, labels = fig.labels.lowReturns))
+
+# Distribution of EEC rate
+fig_compareRS1.EECdist.t7 <- df_t7.stch.RS1 %>% 
+  #mutate(runname = factor(runname, levels = c("RS1", "RS1_cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
+  select(runname, year, EEC_PR.q25, EEC_PR.q50, EEC_PR.q75) %>% 
+  gather(type, value, -runname, -year) %>% 
+  ggplot(aes(x = year, y = value,
+             color = factor(type, levels = c("EEC_PR.q75", "EEC_PR.q50", "EEC_PR.q25")))) + 
+  theme_bw()  + 
+  facet_grid(.~runname) + 
+  geom_line() + 
+  geom_point() + 
+  geom_hline(yintercept = 100, linetype = 2, size = 1) +
+  coord_cartesian(ylim = c(0,20)) + 
+  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_y_continuous(breaks = seq(0, 500, 2.5)) + 
+  scale_color_manual(values = c(RIG.yellow.dark,RIG.red, RIG.blue, RIG.green, "green"),  name = NULL, 
+                     label  = c("75th percentile", "median", "25th percentile")) + 
+  labs(title = "Distribution of employee contribution for new hires after Jan 2019",
+       x = NULL, y = "Percent") + 
+  theme(axis.text.x = element_text(size = 8)) + 
+  RIG.theme()
+fig_compareRS1.EECdist.t7
+
+
+
+# Risk of high EEC rate (15%) for t7
+fig.title <-  "Probability of employee contribution above 15% of payroll \nat any time prior to and including the given year \nunder different funding approaches"
+fig_compareRS1.EEChigh.t7 <- df_t7.stch.RS1 %>% 
+  ggplot(aes(x = year, y = EEC_high, color = runname)) + 
+  theme_bw() + 
+  geom_line() + geom_point() + 
+  coord_cartesian(ylim = c(0, 60)) + 
+  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_y_continuous(breaks = seq(0,100, 5)) +
+  scale_color_manual(name = "", values = c(RIG.red, RIG.blue, RIG.green)) + 
+  #scale_color_manual(values = c(RIG.blue, RIG.green),  name = "Contribution \napproaches", 
+  #                   label  = c("without ERC cap", "with ERC cap")) + 
+  labs(title = fig.title,
+       x = NULL, y = "Probability (%)") + 
+  guides(color = guide_legend(keywidth = 1.5, keyheight = 3)) + 
+  RIG.theme()
+fig_compareRS1.EEChigh.t7
+
+
+
+
+
+#*************************************************************************
+## Comparing return scenarios: alternative capital market assumptions ####
+#*************************************************************************
+runs.compareRS2 <- c("RS1", "RS1_cap",
+                     "RS4", "RS4_cap",
+                     "RS5", "RS5_cap")
+
+fig.labels.altAssumptions <- c("Scenario 2: \nAssumption achieved \nstochastic", 
+                               "Scenario 5: \nHigh volatility \nreflecting market forecasts", 
+                               "Scenario 6: \nLow expected return \nbased on LAFPP target portfolio")
+
+df_all.stch.RS2 <-  df_all.stch %>% filter(runname %in% runs.compareRS2, Tier == "sumTiers")
+
+# Risk of high ERC
+fig.title <-  "Probability of ERC above 50% of payroll \nat any time prior to and including the given year \nunder different return scenarios"
+
+fig_compareRS2.ERChigh <- df_all.stch.RS2 %>% 
+  select(runname, year, ERC_high) %>% 
+  gather(variable, value, -year, -runname) %>% 
+  mutate(value = as.numeric(value),
+         RS = str_sub(runname, 1, 3),
+         policy = str_sub(runname, 5),
+         policy = ifelse(policy == "cap", policy, "no_cap" ),
+         policy = factor(policy, levels = c("no_cap", "cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
+  ggplot(aes(x = year, y = value, color = factor(RS, levels = c("RS1", "RS4", "RS5")))) + theme_bw() + 
+  facet_grid(. ~ policy) + 
+  geom_line() + geom_point() + 
+  coord_cartesian(ylim = c(0, 55)) + 
+  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_y_continuous(breaks = seq(0,100, 5)) +
+  scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
+                     label  = fig.labels.altAssumptions) + 
+  labs(title = fig.title,
+       x = NULL, y = "Probability (%)") + 
+  guides(color = guide_legend(keywidth = 1.5, keyheight = 3)) + 
+  RIG.theme()
+fig_compareRS2.ERChigh
+
+
+
+
+
+# Risk of sharp ERC increase
+fig.title <- "Probability of ERC rising by more than 10% of payroll \nin any 5-year period up to the given year \nunder different return scenarios"
+
+fig_compareRS2.ERChike <- df_all.stch.RS2 %>% 
+  select(runname, year, ERC_hike) %>% 
+  gather(variable, value, -year, -runname) %>% 
+  mutate(value = as.numeric(value),
+         RS = str_sub(runname, 1, 3),
+         policy = str_sub(runname, 5),
+         policy = ifelse(policy == "cap", policy, "no_cap" ),
+         policy = factor(policy, levels = c("no_cap", "cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
+  ggplot(aes(x = year, y = value, color = factor(RS, levels = c("RS1", "RS4", "RS5")))) + theme_bw() + 
+  facet_grid(. ~ policy) + 
+  geom_line() + geom_point() + 
+  coord_cartesian(ylim = c(0, 100)) + 
+  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_y_continuous(breaks = seq(0,100, 10)) +
+  scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
+                     label  = fig.labels.altAssumptions) + 
+  labs(title = fig.title,
+       x = NULL, y = "Probability (%)") + 
+  guides(color = guide_legend(keywidth = 1.5, keyheight = 3)) + 
+  RIG.theme()
+fig_compareRS2.ERChike
+
+
+
+# Risk of low FR
+fig.title <- "Probability of funded ratio below 40% \nat any time prior to and including the given year \nunder different return scenarios and funding approaches"
+
+fig_compareRS2.FR40less <- df_all.stch.RS2 %>% 
+  select(runname, year, FR40less) %>% 
+  gather(variable, value, -year, -runname) %>% 
+  mutate(value = as.numeric(value),
+         RS = str_sub(runname, 1, 3),
+         policy = str_sub(runname, 5),
+         policy = ifelse(policy == "cap", policy, "no_cap" ),
+         policy = factor(policy, levels = c("no_cap", "cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
+  ggplot(aes(x = year, y = value, color = factor(RS, levels = c("RS1", "RS4", "RS5")))) + theme_bw() + 
+  facet_grid(. ~ policy) + 
+  geom_line() + geom_point() + 
+  coord_cartesian(ylim = c(0, 20)) + 
+  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_y_continuous(breaks = seq(0,100, 2.5)) +
+  scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
+                     label  = fig.labels.altAssumptions) + 
+  labs(title = fig.title,
+       x = NULL, y = "Probability (%)") + 
+  guides(color = guide_legend(keywidth = 1.5, keyheight = 3)) + 
+  RIG.theme()
+fig_compareRS2.FR40less
+
+
+
+
+# Median ERC rate
+fig.title <- "Median employer contribution rates \nunder different return scenarios and funding approaches"
+
+fig_compareRS2.MedERC <- df_all.stch.RS2 %>% 
+  select(runname, year, ERC_PR.q50) %>% 
+  gather(variable, value, -year, -runname) %>% 
+  mutate(value = as.numeric(value),
+         RS = str_sub(runname, 1, 3),
+         policy = str_sub(runname, 5),
+         policy = ifelse(policy == "cap", policy, "no_cap" ),
+         policy = factor(policy, levels = c("no_cap", "cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
+  ggplot(aes(x = year, y = value, color = factor(RS, levels = c("RS1", "RS4", "RS5")))) + theme_bw() + 
+  facet_grid(. ~ policy) + 
+  geom_line() + geom_point() + 
+  coord_cartesian(ylim = c(0, 50)) + 
+  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_y_continuous(breaks = seq(0,100, 10)) +
+  scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
+                     label  = fig.labels.altAssumptions) + 
+  labs(title = fig.title,
+       x = NULL, y = "Percent of payroll (%)") + 
+  guides(color = guide_legend(keywidth = 1.5, keyheight = 3)) + 
+  RIG.theme()
+fig_compareRS2.MedERC
+
+
+
+# Median FR
+fig.title <- "Median funded ratios \nunder different return scenarios and funding approaches"
+
+fig_compareRS2.MedFR <- df_all.stch.RS2 %>% 
+  select(runname, year, FR.q50) %>% 
+  gather(variable, value, -year, -runname) %>% 
+  mutate(value = as.numeric(value),
+         RS = str_sub(runname, 1, 3),
+         policy = str_sub(runname, 5),
+         policy = ifelse(policy == "cap", policy, "no_cap" ),
+         policy = factor(policy, levels = c("no_cap", "cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
+  ggplot(aes(x = year, y = value, color = factor(RS, levels = c("RS1", "RS4", "RS5")))) + theme_bw() + 
+  facet_grid(. ~ policy) + 
+  geom_line() + geom_point() + 
+  geom_hline(yintercept = 100, linetype = 2, size = 1) + 
+  coord_cartesian(ylim = c(0, 150)) + 
+  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_y_continuous(breaks = seq(0,500, 20)) +
+  scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
+                     label  = fig.labels.altAssumptions) + 
+  labs(title = fig.title,
+       x = NULL, y = "Percent of payroll (%)") + 
+  guides(color = guide_legend(keywidth = 1.5, keyheight = 3)) + 
+  RIG.theme()
+fig_compareRS2.MedFR 
+
+
+
+# Impact on EEC rates of new hires after 2019
+
+df_t7.stch.RS2 <- df_t7.stch %>% filter(runname %in% c("RS1_cap", "RS4_cap", "RS5_cap"), Tier == "t7") %>% 
+  mutate(runname = factor(runname, labels = fig.labels.altAssumptions))
+
+# Distribution of EEC rate
+fig_compareRS2.EECdist.t7 <- df_t7.stch.RS2 %>% 
+  #mutate(runname = factor(runname, levels = c("RS1", "RS1_cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
+  select(runname, year, EEC_PR.q25, EEC_PR.q50, EEC_PR.q75) %>% 
+  gather(type, value, -runname, -year) %>% 
+  ggplot(aes(x = year, y = value,
+             color = factor(type, levels = c("EEC_PR.q75", "EEC_PR.q50", "EEC_PR.q25")))) + 
+  theme_bw()  + 
+  facet_grid(.~runname) + 
+  geom_line() + 
+  geom_point() + 
+  geom_hline(yintercept = 100, linetype = 2, size = 1) +
+  coord_cartesian(ylim = c(0,20)) + 
+  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_y_continuous(breaks = seq(0, 500, 2.5)) + 
+  scale_color_manual(values = c(RIG.yellow.dark,RIG.red, RIG.blue, RIG.green, "green"),  name = NULL, 
+                     label  = c("75th percentile", "median", "25th percentile")) + 
+  labs(title = "Distribution of employee contribution for new hires after Jan 2019",
+       x = NULL, y = "Percent") + 
+  theme(axis.text.x = element_text(size = 8)) + 
+  RIG.theme()
+fig_compareRS2.EECdist.t7
+
+
+
+# Risk of high EEC rate (15%) for t7
+fig.title <-  "Probability of employee contribution above 15% of payroll \nat any time prior to and including the given year \nunder different funding approaches"
+fig_compareRS2.EEChigh.t7 <- df_t7.stch.RS2 %>% 
+  ggplot(aes(x = year, y = EEC_high, color = runname)) + 
+  theme_bw() + 
+  geom_line() + geom_point() + 
+  coord_cartesian(ylim = c(0, 100)) + 
+  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_y_continuous(breaks = seq(0,100, 10)) +
+  scale_color_manual(name = "", values = c(RIG.red, RIG.blue, RIG.green)) + 
+  #scale_color_manual(values = c(RIG.blue, RIG.green),  name = "Contribution \napproaches", 
+  #                   label  = c("without ERC cap", "with ERC cap")) + 
+  labs(title = fig.title,
+       x = NULL, y = "Probability (%)") + 
+  guides(color = guide_legend(keywidth = 1.5, keyheight = 3)) + 
+  RIG.theme()
+fig_compareRS2.EEChigh.t7
+
+
 
 
 
@@ -206,6 +900,7 @@ df_det
 #*****************************************************
 ## Exploratory graphs  ####
 #*****************************************************
+
 
 df_all.stch %<>% filter(!Tier %in% c("t7", "xt7"))
 
