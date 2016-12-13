@@ -934,6 +934,37 @@ write.xlsx2(df_det.short, paste0(Outputs_folder, "tables.xlsx"), sheetName = "de
 
 
 
+#**************************************************************************
+## #Explore the impact of modeling Tier 7 separately on funded status  ####
+#**************************************************************************
+
+# Runs involved: RS1 and RS1_cap
+# Variables involved: 
+  # NC, SC, ADC, C, ERC, EEC
+
+# Look for sims under RS1 with a extended period of zero ERC
+
+results_all %>% filter(runname == "RS1", sim == 3) %>% 
+  select(runname, sim, year, NC, SC, ADC, C, EEC, ERC, ERC_PR) %>% 
+  mutate(ADC_unadj = NC + SC)
+
+results_all %>% filter(runname == "RS1_cap", sim == 3) %>% 
+  select(runname, sim, Tier, NC, SC, ADC, C, year, ERC, ERC_PR) %>% 
+  mutate(ADC_unadj = NC + SC) %>% 
+  gather(variable, value, -runname, -sim, -Tier, -year) %>% 
+  mutate(variable = paste(variable, Tier, sep = ".")) %>% 
+  select(-Tier) %>% 
+  spread(variable, value) %>% 
+  select(runname, sim, year, ends_with("sumTiers"), ends_with(".t7"))
+
+
+
+
+
+
+
+
+
 
 
 
