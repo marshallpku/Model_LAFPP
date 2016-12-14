@@ -173,7 +173,7 @@ df_t7.stch %<>%
          FR100more2 = FR_MA >= 100,
          ERC_high  = cumany(ERC_PR >= 50), 
          ERC_hike  = cumany(na2zero(ERC_PR - lag(ERC_PR, 5) >= 10)),
-         EEC_high  = cumany(EEC_PR >= 15)) %>% 
+         EEC_high  = cumany(ifelse(is.nan(EEC_PR), 0, EEC_PR) >= 15)) %>% 
   group_by(runname, Tier, year) %>% 
   summarize(FR40less = 100 * sum(FR40less, na.rm = T)/n(),
             FR100more = 100 * sum(FR100more, na.rm = T)/n(),
@@ -269,7 +269,7 @@ fig_stchDet.FR40less <- df_all.stch %>% filter(runname == "RS1") %>%
   labs(title = "Probability of funded ratio below 40% \nin a given year",
        x = NULL, y = "Probability (%)") + 
   RIG.theme()
-
+fig_stchDet.FR40less
 
 
 
@@ -334,7 +334,7 @@ fig_stchDet.3measures <- df_all.stch %>% filter(runname == "RS1") %>%
   labs(title = fig.title ,
        x = NULL, y = "Probability (%)") + 
   RIG.theme()
-
+fig_stchDet.3measures
 
 
 #*****************************************************
@@ -467,7 +467,8 @@ fig_policy.EEChigh.t7 <- df_t7.stch %>%
   RIG.theme()
 fig_policy.EEChigh.t7
 
-
+df_t7.stch %>% 
+  filter(runname %in% c("RS1_cap"), Tier == "t7")
 
 
 #*************************************************************
@@ -944,12 +945,19 @@ write.xlsx2(df_det.short, paste0(Outputs_folder, "tables.xlsx"), sheetName = "de
 
 # Look for sims under RS1 with a extended period of zero ERC
 
-results_all %>% filter(runname == "RS1", sim == 3) %>% 
-  select(runname, sim, year, NC, SC, ADC, C, EEC, ERC, ERC_PR) %>% 
+results_all %>% filter(runname == "RS1", sim == 2, year <=2040) %>% 
+  select(runname, sim, year, NC, SC, ADC, B, C, EEC, ERC, AL, MA, AA, UAAL, EUAAL, LG, FR_MA, I.r)
+# %>% 
+  mutate(ADC_unadj = NC + SC)
+  
+  
+results_all %>% filter(runname == "RS1_cap", sim == 2, Tier == "sumTiers", year <=2040) %>% 
+  select(runname, sim, year, NC, SC, ADC, B, C, EEC, ERC, AL, MA, AA, UAAL, EUAAL, LG, FR_MA, I.r)
+  # %>% 
   mutate(ADC_unadj = NC + SC)
 
-results_all %>% filter(runname == "RS1_cap", sim == 3) %>% 
-  select(runname, sim, Tier, NC, SC, ADC, C, year, ERC, ERC_PR) %>% 
+results_all %>% filter(runname == "RS1_cap", sim == 2) %>% 
+  select(runname, sim, Tier, NC, SC, ADC,B, C, year, ERC, ERC_PR, AL, MA, AA) %>% 
   mutate(ADC_unadj = NC + SC) %>% 
   gather(variable, value, -runname, -sim, -Tier, -year) %>% 
   mutate(variable = paste(variable, Tier, sep = ".")) %>% 
@@ -960,6 +968,18 @@ results_all %>% filter(runname == "RS1_cap", sim == 3) %>%
 
 
 
+results_all %>% filter(runname == "RS1", sim == 0) %>% 
+  select(runname, sim, year, NC, SC, ADC, C, EEC, ERC, ERC_PR, AL, MA, AA, FR_MA, LG, UAAL, Amort_basis) %>% 
+  mutate(ADC_unadj = NC + SC)
+
+results_all %>% filter(runname == "RS1_cap", sim == 0) %>% 
+  select(runname, sim, Tier, NC, SC, ADC, C, year, ERC, ERC_PR, AL, MA, FR_MA) %>% 
+  mutate(ADC_unadj = NC + SC) %>% 
+  gather(variable, value, -runname, -sim, -Tier, -year) %>% 
+  mutate(variable = paste(variable, Tier, sep = ".")) %>% 
+  select(-Tier) %>% 
+  spread(variable, value) %>% 
+  select(runname, sim, year, ends_with("sumTiers"), ends_with(".t7"))
 
 
 

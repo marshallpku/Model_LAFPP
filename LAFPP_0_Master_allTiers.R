@@ -456,7 +456,8 @@ AggLiab.sumTiers <- get_AggLiab_sumTiers(AggLiab.t1, AggLiab.t2, AggLiab.t3,
 # 6.  Simulation ####
 #*********************************************************************************************************
 source("LAFPP_Model_Sim.R")
-#source("LAFPP_Model_Sim_t7.R")
+source("LAFPP_Model_Sim_cap.R")
+
 
 # if(paramlist$simTiers == "separate"){
 #   penSim_results.t1  <- run_sim("t1",  AggLiab.t1)
@@ -467,7 +468,7 @@ source("LAFPP_Model_Sim.R")
 #   penSim_results.t6  <- run_sim("t6",  AggLiab.t6)
 # }
 
-
+if(!paramlist$ERC_cap.initiatives)
 penSim_results.sumTiers <- run_sim("sumTiers", AggLiab.sumTiers) %>% 
                            select(runname, sim, year, Tier, everything())
 
@@ -505,20 +506,39 @@ penSim_results.sumTiers <- run_sim("sumTiers", AggLiab.sumTiers) %>%
 
 if(paramlist$ERC_cap.initiatives){
   
-  penSim_results.xt7 <- penSim_results.sumTiers %>% 
-                        mutate(Tier = "xt7")
   
-  penSim_results.t7 <- run_sim("t7", 
-                                AggLiab.t7,
-                                init_amort_raw_ = init_amort_raw %>% mutate(balance = 0, annual.payment = 0), 
-                                init_unrecReturns.unadj_ = init_unrecReturns.unadj %>% mutate(DeferredReturn = 0)
-                                ) %>%
-                       mutate_all(funs(ifelse(is.nan(.), 0, .))) %>% 
-                       select(runname, sim, year, Tier, everything())
+  
+  # penSim_results.xt7 <- penSim_results.sumTiers %>% 
+  #                       mutate(Tier = "xt7")
+  # 
+  # penSim_results.t7 <- run_sim("t7", 
+  #                               AggLiab.t7,
+  #                               init_amort_raw_ = init_amort_raw %>% mutate(balance = 0, annual.payment = 0), 
+  #                               init_unrecReturns.unadj_ = init_unrecReturns.unadj %>% mutate(DeferredReturn = 0)
+  #                               ) %>%
+  #                      mutate_all(funs(ifelse(is.nan(.), 0, .))) %>% 
+  #                      select(runname, sim, year, Tier, everything())
 
   
-  penSim_results.sumTiers <- 
-    bind_rows(penSim_results.xt7, penSim_results.t7) %>% 
+  penSim_results.sumTiers <- run_sim.wt7("sumTiers",
+                      AggLiab.xt7_ = AggLiab.sumTiers,
+                      AggLiab.t7_  = AggLiab.t7,
+                      i.r_ = i.r,
+                      
+                      init_amort_raw.xt7_ = init_amort_raw, # amount.annual, year.remaining 
+                      init_unrecReturns.unadj.xt7_ = init_unrecReturns.unadj,
+                      
+                      init_amort_raw.t7_ = init_amort_raw %>% mutate(balance = 0, annual.payment = 0),
+                      init_unrecReturns.unadj.t7_ = init_unrecReturns.unadj %>% mutate(DeferredReturn = 0),
+                      
+                      paramlist_ = paramlist,
+                      Global_paramlist_ = Global_paramlist)
+  
+  
+  penSim_results.xt7 <-  penSim_results.sumTiers %>% filter(Tier == "xt7")
+  penSim_results.t7  <-  penSim_results.sumTiers %>% filter(Tier == "t7")
+  
+  penSim_results.sumTiers %<>%  
     select(runname, sim, year, Tier, everything())   %>% 
     group_by(runname, sim, year) %>% 
     summarise_at(c(5:(ncol(penSim_results.sumTiers))),  funs(sum(., na.rm = TRUE))) %>% 
@@ -631,8 +651,13 @@ kable(penSim_results.sumTiers %>% filter(sim == 1) %>% select(one_of(var_display
                                                                                                DROP.rate = EEC_DROP/EEC), digits = 2)  %>%  print 
 
 
-kable(penSim_results.sumTiers %>% filter(sim == 1) %>% select(year, starts_with("B")))
-kable(penSim_results.sumTiers %>% filter(sim == 1) %>% select(one_of(var_display3)))
+# kable(penSim_results.sumTiers %>% filter(sim == 1) %>%  select(runname, sim, year, NC, SC, ADC, B, C, EEC, ERC, ERC_PR, AL, MA,AA, FR_MA, UAAL, LG, I.r))
+# kable(penSim_results.xt7 %>% filter(sim == 3) %>%  select(runname, sim, year, NC, SC, ADC, B, C, EEC, ERC, ERC_PR, AL, MA,AA, FR_MA, UAAL, LG))
+# 
+# 
+# kable(penSim_results.sumTiers %>% filter(sim == 1) %>% select(one_of(var_display3)))
+# 
+
 
 # 17085208040 - 7537531159
 # 1493679418/1.695558e+10

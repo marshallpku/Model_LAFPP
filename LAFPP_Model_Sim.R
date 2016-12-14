@@ -306,7 +306,7 @@ run_sim <- function(Tier_select_,
   
   
   penSim_results <- foreach(k = -1:nsim, .packages = c("dplyr", "tidyr")) %dopar% {
-    #k <- 0
+    #k <- 1
     # initialize
     penSim <- penSim0
     SC_amort <- SC_amort0
@@ -314,6 +314,7 @@ run_sim <- function(Tier_select_,
     if(k == -1) SC_amort[,] <- 0
     
     # if(Tier_select_ != "t7" & Adj.benDROP & k!= -1) penSim$B[1:9] <- B.adj$B.adj2  # Adjust benefit payments for DROP
+    if(Tier_select_ != "t7" & Adj.benDROP & k!= -1) penSim$B[1:5] <- penSim$B[1:5] + B.adj$B.extra[1:5]  # Adjust benefit payments for DROP
     
     penSim[["i.r"]] <- i.r_[, as.character(k)]
     
