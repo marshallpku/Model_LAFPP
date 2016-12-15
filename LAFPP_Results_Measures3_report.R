@@ -218,13 +218,27 @@ df_t7.stch
 
 
 #*****************************************************
+## 10-year and 30 year compound return  ####
+#*****************************************************
+
+
+results_all %>% filter(runname == "RS1", sim > 0) %>% 
+  group_by(sim) %>% 
+  summarise(geoReturn30y = get_geoReturn(i.r),
+            geoReturn5y = get_geoReturn(i.r[year<=2019])) %>% 
+  summarise(negReturn30y = sum(geoReturn30y <= 0)/n(),
+            negReturn5y = sum(geoReturn5y <= 0)/n())
+
+
+
+#*****************************************************
 ## Deterministic run  ####
 #*****************************************************
 
 df_det <- results_all  %>% 
   filter(runname == "RS1", sim == 0, year <= 2044) %>% 
-  select(year, AL, MA, B, C, ERC, EEC, ExF, FR_MA, ERC_PR, ExF_MA, MA_PR) %>% 
-  mutate_at(vars(-year, -FR_MA, -ERC_PR, -ExF_MA, -MA_PR), funs(./1e6)) %>% 
+  select(year, AL, MA, B, C, ERC, EEC, ExF, FR_MA, ERC_PR, NC_PR, ExF_MA, MA_PR) %>% 
+  mutate_at(vars(-year, -FR_MA, -ERC_PR, -ExF_MA, -MA_PR, -NC_PR), funs(./1e6)) %>% 
   mutate(MA_PR = MA_PR/100) 
 
 
@@ -232,6 +246,12 @@ df_det.short <- df_det %>% filter(year %in% c(seq(2015, 2040, 5), 2044))
   
 df_det
 df_det.short
+
+
+results_all  %>% 
+  filter(runname == "RS1", sim == 0, year <= 2044) %>% 
+  select(year, AL, MA, B, C, ERC, EEC, ExF, FR_MA, ERC_PR, NC_PR, ExF_MA, MA_PR, SC, PR) %>% 
+  mutate(SC_PR = 100*SC/PR)
 
 
 #*****************************************************
@@ -335,6 +355,60 @@ fig_stchDet.3measures <- df_all.stch %>% filter(runname == "RS1") %>%
        x = NULL, y = "Probability (%)") + 
   RIG.theme()
 fig_stchDet.3measures
+
+
+
+# Distribution of funded ratio 
+fig_stchDet.FRdist <- df_all.stch %>% filter(runname %in% c("RS1"), Tier == "sumTiers") %>% 
+  left_join(results_all  %>% 
+             filter(runname == "RS1", sim == 0) %>% 
+             select(year, FR_det = FR_MA)) %>%  
+  select(runname, year, FR.q25, FR.q50, FR.q75, FR_det) %>% 
+  gather(type, value, -runname, -year) %>% 
+  ggplot(aes(x = year, y = value,
+             color = factor(type, levels = c("FR.q75", "FR.q50", "FR.q25", "FR_det"))
+  )) + theme_bw() + 
+  geom_line() + 
+  geom_point() + 
+  geom_hline(yintercept = 100, linetype = 2, size = 1) +
+  coord_cartesian(ylim = c(50,180)) + 
+  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_y_continuous(breaks = seq(0, 500, 20)) + 
+  scale_color_manual(values = c(RIG.green, RIG.blue, RIG.red, "black"),  name = NULL, 
+                     label  = c("75th percentile", "50th percentile", "25th percentile", "Deterministic")) + 
+  labs(title = "Distribution of funded ratios",
+       x = NULL, y = "Percent") + 
+  theme(axis.text.x = element_text(size = 8)) + 
+  RIG.theme()
+
+fig_stchDet.FRdist
+
+
+
+# Distribution of ERC rate
+fig_stchDet.ERCdist <- df_all.stch %>% filter(runname %in% c("RS1"), Tier == "sumTiers") %>% 
+  left_join(results_all  %>% 
+              filter(runname == "RS1", sim == 0) %>% 
+              select(year, ERC_det = ERC_PR)) %>% 
+  select(runname, year, ERC_PR.q25, ERC_PR.q50, ERC_PR.q75, ERC_det) %>% 
+  gather(type, value, -runname, -year) %>% 
+  ggplot(aes(x = year, y = value,
+             color = factor(type, levels = c("ERC_PR.q75", "ERC_PR.q50", "ERC_PR.q25", "ERC_det")))) + 
+  theme_bw() + 
+  geom_line() + 
+  geom_point() + 
+  geom_hline(yintercept = 100, linetype = 2, size = 1) +
+  coord_cartesian(ylim = c(0,50)) + 
+  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_y_continuous(breaks = seq(0, 500, 5)) + 
+  scale_color_manual(values = c(RIG.red, RIG.blue, RIG.green, "black"),  name = NULL, 
+                     label  = c("75th percentile", "50th percentile", "25th percentile", "Deterministic")) + 
+  labs(title = "Distribution of employer contribution rates",
+       x = NULL, y = "Percent") + 
+  theme(axis.text.x = element_text(size = 8)) + 
+  RIG.theme()
+fig_stchDet.ERCdist
+
 
 
 #*****************************************************
@@ -545,22 +619,21 @@ fig_compareRS1.ERChike
 
 
 # Risk of low FR
-fig.title <- "Probability of funded ratio below 40% \nat any time prior to and including the given year \nunder different return scenarios and funding approaches"
+fig.title <- "Probability of funded ratio below 40% \nat any time prior to and including the given year \nunder different return scenarios"
 
 fig.labels.lowReturns <- c("Scenario 2: \nAssumption achieved \nstochastic", 
                            "Scenario 3: \n5 years of low returns", 
                            "Scenario 4: \n15 years of low returns")
 
-fig_compareRS1.FR40less <- df_all.stch %>% filter(runname %in% runs.compareRS1, Tier == "sumTiers") %>% 
+fig_compareRS1.FR40less <- df_all.stch %>% filter(runname %in% runs.compareRS1[c(1,3,5)], Tier == "sumTiers") %>% 
   select(runname, year, FR40less) %>% 
   gather(variable, value, -year, -runname) %>% 
-  mutate(value = as.numeric(value),
-         RS = str_sub(runname, 1, 3),
-         policy = str_sub(runname, 5),
-         policy = ifelse(policy == "cap", policy, "no_cap" ),
-         policy = factor(policy, levels = c("no_cap", "cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
-  ggplot(aes(x = year, y = value, color = factor(RS, levels = c("RS1", "RS2", "RS3")))) + theme_bw() + 
-  facet_grid(. ~ policy) + 
+  # mutate(value = as.numeric(value),
+  #        RS = str_sub(runname, 1, 3),
+  #        policy = str_sub(runname, 5),
+  #        policy = ifelse(policy == "cap", policy, "no_cap" ),
+  #        policy = factor(policy, levels = c("no_cap", "cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
+  ggplot(aes(x = year, y = value, color = factor(runname, levels = c("RS1", "RS2", "RS3")))) + theme_bw() + 
   geom_line() + geom_point() + 
   coord_cartesian(ylim = c(0, 10)) + 
   scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
@@ -608,22 +681,21 @@ fig_compareRS1.MedERC
 
 
 # Median  FR
-fig.title <- "Median funded ratios \nunder different return scenarios and funding approaches"
+fig.title <- "Median funded ratios \nunder different return scenarios"
 
 fig.labels.lowReturns <- c("Scenario 2: \nAssumption achieved \nstochastic", 
                            "Scenario 3: \n5 years of low returns", 
                            "Scenario 4: \n15 years of low returns")
 
-fig_compareRS1.MedFR <- df_all.stch %>% filter(runname %in% runs.compareRS1, Tier == "sumTiers") %>% 
+fig_compareRS1.MedFR <- df_all.stch %>% filter(runname %in% runs.compareRS1[c(1,3,5)], Tier == "sumTiers") %>% 
   select(runname, year, FR.q50) %>% 
   gather(variable, value, -year, -runname) %>% 
-  mutate(value = as.numeric(value),
-         RS = str_sub(runname, 1, 3),
-         policy = str_sub(runname, 5),
-         policy = ifelse(policy == "cap", policy, "no_cap" ),
-         policy = factor(policy, levels = c("no_cap", "cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
-  ggplot(aes(x = year, y = value, color = factor(RS, levels = c("RS1", "RS2", "RS3")))) + theme_bw() + 
-  facet_grid(. ~ policy) + 
+  # mutate(value = as.numeric(value),
+  #        RS = str_sub(runname, 1, 3),
+  #        policy = str_sub(runname, 5),
+  #        policy = ifelse(policy == "cap", policy, "no_cap" ),
+  #        policy = factor(policy, levels = c("no_cap", "cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
+  ggplot(aes(x = year, y = value, color = factor(runname, levels = c("RS1", "RS2", "RS3")))) + theme_bw() + 
   geom_line() + geom_point() + 
   geom_hline(yintercept = 100, linetype = 2, size = 1) + 
   coord_cartesian(ylim = c(0, 150)) + 
@@ -762,18 +834,17 @@ fig_compareRS2.ERChike
 
 
 # Risk of low FR
-fig.title <- "Probability of funded ratio below 40% \nat any time prior to and including the given year \nunder different return scenarios and funding approaches"
+fig.title <- "Probability of funded ratio below 40% \nat any time prior to and including the given year \nunder different return scenarios"
 
-fig_compareRS2.FR40less <- df_all.stch.RS2 %>% 
+fig_compareRS2.FR40less <-  df_all.stch %>% filter(runname %in% runs.compareRS2[c(1,3,5)], Tier == "sumTiers") %>% 
   select(runname, year, FR40less) %>% 
   gather(variable, value, -year, -runname) %>% 
-  mutate(value = as.numeric(value),
-         RS = str_sub(runname, 1, 3),
-         policy = str_sub(runname, 5),
-         policy = ifelse(policy == "cap", policy, "no_cap" ),
-         policy = factor(policy, levels = c("no_cap", "cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
-  ggplot(aes(x = year, y = value, color = factor(RS, levels = c("RS1", "RS4", "RS5")))) + theme_bw() + 
-  facet_grid(. ~ policy) + 
+  # mutate(value = as.numeric(value),
+  #        RS = str_sub(runname, 1, 3),
+  #        policy = str_sub(runname, 5),
+  #        policy = ifelse(policy == "cap", policy, "no_cap" ),
+  #        policy = factor(policy, levels = c("no_cap", "cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
+  ggplot(aes(x = year, y = value, color = factor(runname, levels = c("RS1", "RS4", "RS5")))) + theme_bw() + 
   geom_line() + geom_point() + 
   coord_cartesian(ylim = c(0, 20)) + 
   scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
@@ -817,18 +888,17 @@ fig_compareRS2.MedERC
 
 
 # Median FR
-fig.title <- "Median funded ratios \nunder different return scenarios and funding approaches"
+fig.title <- "Median funded ratios \nunder different return scenarios"
 
-fig_compareRS2.MedFR <- df_all.stch.RS2 %>% 
+fig_compareRS2.MedFR <-  df_all.stch %>% filter(runname %in% runs.compareRS2[c(1,3,5)], Tier == "sumTiers") %>% 
   select(runname, year, FR.q50) %>% 
   gather(variable, value, -year, -runname) %>% 
-  mutate(value = as.numeric(value),
-         RS = str_sub(runname, 1, 3),
-         policy = str_sub(runname, 5),
-         policy = ifelse(policy == "cap", policy, "no_cap" ),
-         policy = factor(policy, levels = c("no_cap", "cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
-  ggplot(aes(x = year, y = value, color = factor(RS, levels = c("RS1", "RS4", "RS5")))) + theme_bw() + 
-  facet_grid(. ~ policy) + 
+  # mutate(value = as.numeric(value),
+  #        RS = str_sub(runname, 1, 3),
+  #        policy = str_sub(runname, 5),
+  #        policy = ifelse(policy == "cap", policy, "no_cap" ),
+  #        policy = factor(policy, levels = c("no_cap", "cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
+  ggplot(aes(x = year, y = value, color = factor(runname, levels = c("RS1", "RS4", "RS5")))) + theme_bw() + 
   geom_line() + geom_point() + 
   geom_hline(yintercept = 100, linetype = 2, size = 1) + 
   coord_cartesian(ylim = c(0, 150)) + 
@@ -903,18 +973,22 @@ ggsave(file = paste0(Outputs_folder, "fig_stchDet.FR40less.png"), fig_stchDet.FR
 ggsave(file = paste0(Outputs_folder, "fig_stchDet.ERChigh.png"), fig_stchDet.ERChigh, height = 7, width = 10)
 ggsave(file = paste0(Outputs_folder, "fig_stchDet.ERChike.png"), fig_stchDet.ERChike, height = 7, width = 10)
 ggsave(file = paste0(Outputs_folder, "fig_stchDet.3measures.png"), fig_stchDet.3measures, height = g.height, width = g.width)
+ggsave(file = paste0(Outputs_folder, "fig_stchDet.ERCdist.png"), fig_stchDet.ERCdist, height = 7*0.8, width = 10*0.8)
+ggsave(file = paste0(Outputs_folder, "fig_stchDet.FRdist.png"), fig_stchDet.FRdist, height = 7*0.8, width = 10*0.8)
 
 
 
 ggsave(file = paste0(Outputs_folder, "fig_policy.FRdist.png"), fig_policy.FRdist, height = 7, width = 13)
+ggsave(file = paste0(Outputs_folder, "fig_policy.FRdist.png"), fig_compareRS1.FR40less, height = 7, width = 13)
 ggsave(file = paste0(Outputs_folder, "fig_policy.ERCdist.png"), fig_policy.ERCdist, height = 7, width = 13)
-ggsave(file = paste0(Outputs_folder, "fig_policy.ERChigh.png"), fig_policy.ERChigh, height = 7, width = 13)
-ggsave(file = paste0(Outputs_folder, "fig_policy.ERChike.png"), fig_policy.ERChike, height = 7, width = 13)
-ggsave(file = paste0(Outputs_folder, "fig_policy.EECdist.t7.png"), fig_policy.EECdist.t7, height = 7, width = 10)
-ggsave(file = paste0(Outputs_folder, "fig_policy.EEChigh.t7.png"), fig_policy.EEChigh.t7, height = 7, width = 10)
+ggsave(file = paste0(Outputs_folder, "fig_policy.ERChigh.png"), fig_policy.ERChigh, height = 7*0.9, width = 10*0.9)
+ggsave(file = paste0(Outputs_folder, "fig_policy.ERChike.png"), fig_policy.ERChike, height = 7*0.9, width = 10*0.9)
+ggsave(file = paste0(Outputs_folder, "fig_policy.EECdist.t7.png"), fig_policy.EECdist.t7, height = 7*0.9, width = 10*0.9)
+ggsave(file = paste0(Outputs_folder, "fig_policy.EEChigh.t7.png"), fig_policy.EEChigh.t7, height = 7*0.9, width = 9*0.9)
 
 
-ggsave(file = paste0(Outputs_folder, "fig_compareRS1.MedFR.png"), fig_compareRS1.MedFR, height = 7, width = 13)
+ggsave(file = paste0(Outputs_folder, "fig_compareRS1.MedFR.png"), fig_compareRS1.MedFR, height = 7*0.9, width = 10*0.9)
+ggsave(file = paste0(Outputs_folder, "fig_compareRS1.FR40less.png"), fig_compareRS1.FR40less, height = 7*0.9, width = 10*0.9)
 ggsave(file = paste0(Outputs_folder, "fig_compareRS1.MedERC.png"), fig_compareRS1.MedERC, height = 7, width = 13)
 ggsave(file = paste0(Outputs_folder, "fig_compareRS1.ERChigh.png"), fig_compareRS1.ERChigh, height = 7, width = 13)
 ggsave(file = paste0(Outputs_folder, "fig_compareRS1.ERChike.png"), fig_compareRS1.ERChike, height = 7, width = 13)
@@ -922,7 +996,8 @@ ggsave(file = paste0(Outputs_folder, "fig_compareRS1.EECdist.t7.png"), fig_compa
 ggsave(file = paste0(Outputs_folder, "fig_compareRS1.EEChigh.t7.png"), fig_compareRS1.EEChigh.t7, height = 7, width = 10)
 
 
-ggsave(file = paste0(Outputs_folder, "fig_compareRS2.MedFR.png"), fig_compareRS2.MedFR, height = 7, width = 13)
+ggsave(file = paste0(Outputs_folder, "fig_compareRS2.MedFR.png"), fig_compareRS2.MedFR, height = 7*0.9, width = 10*0.9)
+ggsave(file = paste0(Outputs_folder, "fig_compareRS2.FR40less.png"), fig_compareRS2.FR40less, height = 7*0.9, width = 10*0.9)
 ggsave(file = paste0(Outputs_folder, "fig_compareRS2.MedERC.png"), fig_compareRS2.MedERC, height = 7, width = 13)
 ggsave(file = paste0(Outputs_folder, "fig_compareRS2.ERChigh.png"), fig_compareRS2.ERChigh, height = 7, width = 13)
 ggsave(file = paste0(Outputs_folder, "fig_compareRS2.ERChike.png"), fig_compareRS2.ERChike, height = 7, width = 13)
@@ -953,6 +1028,12 @@ results_all %>% filter(runname == "RS1", sim == 2, year <=2040) %>%
   
 results_all %>% filter(runname == "RS1_cap", sim == 2, Tier == "sumTiers", year <=2040) %>% 
   select(runname, sim, year, NC, SC, ADC, B, C, EEC, ERC, AL, MA, AA, UAAL, EUAAL, LG, FR_MA, I.r)
+  # %>% 
+  mutate(ADC_unadj = NC + SC)
+  
+
+  results_all %>% filter(runname == "RS1_cap", sim == 2, Tier == "t7", year <=2044) %>% 
+    select(runname, sim, year, NC, NC_PR, SC, ADC, B, C, EEC, ERC, AL, MA, AA, UAAL, EUAAL, LG, FR_MA, C_PR) %>% 
   # %>% 
   mutate(ADC_unadj = NC + SC)
 

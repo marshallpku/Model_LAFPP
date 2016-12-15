@@ -415,7 +415,7 @@ run_sim.wt7 <- function(Tier_select_,
   SC_amort0.xt7 <- rbind(SC_amort.init.xt7, SC_amort0.xt7)
   # The amortization basis of year j should be placed in row nrow.initAmort + j - 1. 
   
-  
+  SC_amort0.xt7 %>% colSums()
   
   #*************************************************************************************************************
   #                                  Setting up initial amortization payments: Tier 7 ####
@@ -467,7 +467,7 @@ run_sim.wt7 <- function(Tier_select_,
   
   
   penSim_results <- foreach(k = -1:nsim, .packages = c("dplyr", "tidyr")) %dopar% {
-    # k <- 3
+    # k <- 2
     # initialize
     penSim.xt7   <- penSim0.xt7
     SC_amort.xt7 <- SC_amort0.xt7
@@ -491,8 +491,7 @@ run_sim.wt7 <- function(Tier_select_,
         
         # j <- 1
         # j <- 2
-
-      
+        # j <- 8
       #*************************************************************************************************************
       #                                       Current tiers: Part 1  ####
       #*************************************************************************************************************
@@ -542,12 +541,102 @@ run_sim.wt7 <- function(Tier_select_,
       }
         
       
-      ## Apply corridor for MA, MA must not deviate from AA by more than 40%. 
+      #*************************************************************************************************************
+      #                                       Tier 7: Part 1  ####
+      #*************************************************************************************************************
       
-      penSim.xt7$AA[j] <- with(penSim.xt7, ifelse(AA[j] > s.upper * MA[j], MA[j], AA[j])) 
-      penSim.xt7$AA[j] <- with(penSim.xt7, ifelse(AA[j] < s.lower * MA[j], MA[j], AA[j]))
-    
+      # MA(j) and EAA(j) 
+      if(j == 1) {penSim.t7$MA[j]  <- ifelse(k == -1, penSim.t7$AL[j],                   # k = -1 is for testing model consistency
+                                             switch(init_MA, 
+                                                    MA = MA_0,                        # Use preset value
+                                                    AL = penSim.t7$AL[j],                # Assume inital fund equals inital liability.
+                                                    AL_pct = penSim.t7$AL[j] * MA_0_pct) # Inital MA is a proportion of inital AL
+      ) 
+      penSim.t7$EAA[j] <- switch(init_EAA,
+                                 AL = EAA_0,                       # Use preset value 
+                                 MA = penSim.t7$MA[j])                # Assume inital EAA equals inital market value.
+      
+      penSim.t7$AA[j]  <- ifelse(init_AA == "AL_pct" & k != -1, 
+                                 penSim.t7$AL[j] * AA_0_pct,
+                                 switch(smooth_method,
+                                        method1 =  with(penSim.t7, MA[j]),   # we may want to allow for a preset initial AA.
+                                        method2 =  with(penSim.t7, (1 - w) * EAA[j] + w * MA[j])
+                                 )
+      )
+      } else {
+        penSim.t7$MA[j]  <- with(penSim.t7, MA[j - 1] + I.r[j - 1] + C[j - 1] - B[j - 1])
+        penSim.t7$EAA[j] <- with(penSim.t7, AA[j - 1] + I.e[j - 1] + C[j - 1] - B[j - 1])
+        penSim.t7$AA[j]  <- switch(smooth_method,
+                                   method1 = with(penSim.t7, MA[j] - sum(s.vector[max(s.year + 2 - j, 1):s.year] * I.dif[(j-min(j, s.year + 1)+1):(j-1)])),
+                                   method2 = with(penSim.t7, (1 - w) * EAA[j] + w * MA[j]) 
+        )
+      }
+      
+      
+      ## Initial unrecognized returns
+      # if((init_AA %in% c("AL_pct", "AA0")) & useAVunrecReturn & k != -1 & Tier_select_ == "sumTiers"){
+      #   
+      #   # Adjusting initila unrecognized returns
+      #   init_unrecReturns.adj.t7 <-  mutate(init_unrecReturns.unadj.t7_, DeferredReturn = DeferredReturn * (penSim.t7$MA[1] - penSim.t7$AA[1])/sum(DeferredReturn),
+      #                                        DeferredReturn.annualTot = sum(DeferredReturn) - cumsum(DeferredReturn) # Initial unrecognized return to be subtracted from AA in each year
+      #   )
+      #   
+      #   # Adjust AA for inital unrecognized returns
+      #   #mm <- j - 1
+      #   if((j - 1 + init.year) %in% init_unrecReturns.adj.t7$year) penSim.t7$AA[j] <- penSim.t7$AA[j] - with(init_unrecReturns.adj.t7, DeferredReturn.annualTot[year == (j - 1 + init.year)])
+      #   
+      #   # init_unrecReturns.adj[init_unrecReturns.adj$year - init.year + 1 == j, "DeferredReturn"] #  )
+      #   
+      # }
+      
+      
+      
+      # ## Apply corridor for MA, MA must not deviate from AA by more than 40%. 
+      # 
+      # penSim.xt7$AA[j] <- with(penSim.xt7, ifelse(AA[j] > s.upper * MA[j], MA[j], AA[j])) 
+      # penSim.xt7$AA[j] <- with(penSim.xt7, ifelse(AA[j] < s.lower * MA[j], MA[j], AA[j]))
+      # 
 
+      
+      
+      #*************************************************************************************************************
+      #            ## Apply corridor for AA, AA must not deviate from MA by more than 40%.  ####
+      #*************************************************************************************************************
+      
+      # The corridor is applied based on the total AA and MA of the current tiers and tier 7. 
+      
+      if((penSim.xt7$AA[j] + penSim.t7$AA[j]) > s.upper * (penSim.xt7$MA[j] + penSim.t7$MA[j])){
+        penSim.xt7$AA[j] <-  penSim.xt7$MA[j]
+        penSim.t7$AA[j]  <-  penSim.t7$MA[j]
+      } else {
+        penSim.xt7$AA[j] <-  penSim.xt7$AA[j]
+        penSim.t7$AA[j]  <-  penSim.t7$AA[j]
+      }
+      
+      
+      if((penSim.xt7$AA[j] + penSim.t7$AA[j]) < s.lower * (penSim.xt7$MA[j] + penSim.t7$MA[j])){
+        penSim.xt7$AA[j] <-  penSim.xt7$MA[j]
+        penSim.t7$AA[j]  <-  penSim.t7$MA[j]
+      } else {
+        penSim.xt7$AA[j] <-  penSim.xt7$AA[j]
+        penSim.t7$AA[j]  <-  penSim.t7$AA[j]
+      }
+      
+      # 
+      # penSim.xt7$AA[j] <- ifelse((penSim.xt7$AA[j] + penSim.t7$AA[j]) > s.upper * (penSim.xt7$MA[j] + penSim.t7$MA[j]), penSim.xt7$MA[j], penSim.xt7$AA[j])
+      # penSim.t7$AA[j]  <- ifelse((penSim.xt7$AA[j] + penSim.t7$AA[j]) > s.upper * (penSim.xt7$MA[j] + penSim.t7$MA[j]), penSim.t7$MA[j],  penSim.t7$AA[j])
+      # 
+      # penSim.xt7$AA[j] <- ifelse((penSim.xt7$AA[j] + penSim.t7$AA[j]) < s.lower * (penSim.xt7$MA[j] + penSim.t7$MA[j]), penSim.xt7$MA[j], penSim.xt7$AA[j])
+      # penSim.t7$AA[j]  <- ifelse((penSim.xt7$AA[j] + penSim.t7$AA[j]) < s.lower * (penSim.xt7$MA[j] + penSim.t7$MA[j]), penSim.t7$MA[j],  penSim.t7$AA[j])
+      # 
+      
+      
+      
+    
+      #*************************************************************************************************************
+      #                                       Current tiers: Part 2  ####
+      #*************************************************************************************************************
+      
       # UAAL(j)
       penSim.xt7$UAAL[j]    <- with(penSim.xt7, AL[j] - AA[j])
       # penSim.xt7$UAAL.MA[j] <- with(penSim.xt7, AL[j] - MA[j])
@@ -586,63 +675,14 @@ run_sim.wt7 <- function(Tier_select_,
       
       #**************************************************************************************************************
       
+  
       
-      amort_LG(penSim.xt7$Amort_basis[j], i, m, salgrowth_amort, end = FALSE, method = amort_method)
+      
+    
       
       #*************************************************************************************************************
-      #                                       Tier 7: Part 1  ####
+      #                                       Tier 7: Part 2  ####
       #*************************************************************************************************************
-      
-      # MA(j) and EAA(j) 
-      if(j == 1) {penSim.t7$MA[j]  <- ifelse(k == -1, penSim.t7$AL[j],                   # k = -1 is for testing model consistency
-                                              switch(init_MA, 
-                                                     MA = MA_0,                        # Use preset value
-                                                     AL = penSim.t7$AL[j],                # Assume inital fund equals inital liability.
-                                                     AL_pct = penSim.t7$AL[j] * MA_0_pct) # Inital MA is a proportion of inital AL
-      ) 
-      penSim.t7$EAA[j] <- switch(init_EAA,
-                                  AL = EAA_0,                       # Use preset value 
-                                  MA = penSim.t7$MA[j])                # Assume inital EAA equals inital market value.
-      
-      penSim.t7$AA[j]  <- ifelse(init_AA == "AL_pct" & k != -1, 
-                                  penSim.t7$AL[j] * AA_0_pct,
-                                  switch(smooth_method,
-                                         method1 =  with(penSim.t7, MA[j]),   # we may want to allow for a preset initial AA.
-                                         method2 =  with(penSim.t7, (1 - w) * EAA[j] + w * MA[j])
-                                  )
-      )
-      } else {
-        penSim.t7$MA[j]  <- with(penSim.t7, MA[j - 1] + I.r[j - 1] + C[j - 1] - B[j - 1])
-        penSim.t7$EAA[j] <- with(penSim.t7, AA[j - 1] + I.e[j - 1] + C[j - 1] - B[j - 1])
-        penSim.t7$AA[j]  <- switch(smooth_method,
-                                    method1 = with(penSim.t7, MA[j] - sum(s.vector[max(s.year + 2 - j, 1):s.year] * I.dif[(j-min(j, s.year + 1)+1):(j-1)])),
-                                    method2 = with(penSim.t7, (1 - w) * EAA[j] + w * MA[j]) 
-        )
-      }
-      
-      
-      ## Initial unrecognized returns
-      # if((init_AA %in% c("AL_pct", "AA0")) & useAVunrecReturn & k != -1 & Tier_select_ == "sumTiers"){
-      #   
-      #   # Adjusting initila unrecognized returns
-      #   init_unrecReturns.adj.t7 <-  mutate(init_unrecReturns.unadj.t7_, DeferredReturn = DeferredReturn * (penSim.t7$MA[1] - penSim.t7$AA[1])/sum(DeferredReturn),
-      #                                        DeferredReturn.annualTot = sum(DeferredReturn) - cumsum(DeferredReturn) # Initial unrecognized return to be subtracted from AA in each year
-      #   )
-      #   
-      #   # Adjust AA for inital unrecognized returns
-      #   #mm <- j - 1
-      #   if((j - 1 + init.year) %in% init_unrecReturns.adj.t7$year) penSim.t7$AA[j] <- penSim.t7$AA[j] - with(init_unrecReturns.adj.t7, DeferredReturn.annualTot[year == (j - 1 + init.year)])
-      #   
-      #   # init_unrecReturns.adj[init_unrecReturns.adj$year - init.year + 1 == j, "DeferredReturn"] #  )
-      #   
-      # }
-      
-      
-      ## Apply corridor for MA, MA must not deviate from AA by more than 40%. 
-      
-      penSim.t7$AA[j] <- with(penSim.t7, ifelse(AA[j] > s.upper * MA[j], MA[j], AA[j])) 
-      penSim.t7$AA[j] <- with(penSim.t7, ifelse(AA[j] < s.lower * MA[j], MA[j], AA[j]))
-      
       
       # UAAL(j)
       penSim.t7$UAAL[j]    <- with(penSim.t7, AL[j] - AA[j])
@@ -793,7 +833,7 @@ run_sim.wt7 <- function(Tier_select_,
       
       
       #*************************************************************************************************************
-      #                                       Current tiers: Part 2  ####
+      #                                       Current tiers: Part 3  ####
       #*************************************************************************************************************
     
       # C(j) - ADC(j)
@@ -820,7 +860,7 @@ run_sim.wt7 <- function(Tier_select_,
       
       
       #*************************************************************************************************************
-      #                                       Tier 7: Part 2  ####
+      #                                       Tier 7: Part 3  ####
       #*************************************************************************************************************
       
       # C(j) - ADC(j)
