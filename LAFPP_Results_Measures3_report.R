@@ -358,6 +358,34 @@ fig_stchDet.3measures
 
 
 
+fig.levels <- c("ERC_hike", "ERC_high")
+fig.lvl.labs <- c("Probability of employer contribution \nrising more than 10% of payroll in a 5-year period \nat any time prior to and including the given year",
+                  "Probability of ERC above 50% of payroll \nat any time prior to and including the given year \nunder different funding approaches")
+fig.title <- 'Risk of high employer contribution rates and risk of sharp increases of employer contribution rate \nunder scenario "Assumption achieved: deterministic" and scenario "Assumption achieved: stochastic" '
+fig_stchDet.2measures <- df_all.stch %>% filter(runname == "RS1") %>% 
+  select(year, ERC_hike, ERC_high) %>% 
+  gather(variable, value, -year) %>% 
+  # mutate(FR40less.det = 0, 
+  #        ERChike.det  = 0,
+  #        ERChigh.det  = 0) %>% 
+  mutate(value.det = 0) %>%
+  gather(Var, value, -year, -variable) %>% 
+  mutate(variable = factor(variable, levels = fig.levels, labels = fig.lvl.labs )) %>% 
+  ggplot(aes(x = year, y = value, color = Var)) + facet_grid(.~variable) +  theme_bw() + 
+  geom_point() + geom_line() + 
+  coord_cartesian(ylim = c(0,70)) + 
+  scale_y_continuous(breaks = seq(0,200, 10)) +
+  scale_x_continuous(breaks = seq(2015,2050, 5)) +
+  scale_color_manual(values = c(RIG.red,"black"),  name = "", 
+                     label  = c("Stochastic run", "Deterministic run")) + 
+  labs(title = fig.title ,
+       x = NULL, y = "Probability (%)") + 
+  RIG.theme()
+fig_stchDet.2measures
+
+
+
+
 # Distribution of funded ratio 
 fig_stchDet.FRdist <- df_all.stch %>% filter(runname %in% c("RS1"), Tier == "sumTiers") %>% 
   left_join(results_all  %>% 
@@ -973,6 +1001,7 @@ ggsave(file = paste0(Outputs_folder, "fig_stchDet.FR40less.png"), fig_stchDet.FR
 ggsave(file = paste0(Outputs_folder, "fig_stchDet.ERChigh.png"), fig_stchDet.ERChigh, height = 7, width = 10)
 ggsave(file = paste0(Outputs_folder, "fig_stchDet.ERChike.png"), fig_stchDet.ERChike, height = 7, width = 10)
 ggsave(file = paste0(Outputs_folder, "fig_stchDet.3measures.png"), fig_stchDet.3measures, height = g.height, width = g.width)
+ggsave(file = paste0(Outputs_folder, "fig_stchDet.2measures.png"), fig_stchDet.2measures, height = 1.1*g.height, width = g.width)
 ggsave(file = paste0(Outputs_folder, "fig_stchDet.ERCdist.png"), fig_stchDet.ERCdist, height = 7*0.8, width = 10*0.8)
 ggsave(file = paste0(Outputs_folder, "fig_stchDet.FRdist.png"), fig_stchDet.FRdist, height = 7*0.8, width = 10*0.8)
 
