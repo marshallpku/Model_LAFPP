@@ -231,7 +231,7 @@ if (paramlist$ERC_cap.initiatives){
  init_pop.t7       <- get_initPop_tier("t6")
  for (z in 1:length(init_pop.t7)) init_pop.t7[[z]][ , ] <- 0
  
- paramlist$newEnt_byTier_before2019 <- c(t1 = 0, t2 = 0, t3 = 0, t4 = 0, t5 = 0, t6 = 1, t7 = 0)
+ paramlist$newEnt_byTier_before2019 <- c(t1 = 0, t2 = 0, t3 = 0, t4 = 0, t5 = 0, t6 = 0, t7 = 1)
  paramlist$newEnt_byTier_after2019  <- c(t1 = 0, t2 = 0, t3 = 0, t4 = 0, t5 = 0, t6 = 0, t7 = 1)
  }
 

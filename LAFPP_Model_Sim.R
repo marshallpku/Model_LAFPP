@@ -471,17 +471,17 @@ run_sim <- function(Tier_select_,
       
       
       
-      # ERC cap for LAFPP
+      # ERC cap for LAFPP (all tiers)
       
       # The ERC cap is determined by the smaller one of:
-      # 13% of the total payroll of Tier 7. 
+      # 13% of the total payroll. 
       # 50% of the total normal cost. (we interpret the "total cost of retirement benefits" as the the total normal cost.)
-      # When the limit is triggered, the EEC of Tier 7 is calculated as the total ADC minus the capped ERC. 
+      # When the limit is triggered, the EEC is calculated as the total ADC minus the capped ERC. 
       
       if(ERC_cap_NC50) penSim$ERC_cap[j] <- min(0.13 * penSim$PR[j], 0.5 * penSim$NC[j]) else
                        penSim$ERC_cap[j] <- 0.13 * penSim$PR[j]
       
-      if(ERC_cap.initiatives & Tier_select_ == "t7"){
+      if(ERC_cap.initiatives.allTiers){
         penSim$ERC[j] <- with(penSim, ifelse(ERC[j] > ERC_cap[j], ERC_cap[j], ERC[j]))
         penSim$EEC[j] <- with(penSim, C[j] - ERC[j])
       }

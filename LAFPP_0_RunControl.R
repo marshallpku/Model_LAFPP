@@ -245,72 +245,57 @@ for(runName in runList$runname ){
     #runname <- "LAFPP",
     #Tier_select <- "t76",
     #simTiers <- "joint",
-  #paramlist$useAVamort  <- F 
-  #paramlist$useExtFund  <- F
+    #paramlist$useAVamort  <- F 
+    #paramlist$useExtFund  <- F
     
   paramlist$Grouping    <- "fillin"
     
   paramlist$r.min  <- 41 # this is not required age of retirement benefit. 
   paramlist$r.max  <- 65 
     
-    #fasyears <- 3,
-    #cola     <- 0.03,
-    #i <- 0.075,
-    
+
   paramlist$infl <- 0.0325
   paramlist$prod <- 0.01
-    #s.year <- 7,
+
   paramlist$s.lower  <- 0.6  # AVA is adjusted to be within 40% of MVA:
   paramlist$s.upper  <- 1.4
     
-    #m <- 20,
+
     
   paramlist$r.full <- 50 # age at which vested terms are assumed to retire(Temp, should use r.vben)
   paramlist$r.vben <- 50 # age at which vested terms are assumed to retire.
     
-    #r.yos  <- 5,
-    #v.yos  <- 5, 
-    #r.age
     
   paramlist$startingSal_growth <- 0.038
-    # w.salgrowth.method <-  "simple", # "simple" or "withInit"
     
   paramlist$actuarial_method <- "EAN.CP"
     
-    
-  # paramlist$wf_growth <- 0
-  # paramlist$no_entrance <- "F"
+
   paramlist$newEnt_byTier <- c(t1 = 0, t2 = 0, t3 = 0, t4 = 0, t5 = 0, t6 = 1)
-    #entrants_dist = rep(1/length(range_ea), length(range_ea)),
+
     
   paramlist$pct.ca.M <-  0.8 # proportion of males who opt for ca upon retirement
   paramlist$pct.ca.F <-  0.6
     
-    #factor.ca <- 0.25,
+
     
     # Investment returns
   paramlist$seed <- 1234
-    #ir.mean <- 0.075,
-    #ir.sd   <- 0,  # 0.12,
-    
-    
+
   # paramlist$init_MA <- "AL_pct"
   # paramlist$init_AA <- "AL_pct"  # Later we may want to allow it to be "MA" (equal to MA), "AL" (equal to AL), "AA0"(preset AA value)
   # 
   # paramlist$MA_0_pct <- 0.946  # AV2015 pdf page 12
   # paramlist$AA_0_pct <- 0.915  # AV2015 pdf page 12
-  # 
+
   paramlist$init_EAA <- "MA"
     
     
   paramlist$smooth_method <- "method1"
   paramlist$salgrowth_amort <- 0.04
-    #amort_method <- "cp",
+
   paramlist$amort_type <- "closed"
-    #nonNegC <- "FALSE",
-    #EEC_fixed <- "TRUE",
-    #ConPolicy <- "ADC",
-    #EEC_rate <- 0.05
+
   #)
 
   
@@ -318,7 +303,6 @@ for(runName in runList$runname ){
   paramlist$range_ea = with(Global_paramlist, min.ea:max.ea)
   paramlist$range_age = with(Global_paramlist, min.age:max.age)
   paramlist$range_age.r = with(paramlist, r.min:r.max)
-  # paramlist$m.max = with(paramlist, max(m.UAAL0, m.UAAL1, m.surplus0, m.surplus1))
   paramlist$v     = with(paramlist, 1/(1 + i))
   
   
