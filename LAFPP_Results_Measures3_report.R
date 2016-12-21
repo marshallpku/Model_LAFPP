@@ -93,7 +93,8 @@ RIG.theme <- function(){
         panel.grid.minor.x = element_blank(),
         panel.grid.minor.y = element_blank(),
         panel.grid.major.y = element_line(size = 0.5, color = "gray80"),
-        plot.title=element_text(hjust=0.5))
+        plot.title=element_text(hjust=0.5),
+        plot.subtitle=element_text(hjust=0.5))
 }
 
 
@@ -292,9 +293,30 @@ fig_distReturn <- results_all %>%
   labs(title = "Distribution of 30-year compound annual return over 2,000 simulations",
        x = "%",
        y = "Simulatoin count") + 
+
   RIG.theme()
 
 fig_distReturn
+
+
+med.FR_MA <- (results_all %>% filter(runname == "RS1", sim > 0, year == 2044))$FR_MA %>% median
+fig_distFR30 <- results_all %>% 
+  filter(runname == "RS1", sim > 0, year == 2044) %>% 
+  # group_by(sim) %>% 
+  # summarize(geoReturn = get_geoReturn(i.r)) %>% 
+  ggplot(aes(FR_MA)) + theme_bw() + 
+  geom_histogram(color = "black", fill = RIG.blue, binwidth = 10, boundary = 0) + 
+  geom_vline(xintercept = c(100, med.FR_MA), color = c(RIG.red,"blue"), size = 0.8) + 
+  coord_cartesian(xlim = c(0, 400)) + 
+  scale_x_continuous(breaks = seq(0,400,20))+
+  labs(title = "Distribution of funded ratios in year 30 over 2,000 simulations",
+       x = "%",
+       y = "Simulatoin count") + 
+  annotate("text", x = med.FR_MA + 50, y = 175, label = paste0("Median funded ratio in year 30: \n", round(med.FR_MA, 1), "%"),
+           color = "blue", size = 3.5) + 
+  RIG.theme()
+fig_distFR30
+
 
 
 fig_stchDet.FR40less <- df_all.stch %>% filter(runname == "RS1") %>% 
@@ -1086,6 +1108,79 @@ fig_compareRS2.MedFR
 
 
 
+# distribuiton FR with current funding policy under different return scenarios
+fig.title <- "Distribution of funded ratios \nunder different return scenarios"
+fig.subtitle <- "Current funding policy, without ERC cap"
+fig.labels.pctile3 <- c("25th percentile",  "50th percentile", "75th percentile")
+fig.labels.pctile5 <- c("10th percentile",  "25th percentile", "50th percentile", "75th percentile", "90th percentile")
+fig_compareRS2.distFR <-  df_all.stch %>% filter(runname %in% runs.compareRS2[c(1,4,7)], Tier == "sumTiers") %>% 
+  select(runname, year, FR.q10, FR.q25, FR.q50, FR.q75, FR.q90) %>% 
+  gather(variable, value, -year, -runname) %>% 
+  mutate(runname = factor(runname, labels = fig.labels.altAssumptions)) %>% 
+  # mutate(value = as.numeric(value),
+  #        RS = str_sub(runname, 1, 3),
+  #        policy = str_sub(runname, 5),
+  #        policy = ifelse(policy == "cap", policy, "no_cap" ),
+  #        policy = factor(policy, levels = c("no_cap", "cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
+  ggplot(aes(x = year, y = value, color = factor(variable, levels = c("FR.q90", "FR.q75", "FR.q50", "FR.q25", "FR.q10"),
+                                                           labels = rev(fig.labels.pctile5) ))) + 
+  theme_bw() + 
+  facet_grid(. ~ runname) + 
+  geom_line() + geom_point() + 
+  geom_hline(yintercept = 100, linetype = 2, size = 1) + 
+  coord_cartesian(ylim = c(0, 200)) + 
+  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_y_continuous(breaks = seq(0,500, 20)) +
+  scale_color_manual(values = rev(c("red", RIG.red, RIG.blue, RIG.green, "green")),  name = "") + 
+  labs(title = fig.title,
+       subtitle = fig.subtitle,
+       x = NULL, y = "Funded ratio (%)") + 
+  guides(color = guide_legend(keywidth = 1.5, keyheight = 3)) + 
+  RIG.theme()
+fig_compareRS2.distFR
+
+
+
+
+# distribuiton ERC with current funding policy under different return scenarios
+fig.title <- "Distribution of funded ratios \nunder different return scenarios"
+fig.subtitle <- "Current funding policy, without ERC cap"
+fig.labels.pctile3 <- c("25th percentile",  "50th percentile", "75th percentile")
+fig.labels.pctile5 <- c("10th percentile",  "25th percentile", "50th percentile", "75th percentile", "90th percentile")
+fig_compareRS2.distERC <-  df_all.stch %>% filter(runname %in% runs.compareRS2[c(1,4,7)], Tier == "sumTiers") %>% 
+  select(runname, year, ERC_PR.q10, ERC_PR.q25, ERC_PR.q50, ERC_PR.q75, ERC_PR.q90) %>% 
+  gather(variable, value, -year, -runname) %>% 
+  mutate(runname = factor(runname, labels = fig.labels.altAssumptions)) %>% 
+  # mutate(value = as.numeric(value),
+  #        RS = str_sub(runname, 1, 3),
+  #        policy = str_sub(runname, 5),
+  #        policy = ifelse(policy == "cap", policy, "no_cap" ),
+  #        policy = factor(policy, levels = c("no_cap", "cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
+  ggplot(aes(x = year, y = value, color = factor(variable, levels = c("ERC_PR.q90", "ERC_PR.q75", "ERC_PR.q50", "ERC_PR.q25", "ERC_PR.q10"),
+                                                 labels = rev(fig.labels.pctile5) ))) + 
+  theme_bw() + 
+  facet_grid(. ~ runname) + 
+  geom_line() + geom_point() + 
+  geom_hline(yintercept = 100, linetype = 2, size = 1) + 
+  coord_cartesian(ylim = c(0, 80)) + 
+  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_y_continuous(breaks = seq(0,500, 10)) +
+  scale_color_manual(values = c("red", RIG.red, RIG.blue, RIG.green, "green"),  name = "") + 
+  labs(title = fig.title,
+       subtitle = fig.subtitle,
+       x = NULL, y = "Percent of payroll (%)") + 
+  guides(color = guide_legend(keywidth = 1.5, keyheight = 3)) + 
+  RIG.theme()
+fig_compareRS2.distERC
+
+
+
+
+
+
+
+
+
 # Impact on EEC rates of new hires after 2019
 
 df_t7.stch.RS2 <- df_t7.stch %>% filter(runname %in% c("RS1_cap", "RS4_cap", "RS5_cap"), Tier == "t7") %>% 
@@ -1198,6 +1293,7 @@ g.width <- 12
 # g.width.3col <- 
 
 ggsave(file = paste0(Outputs_folder, "fig_distReturn.png"), fig_distReturn, height = 7, width = 10)
+ggsave(file = paste0(Outputs_folder, "fig_distFR30.png"), fig_distFR30, height = 7, width = 10)
 ggsave(file = paste0(Outputs_folder, "fig_stchDet.FR40less.png"), fig_stchDet.FR40less, height = 7, width = 10)
 ggsave(file = paste0(Outputs_folder, "fig_stchDet.ERChigh.png"), fig_stchDet.ERChigh, height = 7, width = 10)
 ggsave(file = paste0(Outputs_folder, "fig_stchDet.ERChike.png"), fig_stchDet.ERChike, height = 7, width = 10)
@@ -1209,21 +1305,20 @@ ggsave(file = paste0(Outputs_folder, "fig_stchDet.FRdist.png"), fig_stchDet.FRdi
 
 
 ggsave(file = paste0(Outputs_folder, "fig_policy.FRdist.png"), fig_policy.FRdist, height = 7, width = 13)
-ggsave(file = paste0(Outputs_folder, "fig_policy.FRdist.png"), fig_compareRS1.FR40less, height = 7, width = 13)
-ggsave(file = paste0(Outputs_folder, "fig_policy.ERCdist.png"), fig_policy.ERCdist, height = 7, width = 13)
+ggsave(file = paste0(Outputs_folder, "fig_policy.ERCdist.png"), fig_policy.ERCdist, height = 0.8*5, width = 0.8*15)
 ggsave(file = paste0(Outputs_folder, "fig_policy.ERChigh.png"), fig_policy.ERChigh, height = 7*0.9, width = 10*0.9)
 ggsave(file = paste0(Outputs_folder, "fig_policy.ERChike.png"), fig_policy.ERChike, height = 7*0.9, width = 10*0.9)
 ggsave(file = paste0(Outputs_folder, "fig_policy.EECdist.t7.png"), fig_policy.EECdist.t7, height = 7*0.9, width = 10*0.9)
 ggsave(file = paste0(Outputs_folder, "fig_policy.EEChigh.t7.png"), fig_policy.EEChigh.t7, height = 7*0.9, width = 9*0.9)
-ggsave(file = paste0(Outputs_folder, "fig_policy.EECdist.allTiers.png"), fig_policy.EECdist.allTiers, height = 7*0.9, width = 12*0.9)
+ggsave(file = paste0(Outputs_folder, "fig_policy.EECdist.allTiers.png"), fig_policy.EECdist.allTiers, height = 7*0.9, width = 10*0.9)
 ggsave(file = paste0(Outputs_folder, "fig_policy.EEChigh.allTiers.png"), fig_policy.EEChigh.allTiers, height = 7*0.9, width = 9*0.9)
 
 
 ggsave(file = paste0(Outputs_folder, "fig_compareRS1.MedFR.png"), fig_compareRS1.MedFR, height = 7*0.9, width = 10*0.9)
 ggsave(file = paste0(Outputs_folder, "fig_compareRS1.FR40less.png"), fig_compareRS1.FR40less, height = 7*0.9, width = 10*0.9)
-ggsave(file = paste0(Outputs_folder, "fig_compareRS1.MedERC.png"), fig_compareRS1.MedERC, height = 7, width = 13)
-ggsave(file = paste0(Outputs_folder, "fig_compareRS1.ERChigh.png"), fig_compareRS1.ERChigh, height = 7, width = 13)
-ggsave(file = paste0(Outputs_folder, "fig_compareRS1.ERChike.png"), fig_compareRS1.ERChike, height = 7, width = 13)
+ggsave(file = paste0(Outputs_folder, "fig_compareRS1.MedERC.png"), fig_compareRS1.MedERC, height = 0.8*5, width = 0.8*15)
+ggsave(file = paste0(Outputs_folder, "fig_compareRS1.ERChigh.png"), fig_compareRS1.ERChigh, height = 0.8*5, width = 0.8*15)
+ggsave(file = paste0(Outputs_folder, "fig_compareRS1.ERChike.png"), fig_compareRS1.ERChike, height = 0.8*5, width = 0.8*15)
 ggsave(file = paste0(Outputs_folder, "fig_compareRS1.EECdist.t7.png"), fig_compareRS1.EECdist.t7, height = 5, width = 15)
 ggsave(file = paste0(Outputs_folder, "fig_compareRS1.EEChigh.t7.png"), fig_compareRS1.EEChigh.t7, height = 7, width = 10)
 ggsave(file = paste0(Outputs_folder, "fig_compareRS1.EECdist.allTiers.png"), fig_compareRS1.EECdist.allTiers, height = 5, width = 15)
@@ -1232,9 +1327,13 @@ ggsave(file = paste0(Outputs_folder, "fig_compareRS1.EEChigh.allTiers.png"), fig
 
 ggsave(file = paste0(Outputs_folder, "fig_compareRS2.MedFR.png"), fig_compareRS2.MedFR, height = 7*0.9, width = 10*0.9)
 ggsave(file = paste0(Outputs_folder, "fig_compareRS2.FR40less.png"), fig_compareRS2.FR40less, height = 7*0.9, width = 10*0.9)
-ggsave(file = paste0(Outputs_folder, "fig_compareRS2.MedERC.png"), fig_compareRS2.MedERC, height = 7, width = 13)
-ggsave(file = paste0(Outputs_folder, "fig_compareRS2.ERChigh.png"), fig_compareRS2.ERChigh, height = 7, width = 13)
-ggsave(file = paste0(Outputs_folder, "fig_compareRS2.ERChike.png"), fig_compareRS2.ERChike, height = 7, width = 13)
+ggsave(file = paste0(Outputs_folder, "fig_compareRS2.MedERC.png"), fig_compareRS2.MedERC, height = 0.8*5, width = 0.8*15)
+
+ggsave(file = paste0(Outputs_folder, "fig_compareRS2.distFR.png"), fig_compareRS2.distFR, height = 7*0.9, width = 10*0.9)
+ggsave(file = paste0(Outputs_folder, "fig_compareRS2.distERC.png"), fig_compareRS2.distERC, height = 0.8*5, width = 0.8*15)
+
+ggsave(file = paste0(Outputs_folder, "fig_compareRS2.ERChigh.png"), fig_compareRS2.ERChigh, height = 0.8*5, width = 0.8*15)
+ggsave(file = paste0(Outputs_folder, "fig_compareRS2.ERChike.png"), fig_compareRS2.ERChike, height = 0.8*5, width = 0.8*15)
 ggsave(file = paste0(Outputs_folder, "fig_compareRS2.EECdist.t7.png"), fig_compareRS2.EECdist.t7, height = 5, width = 15)
 ggsave(file = paste0(Outputs_folder, "fig_compareRS2.EEChigh.t7.png"), fig_compareRS2.EEChigh.t7, height = 7, width = 10)
 ggsave(file = paste0(Outputs_folder, "fig_compareRS2.EECdist.allTiers.png"), fig_compareRS2.EECdist.allTiers, height = 5, width = 15)
