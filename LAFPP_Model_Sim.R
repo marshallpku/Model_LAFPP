@@ -294,8 +294,7 @@ run_sim <- function(Tier_select_,
   
   SC_amort0 <- rbind(SC_amort.init, SC_amort0)
   # The amortization basis of year j should be placed in row nrow.initAmort + j - 1. 
-  
-  
+  # save(SC_amort0, file = "SC_amort0.RData")  
   
   #*************************************************************************************************************
   #                                       Simuation  ####

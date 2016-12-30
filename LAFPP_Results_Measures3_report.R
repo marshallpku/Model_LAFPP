@@ -1301,136 +1301,33 @@ results_all %>% filter(runname == "RS1_cap", sim == 0) %>%
 
 
 
+#**************************************************************************
+# Explore issues in the report ####
+#**************************************************************************
+
+## Check supplemental costs in the deterministic run
+
+load("SC_amort0.RData")  
+
+colSums(SC_amort0)[1:30]
+
+results_all %>% filter(runname == "RS1", sim == 0) %>% 
+  select(runname, sim, year, SC, LG, ADC, C, FR_MA) %>% 
+  mutate(SC_original = colSums(SC_amort0)[1:30]) %>% 
+  mutate_each(funs(./1e6), -runname, -sim, -year, -FR_MA) %>%
+  mutate(SC_diffpct = 100 * ((SC - SC_original)/SC_original),
+         SC_diff    = SC - SC_original) %>% 
+  select(runname, sim,year, SC, SC_original, SC_diff, SC_diffpct, everything())
+
+  
+  
+results_all %>% filter(runname == "RS1", sim == -1) %>% 
+  select(runname, sim, year, SC, LG, ADC, C, FR_MA) %>% 
+  mutate(SC_original = colSums(SC_amort0)[1:30]) %>%
+  mutate_each(funs(./1e6), -runname, -sim, -year, -FR_MA) %>% 
+  mutate(SC_diff = 100 * SC/SC_original -100 )
 
 
-
-# #*****************************************************
-# ## Exploratory graphs  ####
-# #*****************************************************
-# 
-# 
-# df_all.stch %<>% filter(!Tier %in% c("t7", "xt7"))
-# 
-# g.FR40less <- 
-#   df_all.stch %>% 
-#   ggplot(aes(x = year, y = FR40less, color = runname)) + theme_bw() + 
-#   geom_point() + 
-#   geom_line() + 
-#   scale_x_continuous(breaks = seq(2015, 2100, 5))
-# g.FR40less
-# 
-# 
-# g.ERCsharpRise <- 
-#   df_all.stch %>% 
-#   ggplot(aes(x = year, y = ERC_hike, color = runname)) + theme_bw() + 
-#   geom_point() + 
-#   geom_line() + 
-#   scale_x_continuous(breaks = seq(2015, 2100, 5))
-# g.ERCsharpRise
-# 
-# 
-# g.ERChigh <- 
-#   df_all.stch %>%  
-#   ggplot(aes(x = year, y = ERC_high, color = runname)) + theme_bw() + 
-#   geom_point() + 
-#   geom_line() + 
-#   scale_x_continuous(breaks = seq(2015, 2100, 5))
-# g.ERChigh
-# 
-# 
-# g.FR.pctmore <-
-#   df_all.stch %>% 
-#   ggplot(aes(x = year, y = FR100more, color = runname)) + theme_bw() + 
-#   geom_point() + 
-#   geom_line() + 
-#   scale_x_continuous(breaks = seq(2015, 2100, 5))
-# g.FR.pctmore
-# 
-# g.FR.pctmore2 <-
-#   df_all.stch %>% 
-#   ggplot(aes(x = year, y = FR100more2, color = runname)) + theme_bw() + 
-#   geom_point() + 
-#   geom_line() + 
-#   scale_x_continuous(breaks = seq(2015, 2100, 5))
-# g.FR.pctmore2
-# 
-# 
-# g.FR.qts <- 
-#   df_all.stch %>% 
-#   select(runname, year, starts_with("FR.q")) %>% 
-#   gather(var, value, -runname, -year) %>% 
-#   ggplot(aes(x = year, y = value, color = var)) + theme_bw() + facet_grid(.~runname) + 
-#   geom_point() + 
-#   geom_line() + 
-#   geom_hline(yintercept = 100, linetype = 2) + 
-#   scale_x_continuous(breaks = seq(2015, 2100, 5))
-# g.FR.qts
-# 
-# 
-# g.FR.qts2 <- 
-#   df_all.stch %>% 
-#   select(runname, year, starts_with("FR.q")) %>% 
-#   gather(var, value, -runname, -year) %>% 
-#   ggplot(aes(x = year, y = value, color = var)) + theme_bw() + facet_grid(.~runname) + 
-#   geom_point() + 
-#   geom_line() + 
-#   geom_hline(yintercept = 100, linetype = 2) + 
-#   coord_cartesian(ylim = c(0,200)) + 
-#   scale_x_continuous(breaks = seq(2015, 2100, 5))
-# g.FR.qts2
-# 
-# 
-# g.ERC_PR.qts <- 
-#   df_all.stch %>% 
-#   select(runname, year, starts_with("ERC_PR.q")) %>% 
-#   gather(var, value, -runname, -year) %>%
-#   ggplot(aes(x = year, y = value, color = var)) + theme_bw() + facet_grid(.~runname) + 
-#   geom_point() + 
-#   geom_line() + 
-#   scale_x_continuous(breaks = seq(2015, 2100, 5)) +
-#   scale_y_continuous(breaks = seq(0, 100, 10))
-# g.ERC_PR.qts
-# 
-# 
-# 
-# ggsave(g.FR40less,   file = paste0(outputs.folder, "g.FR40less.png"), width  = 10, height = 5)
-# ggsave(g.ERCsharpRise, file = paste0(outputs.folder, "g.ERCsharpRise.png"), width  = 10, height = 5)
-# ggsave(g.ERChigh,      file = paste0(outputs.folder, "g.ERChigh.png"), width  = 10, height = 5)
-# ggsave(g.FR.pctmore,   file = paste0(outputs.folder, "g.FR.pctmore.png"), width  = 10, height = 5)
-# ggsave(g.FR.pctmore2,   file = paste0(outputs.folder, "g.FR.pctmore2.png"), width  = 10, height = 5)
-# 
-# ggsave(g.FR.qts,     file = paste0(outputs.folder, "g.FR.qts.png"), width  = 15, height = 5)
-# ggsave(g.FR.qts2,     file = paste0(outputs.folder, "g.FR.qts2.png"), width  = 15, height = 5)
-# ggsave(g.ERC_PR.qts, file = paste0(outputs.folder, "g.ERC_PR.qts.png"), width  = 15, height = 5)
-# 
-# 
-# 
-# 
-# 
-# #*****************************************************
-# ## Assumption achieved  ####
-# #*****************************************************
-# 
-# 
-# 
-# 
-# 
-# 
-# #*****************************************************
-# ## Low returns in early years  ####
-# #*****************************************************
-# 
-# 
-# 
-# 
-# #********************************************************************
-# ## Return scenarios based on capital market assumptions          ####
-# #********************************************************************
-# 
-# 
-# 
-# 
-# 
 
 
 
