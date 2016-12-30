@@ -105,7 +105,8 @@ RIG.theme <- function(){
 # Runs used in the report 
 runs_RS <- paste0("RS", 1:5)
 runs_cap <-  paste0("RS", 1:5, "_cap") 
-runs_cap.allTiers <-  paste0("RS", 1:5, "_cap.allTiers") 
+runs_cap.allTiers <-  paste0("RS", 1:5, "_cap.allTiers")
+runs_RS_FR075 <- paste0("RS", 1:5, "_FR075")
 
 runs_RS_labels <- c("Assumption Achieved",
                      "5 years of low returns",
@@ -126,9 +127,15 @@ runs_cap.allTiers_labels <- c("Assumption Achieved; w/ERC cap",
                               "Callan; w/ERC cap",
                               "RVK; w/ERC cap")
 
+runs_RS_FR075_labels <- c("Assumption Achieved; 75% initial FR", 
+                    "5 years of low returns; 75% initial FR",
+                    "15 years of low returns; 75% initial FR",
+                    "Callan; 75% initial FR",
+                    "RVK; 75% initial FR")
 
-runs_all <- c(runs_RS, runs_cap, runs_cap.allTiers)
-runs_all_labels <- c(runs_RS_labels, runs_cap_labels, runs_cap.allTiers_labels)
+
+runs_all <- c(runs_RS, runs_cap, runs_cap.allTiers, runs_RS_FR075)
+runs_all_labels <- c(runs_RS_labels, runs_cap_labels, runs_cap.allTiers_labels, runs_RS_FR075_labels )
 
 
 df_all.stch <- results_all  %>% 
@@ -230,8 +237,24 @@ df_t7.stch
 
 
 
+df_all.stch %>% filter(runname == "RS4")
+df_all.stch %>% filter(runname == "RS1_cap")
+df_all.stch %>% filter(runname == "RS1_cap.allTiers") %>% select(runname, year, starts_with("EEC"))
 
 
+df_all.stch %>% filter(runname == "RS1_FR075")
+df_all.stch %>% filter(runname == "RS2_FR075")
+df_all.stch %>% filter(runname == "RS3_FR075")
+
+
+
+(8.546271 - 6.1)/8.54
+(37.73475 - 33.07573) / 37.73475
+
+x <- results_all %>% filter(runname %in% c("RS1", "RS1_FR075"), sim == 0) %>% 
+  group_by(runname) %>% 
+  summarise(sum_I.r = sum(I.r))
+x$sum_I.r[1]/x$sum_I.r[2]
 
 # df_all.stch
 # 
@@ -1286,6 +1309,42 @@ fig_compareRS2.EEChigh.allTiers
 
 
 
+#*************************************************************************
+##                     Summary tables ####
+#*************************************************************************
+
+
+lvl_policies  <- c("", "_cap", "_cap.allTiers")
+lvl_scenarios <- paste0(paste0("RS", rep(1:5, 3)), rep(lvl_policies, each = 5))
+lvl_measures  <- c("FR40less", "ERC_hike", "ERC_high") 
+
+# Summary tables for the three major risk measures
+tab_summary1 <- 
+  df_all.stch %>% filter(runname %in% c(runs_all[1:15]), year == 2044, Tier == "sumTiers") %>% 
+  select(runname, FR40less, ERC_hike, ERC_high) %>% 
+  gather(Measure, value, -runname) %>% 
+  mutate(runname = factor(runname, levels = lvl_scenarios),
+         Measure = factor(Measure, levels = lvl_measures)) %>% 
+  spread(runname, value)
+
+
+# Summary tables for EEC risks
+tab_summary2 <- 
+df_all.stch %>% filter(runname %in% c(runs_all[1:15]), year == 2044) %>% 
+  mutate(policy = str_sub(runname, 5)) %>% 
+  filter(!(policy == "cap" & Tier == "sumTiers"), !(policy == "cap" & Tier == "xt7")) %>% 
+  select(runname, EEC_high, EEC_PR.q75) %>% 
+  gather(Measure, value, -runname) %>% 
+  mutate(runname = factor(runname, levels = lvl_scenarios)) %>% 
+  spread(runname, value)
+
+
+
+
+#*************************************************************************
+##                        Saving results                              ####
+#*************************************************************************
+
 g.height <- 5
 g.width <- 12
 
@@ -1329,7 +1388,7 @@ ggsave(file = paste0(Outputs_folder, "fig_compareRS2.MedFR.png"), fig_compareRS2
 ggsave(file = paste0(Outputs_folder, "fig_compareRS2.FR40less.png"), fig_compareRS2.FR40less, height = 7*0.9, width = 10*0.9)
 ggsave(file = paste0(Outputs_folder, "fig_compareRS2.MedERC.png"), fig_compareRS2.MedERC, height = 0.8*5, width = 0.8*15)
 
-ggsave(file = paste0(Outputs_folder, "fig_compareRS2.distFR.png"), fig_compareRS2.distFR, height = 7*0.9, width = 10*0.9)
+ggsave(file = paste0(Outputs_folder, "fig_compareRS2.distFR.png"), fig_compareRS2.distFR, height = 5*0.9, width = 15*0.9)
 ggsave(file = paste0(Outputs_folder, "fig_compareRS2.distERC.png"), fig_compareRS2.distERC, height = 0.8*5, width = 0.8*15)
 
 ggsave(file = paste0(Outputs_folder, "fig_compareRS2.ERChigh.png"), fig_compareRS2.ERChigh, height = 0.8*5, width = 0.8*15)
@@ -1341,7 +1400,8 @@ ggsave(file = paste0(Outputs_folder, "fig_compareRS2.EEChigh.allTiers.png"), fig
 
 write.xlsx2(df_det, paste0(Outputs_folder, "tables.xlsx"), sheetName = "det_full")
 write.xlsx2(df_det.short, paste0(Outputs_folder, "tables.xlsx"), sheetName = "det_short", append = TRUE)
-
+write.xlsx2(tab_summary1, paste0(Outputs_folder, "tables.xlsx"), sheetName = "summary1", append = TRUE)
+write.xlsx2(tab_summary2, paste0(Outputs_folder, "tables.xlsx"), sheetName = "summary2", append = TRUE)
 
 
 #**************************************************************************
@@ -1355,7 +1415,7 @@ write.xlsx2(df_det.short, paste0(Outputs_folder, "tables.xlsx"), sheetName = "de
 # Look for sims under RS1 with a extended period of zero ERC
 
 results_all %>% filter(runname == "RS1", sim == 2, year <=2040) %>% 
-  select(runname, sim, year, NC, SC, ADC, B, C, EEC, ERC, AL, MA, AA, UAAL, EUAAL, LG, FR_MA, I.r)
+  select(runname, sim, year, NC, NC_PR, SC, ADC, B, C, EEC, ERC, AL, MA, AA, UAAL, EUAAL, LG, FR_MA, I.r)
 # %>% 
   mutate(ADC_unadj = NC + SC)
   
@@ -1531,6 +1591,11 @@ results_all %>% filter(runname == "RS1_cap", sim == 0) %>%
 # 
 # 
 
+G2A <- function(G, V){
+  ArithMean <- (1 + G)*(0.5 + 0.5*(1 + 4*V/(1 + G)^2 )^0.5 )^0.5 - 1
+}
+
+(G2A(0.075, 0.12))
 
 
 
