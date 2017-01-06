@@ -105,7 +105,7 @@ init_terminated_ <-  get_tierData(init_terms_all_, Tier_select_)
 #*************************************************************************************************************
 # Starts with a simple case with only 2 entry ages: 20 and 74
 
-min.year <- min(init.year - (max.age - (r.max - 1)), init.year - (r.max - 1 - min.ea))
+min.year <- min(init.year - (max.age - (r.max - 1)), init.year - (r.max - 1 - min.ea), 1941)
 ## Track down to the year that is the smaller one of the two below: 
 # the year a 120-year-old retiree in year 1 entered the workforce at age r.max - 1 (remeber ea = r.max - 1 is assigned to all inital retirees)
 # the year a r.max year old active in year 1 enter the workforce at age min.ea 

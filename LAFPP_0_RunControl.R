@@ -23,6 +23,12 @@ library("readxl")
 library("XLConnect") # slow but convenient because it reads ranges; NOTE: I had to install Java 64-bit on Windows 10 64-bit to load properly
 # library(xlsx)
 library("btools")
+options(dplyr.print_min = 60) # default is 10
+
+
+
+
+
 
 source("Functions.R")
 
@@ -276,7 +282,9 @@ for(runName in runList$runname ){
     
   paramlist$pct.ca.M <-  0.8 # proportion of males who opt for ca upon retirement
   paramlist$pct.ca.F <-  0.6
-    
+  
+  # paramlist$pct.ca.M <-  0.8 # proportion of males who opt for ca upon retirement
+  # paramlist$pct.ca.F <-  0.6  
 
     
     # Investment returns

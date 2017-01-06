@@ -33,18 +33,18 @@ get_AggLiab <- function( Tier_select_,
      # Global_paramlist_ = Global_paramlist
      # 
    # for all tiers
-     # Tier_select_ = "t1"
-     # liab_   = liab.t1
-     # liab.ca_ = liab.ca.t1
-     # liab.disb.ca_ = liab.disb.ca.t1
-     # pop_    = pop$pop.t1
-     # mortality.post.model_ = mortality.post.model.t1
-     # 
-     # init_beneficiaries_all_  = init_beneficiaries_all
-     # init_retirees.ca_all_    = init_retirees.ca_all
-     # init_disb.ca_all_        = init_disb.ca_all
-     # paramlist_ = paramlist
-     # Global_paramlist_ = Global_paramlist
+   # Tier_select_ = "t5"
+   # liab_   = liab.t5
+   # liab.ca_ = liab.ca.t5
+   # liab.disb.ca_ = liab.disb.ca.t5
+   # pop_    = pop$pop.t5
+   # mortality.post.model_ = mortality.post.model.t5
+   # 
+   # init_beneficiaries_all_  = init_beneficiaries_all
+   # init_retirees.ca_all_    = init_retirees.ca_all
+   # init_disb.ca_all_        = init_disb.ca_all
+   # paramlist_ = paramlist
+   # Global_paramlist_ = Global_paramlist
 
   
    assign_parmsList(Global_paramlist_, envir = environment())

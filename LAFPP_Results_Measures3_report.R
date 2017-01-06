@@ -1417,19 +1417,29 @@ write.xlsx2(tab_summary2, paste0(Outputs_folder, "tables.xlsx"), sheetName = "su
 results_all %>% filter(runname == "RS1", sim == 2, year <=2040) %>% 
   select(runname, sim, year, NC, NC_PR, SC, ADC, B, C, EEC, ERC, AL, MA, AA, UAAL, EUAAL, LG, FR_MA, I.r)
 # %>% 
-  mutate(ADC_unadj = NC + SC)
+  mutate(ADC_unadj = NC + SC
+        )
   
   
-results_all %>% filter(runname == "RS1_cap", sim == 2, Tier == "sumTiers", year <=2040) %>% 
-  select(runname, sim, year, NC, SC, ADC, B, C, EEC, ERC, AL, MA, AA, UAAL, EUAAL, LG, FR_MA, I.r)
+results_all %>% filter(runname == "RS1_cap", sim == 1, Tier == "sumTiers", year <=2044) %>% 
+  select(runname, sim, year, NC, SC, ADC, B, C, EEC, ERC, AL, MA, AA, UAAL, EUAAL, LG, FR_MA, I.r, ERC_cap, NC_PR)
   # %>% 
-  mutate(ADC_unadj = NC + SC)
+  mutate(ADC_unadj = NC + SC,
+         ERC_cap_PR = 100 * ERC_cap / PR )
   
+results_all %>% filter(runname == "RS1_cap", sim == 1, Tier == "t7", year <=2044) %>% 
+    select(runname, sim, year, NC, NC_PR, SC, ADC, B, C, EEC, ERC, AL, MA, AA, FR_MA, C_PR, ERC_cap, PR, ERC_PR, i.r) %>% 
+  # %>% 
+  mutate(ADC_unadj = NC + SC,
+         ERC_cap_PR = 100 * ERC_cap / PR )
 
-  results_all %>% filter(runname == "RS1_cap", sim == 2, Tier == "t7", year <=2044) %>% 
-    select(runname, sim, year, NC, NC_PR, SC, ADC, B, C, EEC, ERC, AL, MA, AA, UAAL, EUAAL, LG, FR_MA, C_PR) %>% 
+results_all %>% filter(runname == "RS1_cap", sim == 1, Tier == "xt7", year <=2044) %>% 
+  select(runname, sim, year, NC, NC_PR, SC, ADC, B, C, EEC, ERC, AL, MA, AA, UAAL, EUAAL, LG, FR_MA, C_PR, ERC_cap, PR, ERC_PR) %>% 
   # %>% 
-  mutate(ADC_unadj = NC + SC)
+  mutate(ADC_unadj = NC + SC,
+         ERC_cap_PR = 100 * ERC_cap / PR )
+
+
 
 results_all %>% filter(runname == "RS1_cap", sim == 2) %>% 
   select(runname, sim, Tier, NC, SC, ADC,B, C, year, ERC, ERC_PR, AL, MA, AA) %>% 
@@ -1444,8 +1454,9 @@ results_all %>% filter(runname == "RS1_cap", sim == 2) %>%
 
 
 results_all %>% filter(runname == "RS1", sim == 0) %>% 
-  select(runname, sim, year, NC, SC, ADC, C, EEC, ERC, ERC_PR, AL, MA, AA, FR_MA, LG, UAAL, Amort_basis) %>% 
-  mutate(ADC_unadj = NC + SC)
+  select(runname, sim, year, NC, NC_PR, SC, ADC, C, EEC, ERC, ERC_PR, AL, MA, AA, FR_MA, LG, UAAL, Amort_basis, PR) %>% 
+  mutate(ADC_unadj = NC + SC,
+         SC_PR = 100 * SC/PR)
 
 results_all %>% filter(runname == "RS1_cap", sim == 0) %>% 
   select(runname, sim, Tier, NC, SC, ADC, C, year, ERC, ERC_PR, AL, MA, FR_MA) %>% 
@@ -1493,6 +1504,40 @@ G2A <- function(G, V){
 }
 
 (G2A(0.075, 0.12))
+
+
+results_all %>% filter(sim>0, runname %in% c("RS1", "RS1_FR075")) %>% 
+  group_by(sim, runname) %>% 
+  summarise(geoReturn = get_geoReturn(i.r),
+            sumInvInc = sum(I.r)) %>% 
+  gather(var, value, -sim, -runname) %>% 
+  mutate(var2 = paste(var, runname, sep = "_" )) %>% 
+  select(-var, -runname) %>% 
+  spread(var2, value) %>% 
+  select(-geoReturn_RS1_FR075) %>% 
+  mutate(Diff_inc = (sumInvInc_RS1 - sumInvInc_RS1_FR075) - sumInvInc_RS1_FR075)  %>% 
+  arrange(geoReturn_RS1) %>% 
+  ggplot(aes(x = geoReturn_RS1, y = Diff_inc)) + geom_point()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

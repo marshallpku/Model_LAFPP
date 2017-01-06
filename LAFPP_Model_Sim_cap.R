@@ -369,11 +369,15 @@ run_sim.wt7 <- function(Tier_select_,
                        B.adj1 = R2.GASB_scale* adj.factor)
   
   # Extra benefits: approximate DROP balance accumulated before 2015
-  B.extra <- 1369*3*6132*12
+  B.adj %<>% mutate(B.extra = 0, B.extra.balance = 0) 
+  B.adj$B.extra.balance[1] <- 1369*3*6132*12
+  for(z in 1:5){
+    B.adj$B.extra[z] <-  B.adj$B.extra.balance[z] / (5 - z + 1)
+    if(z != nrow(B.adj)) B.adj$B.extra.balance[z + 1] <-  (B.adj$B.extra.balance[z] - B.adj$B.extra[z]) * 1.05
+  }
   
-  B.adj %<>% mutate(B.extra = ifelse(year - 2015 < 5, B.extra/5, 0),
-                    B.adj2  = B.adj1 + B.extra)
-  
+  B.adj %<>% mutate(#B.extra = ifelse(year - 2015 < 5, B.extra/5, 0),
+    B.adj2  = B.adj1 + B.extra)
   #if(Adj.benDROP) penSim0$B[1:9] <- B.adj$B.adj2
   
   
@@ -651,6 +655,9 @@ run_sim.wt7 <- function(Tier_select_,
         
       } else {
         penSim.xt7$EUAAL[j] <- with(penSim.xt7, (UAAL[j - 1] + NC[j - 1])*(1 + i[j - 1]) - C[j - 1] - Ic[j - 1])
+        
+        # if(j %in% (B.adj$year - init.year + 1 + 1)) penSim.xt7$EUAAL[j] <- penSim.xt7$EUAAL[j] + (B.adj[B.adj$year == j + init.year - 1 - 1,]$B.extra) * (1 + i) # For LAFPP. adjustment for initial DROP benefit balance is not used in the calculation of losses/gains.
+        
         penSim.xt7$LG[j]    <- with(penSim.xt7,  UAAL[j] - EUAAL[j])
         penSim.xt7$Amort_basis[j]    <- with(penSim.xt7,  LG[j] - (C_ADC[j - 1]) * (1 + i[j - 1]))
       
@@ -905,6 +912,8 @@ run_sim.wt7 <- function(Tier_select_,
   penSim_results <- bind_rows(penSim_results) %>% 
     mutate(sim     = rep(-1:nsim, each = 2*nyear),
            runname = runname,
+           run.returnScn = run.returnScn,
+           run.policyScn = run.policyScn,
            FR      = 100 * AA / exp(log(AL)),
            FR_MA   = 100 * MA / exp(log(AL)),
            UAAL_PR = 100 * UAAL / PR,

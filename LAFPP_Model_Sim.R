@@ -248,9 +248,15 @@ run_sim <- function(Tier_select_,
                        B.adj1 = R2.GASB_scale* adj.factor)
   
   # Extra benefits: approximate DROP balance accumulated before 2015
-  B.extra <- 1369*3*6132*12
   
-  B.adj %<>% mutate(B.extra = ifelse(year - 2015 < 5, B.extra/5, 0),
+  B.adj %<>% mutate(B.extra = 0, B.extra.balance = 0) 
+  B.adj$B.extra.balance[1] <- 1369*3*6132*12
+  for(z in 1:5){
+    B.adj$B.extra[z] <-  B.adj$B.extra.balance[z] / (5 - z + 1)
+    if(z != nrow(B.adj)) B.adj$B.extra.balance[z + 1] <-  (B.adj$B.extra.balance[z] - B.adj$B.extra[z]) * 1.05
+  }
+  
+  B.adj %<>% mutate(#B.extra = ifelse(year - 2015 < 5, B.extra/5, 0),
                     B.adj2  = B.adj1 + B.extra)
   
   #if(Adj.benDROP) penSim0$B[1:9] <- B.adj$B.adj2
@@ -305,7 +311,7 @@ run_sim <- function(Tier_select_,
   
   
   penSim_results <- foreach(k = -1:nsim, .packages = c("dplyr", "tidyr")) %dopar% {
-    #k <- 1
+    # k <- 0
     # initialize
     penSim <- penSim0
     SC_amort <- SC_amort0
@@ -323,7 +329,6 @@ run_sim <- function(Tier_select_,
         
         # j <- 1
         # j <- 2
-
 
       # MA(j) and EAA(j) 
       if(j == 1) {penSim$MA[j]  <- ifelse(k == -1, penSim$AL[j],                   # k = -1 is for testing model consistency
@@ -386,10 +391,13 @@ run_sim <- function(Tier_select_,
       if (j == 1){
         penSim$EUAAL[j] <- 0
         penSim$LG[j] <- with(penSim,  UAAL[j])  # This is the intial underfunding, rather than actuarial loss/gain if the plan is established at period 1. 
-        penSim$Amort_basis[j] <- with(penSim, LG[j])  # This will not be used for UCRP since the amortization scheme for year 1 is provided by SC_amort.(from AV2015)
+        penSim$Amort_basis[j] <- with(penSim, LG[j])  # This will not be used for LAFPP since the amortization scheme for year 1 is provided by SC_amort.(from AV2015)
         
       } else {
         penSim$EUAAL[j] <- with(penSim, (UAAL[j - 1] + NC[j - 1])*(1 + i[j - 1]) - C[j - 1] - Ic[j - 1])
+        
+        # if(j %in% (B.adj$year - init.year + 1 + 1)) penSim$EUAAL[j] <- penSim$EUAAL[j] + (B.adj[B.adj$year == j + init.year - 1 - 1,]$B.extra) * (1 + i) # For LAFPP. adjustment for initial DROP benefit balance is not used in the calculation of losses/gains.
+        
         penSim$LG[j]    <- with(penSim,  UAAL[j] - EUAAL[j])
         penSim$Amort_basis[j]    <- with(penSim,  LG[j] - (C_ADC[j - 1]) * (1 + i[j - 1]))
       
@@ -398,6 +406,7 @@ run_sim <- function(Tier_select_,
         # penSim$Amort_basis[j]    <- with(penSim,  LG[j] - (C_ADC[j - 1]) * (1 + i[j - 1]))
         
       }   
+      
       
       # # Amortize LG(j)
     
@@ -524,6 +533,8 @@ run_sim <- function(Tier_select_,
   penSim_results <- bind_rows(penSim_results) %>% 
     mutate(sim     = rep(-1:nsim, each = nyear),
            runname = runname,
+           run.returnScn = run.returnScn,
+           run.policyScn = run.policyScn,
            Tier    = Tier_select_,
            FR      = 100 * AA / exp(log(AL)),
            FR_MA   = 100 * MA / exp(log(AL)),

@@ -5,6 +5,8 @@ gc()
 # 1.1 Load data,  for all tiers ####
 #*********************************************************************************************************
 
+
+
 # Plan information
 # source("LAFPP_Data_RP2000.R")
 source("LAFPP_Data_PlanInfo.R")
@@ -12,6 +14,15 @@ source("LAFPP_Data_ImportMemberData.R")
 
 load("Data_inputs/LAFPP_PlanInfo.RData")    # for all tiers
 load("Data_inputs/LAFPP_MemberData.RData")  # for all tiers
+
+
+## Exclude selected type(s) of initial members
+# init_actives_all %<>% mutate(nactives = 0) 
+# init_retirees_all %<>% mutate(nretirees = 0)
+# init_beneficiaries_all %<>% mutate(n.R0S1 = 0)
+# init_terms_all %<>% mutate(nterm = 0)
+#init_disb_all  %<>% mutate(ndisb = 0) 
+
 
 pct.init.ret.la <-  0.2
 pct.init.ret.ca  <- 1 - pct.init.ret.la
@@ -86,8 +97,8 @@ decrement.model.t7
  # init_actives_all %<>% mutate(nactives = 0) 
  # init_retirees_all %<>% mutate(nretirees = 0)
  # init_beneficiaries_all %<>% mutate(n.R0S1 = 0)
- # init_terminated_all %<>% mutate(nterm = 0)
-
+ # init_terms_all %<>% mutate(nterm = 0)
+ 
 
 ## Exclude initial terms with ea < 20: Data_population, line 504
  # init_terminated_all %<>% filter(age.term >= Global_paramlist$min.ea,
@@ -539,10 +550,12 @@ if(paramlist$ERC_cap.initiatives){
   penSim_results.t7  <-  penSim_results.sumTiers %>% filter(Tier == "t7")
   
   penSim_results.sumTiers %<>%  
-    select(runname, sim, year, Tier, everything())   %>% 
+    select(runname, run.returnScn, run.policyScn, sim, year, Tier, everything())   %>% 
     group_by(runname, sim, year) %>% 
-    summarise_at(c(5:(ncol(penSim_results.sumTiers))),  funs(sum(., na.rm = TRUE))) %>% 
+    summarise_at(c(7:(ncol(penSim_results.sumTiers))),  funs(sum(., na.rm = TRUE))) %>% 
     mutate(Tier    = "sumTiers",
+           run.returnScn = paramlist$run.returnScn, 
+           run.policyScn = paramlist$run.policyScn,
            FR      = 100 * AA / exp(log(AL)),
            FR_MA   = 100 * MA / exp(log(AL)),
            UAAL_PR = 100 * UAAL / PR,
@@ -566,8 +579,8 @@ if(paramlist$ERC_cap.initiatives){
            ExF     = C - B,
            ExF_PR  = 100 * ExF / PR,
            ExF_MA  = 100 * ExF / MA,
-           PR.growth = ifelse(year > 1, 100 * (PR / lag(PR) - 1), NA)) %>%
-    select(runname, sim, year, Tier, everything())
+           PR.growth = ifelse(year > 1, 100 * (PR / lag(PR) - 1), NA)) %>% 
+    select(runname, run.returnScn, run.policyScn, sim, year, Tier, everything())
   
   }
 
@@ -624,12 +637,13 @@ if(paramlist$ERC_cap.initiatives){
 
 
 var_display1 <- c("runname",  "Tier", "sim", "year", "FR", "MA", "AA", 
-                 "AL", "AL.act", "AL.act.laca", 
-                 "NC", "NC.laca",   #"AL.act.v", "AL.la", "AL.ca", "AL.term",
+                 "AL", 
+                 # "AL.act", "AL.act.laca", 
+                 #"NC", "NC.laca",   #"AL.act.v", "AL.la", "AL.ca", "AL.term",
                  "PVFB", 
                  "B", # "B.la", "B.ca", "B.disb.la","B.disb.ca", 
                  "C",   
-                 "PR", "NC_PR", "ERC_PR")
+                 "PR", "NC_PR", "ERC_PR", "LG", "Amort_basis", "UAAL", "EUAAL")
 
 var_display2 <- c("Tier", "sim", "year", "FR", "MA", "AL", "AL.act", "NC", "SC", "C", "B", "EEC","ERC","PR", "PR_DROP", "EEC_DROP", "ERC_PR" ) # , "ADC") # ,"Amort_basis")
 
@@ -640,7 +654,7 @@ var_display3 <- c("nactives", "nretirees", "nla", "n.ca.R1", "n.ca.R0S1",
 kable(penSim_results.sumTiers %>% filter(sim == -1) %>% select(one_of(var_display1)), digits = 2) %>% print 
 #kable(penSim_results.sumTiers %>% filter(sim == -1) %>% select(one_of(var_display2)), digits = 2) %>% print 
 
-kable(penSim_results.sumTiers %>% filter(sim == 0) %>% select(one_of(var_display1)) %>% mutate(FR.AA = 100 * AA/AL) , digits = 2) %>% print 
+kable(penSim_results.sumTiers %>% filter(sim == 0) %>% select(one_of(var_display1))) %>% print  # mutate(FR.AA = 100 * AA/AL) , digits = 2) %>%
 #kable(penSim_results.sumTiers %>% filter(sim == 0) %>% select(one_of(var_display2)), digits = 2) %>% print 
 
 kable(penSim_results.sumTiers %>% filter(sim == 1) %>% select(one_of(var_display1)), digits = 2) %>% print 
@@ -755,6 +769,13 @@ kable(penSim_results.sumTiers %>% filter(sim == 1) %>% select(one_of(var_display
 # (607 - 546)/607
 # (919 - 798)/919
 
+# load("../Model_Main/IO_M2.1_new/Outputs_D1F075-average.RData")
+# outputs_list$results %>% select(runname, sim ,year, AL, NC, B, MA, C, i.r) %>% head
 
+
+# load("Results/results_sumTiers_RS1.RData")
+# load("Results/results_sumTiers_RS1_cap.RData")
+# load("Results/results_sumTiers_RS1_cap.allTiers.RData")
+# outputs_list$results %>% filter(Tier == "sumTiers", sim == 1) %>% select(runname, sim, year, Tier, AL, MA, FR_MA) %>%  head(100)
 
 
