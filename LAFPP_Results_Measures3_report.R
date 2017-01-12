@@ -110,10 +110,10 @@ runs_cap.allTiers <-  paste0("RS", 1:5, "_cap.allTiers")
 runs_RS_FR075 <- paste0("RS", 1:5, "_FR075")
 
 runs_RS_labels <- c("Assumption Achieved",
-                     "5 years of low returns",
-                     "15 years of low returns",
-                     "Callan",
-                     "RVK")
+                    "5 years of low returns",
+                    "15 years of low returns",
+                    "Callan",
+                    "RVK")
 
 runs_cap_labels <- c("Assumption Achieved; w/ERC cap for new hires",
                      "5 years of low returns; w/ERC cap for new hires",
@@ -129,10 +129,10 @@ runs_cap.allTiers_labels <- c("Assumption Achieved; w/ERC cap",
                               "RVK; w/ERC cap")
 
 runs_RS_FR075_labels <- c("Assumption Achieved; 75% initial FR", 
-                    "5 years of low returns; 75% initial FR",
-                    "15 years of low returns; 75% initial FR",
-                    "Callan; 75% initial FR",
-                    "RVK; 75% initial FR")
+                          "5 years of low returns; 75% initial FR",
+                          "15 years of low returns; 75% initial FR",
+                          "Callan; 75% initial FR",
+                          "RVK; 75% initial FR")
 
 
 runs_all <- c(runs_RS, runs_cap, runs_cap.allTiers, runs_RS_FR075)
