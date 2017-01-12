@@ -22,6 +22,7 @@ library("readxl")
 library("XLConnect") # slow but convenient because it reads ranges; NOTE: I had to install Java 64-bit on Windows 10 64-bit to load properly
 library(xlsx)
 library("btools")
+library("scales")
 
 source("Functions.R")
 
@@ -31,7 +32,7 @@ source("Functions.R")
 ##  Defining paths for inputs and outputs         ####
 #*****************************************************
 IO_folder       <- "Results/"
-Outputs_folder  <- "Results/Graphs_report2/"
+Outputs_folder  <- "Results/Graphs_fiscal/"
 
 
 #*****************************************************
@@ -140,7 +141,7 @@ df_revenue %<>%
 
 
 #**********************************************************************************************
-##  Fiscal analysis  ####
+##  Fiscal analysis:  ####
 #**********************************************************************************************
 
 # Assumption about the non-pension ERC in the LAFPP system (mainly health subsidy):
@@ -188,7 +189,25 @@ results_fiscal <-
          ERC.tot_GenFund) 
 
 
+fig_projGenFund <- 
+results_fiscal %>% filter(runname == "RS1", sim == 0) %>% 
+  ggplot(aes(x = year, y = GenFund.proj/1e6)) + 
+  geom_bar(stat = "identity", fill = "skyblue2", color = "grey50", width = 0.5) + 
+  theme_bw() + 
+  RIG.theme() + 
+  scale_x_continuous(breaks = c(seq(2015, 2040, 5), 2044)) + 
+  scale_y_continuous(breaks = seq(0, 20000, 1000)) + 
+  labs(title = "Projected General Fund of the Los Angeles City",
+       y = "$Million",
+       x = "Year")
+fig_projGenFund
+  
 
+
+
+#**********************************************************************************************
+##  Fiscal analysis: Deterministic Run  ####
+#**********************************************************************************************
 ## Deterministic run
  results_fiscal.det <- 
  results_fiscal %>%  filter(sim ==0, Tier == "sumTiers") %>% 
@@ -198,7 +217,8 @@ results_fiscal <-
           ERC.tot_GenFund)
 
 
- # LAFPP ERC  
+ # LAFPP ERC
+fig_det_LAFPP <- 
  results_fiscal.det %>% 
    filter(run.returnScn %in% paste0("RS", c(1, 3, 5)), run.policyScn %in% c("noCap", "cap", "cap.allTiers" )) %>% 
    ggplot(aes(x = year, y = ERC.LAFPP_GenFund, color = run.returnScn.lab))  + 
@@ -216,9 +236,10 @@ results_fiscal <-
         subtitle = "Deterministic runs",
         x = "Year",
         y = "Percent")
-
+fig_det_LAFPP
  
- # LAFPP + LACERS ERC  
+ # LAFPP + LACERS ERC
+fig_det_tot <- 
  results_fiscal.det %>% 
    filter(run.returnScn %in% paste0("RS", c(1, 3, 5)), run.policyScn %in% c("noCap", "cap", "cap.allTiers" )) %>% 
    ggplot(aes(x = year, y = ERC.tot_GenFund, color = run.returnScn.lab))  + 
@@ -236,17 +257,258 @@ results_fiscal <-
         subtitle = "Deterministic runs",
         x = "Year",
         y = "Percent")
+fig_det_tot
+   
+#**********************************************************************************************
+## Stochastic runs: policies  ####
+#**********************************************************************************************
+
+
+ ## Stochastic runs
+
+ results_fiscal.stch <- 
+   results_fiscal %>%  filter(Tier == "sumTiers", sim >0) %>%
+   group_by(run.returnScn, run.policyScn, year) %>% 
+   summarise(
+          ERC.LAFPP_GenFund.q10   = quantile(ERC.LAFPP_GenFund, 0.1,  na.rm = T),
+          ERC.LAFPP_GenFund.q25   = quantile(ERC.LAFPP_GenFund, 0.25, na.rm = T),
+          ERC.LAFPP_GenFund.q50   = quantile(ERC.LAFPP_GenFund, 0.50, na.rm = T),
+          ERC.LAFPP_GenFund.q75   = quantile(ERC.LAFPP_GenFund, 0.75, na.rm = T),
+          ERC.LAFPP_GenFund.q90   = quantile(ERC.LAFPP_GenFund, 0.90, na.rm = T),
+          
+          ERC.tot_GenFund.q10   = quantile(ERC.tot_GenFund, 0.1,  na.rm = T),
+          ERC.tot_GenFund.q25   = quantile(ERC.tot_GenFund, 0.25, na.rm = T),
+          ERC.tot_GenFund.q50   = quantile(ERC.tot_GenFund, 0.50, na.rm = T),
+          ERC.tot_GenFund.q75   = quantile(ERC.tot_GenFund, 0.75, na.rm = T),
+          ERC.tot_GenFund.q90   = quantile(ERC.tot_GenFund, 0.90, na.rm = T))
+          
+ results_fiscal.stch
+
+# Distribution under current policy and assumption is met
+ 
+ 
+ # LAFPP ERC  
+fig_stch.LAFPP <- 
+ results_fiscal.stch %>% 
+   filter(run.returnScn %in% paste0("RS", c(1)), run.policyScn %in% c("noCap")) %>% 
+   select(run.returnScn, run.policyScn, year, 
+          ERC.LAFPP_GenFund.q25, 
+          ERC.LAFPP_GenFund.q50, 
+          ERC.LAFPP_GenFund.q75) %>% 
+   gather(qtile, value, -run.returnScn, -run.policyScn, -year) %>% 
+   mutate(qtile = factor(qtile, levels = c("ERC.LAFPP_GenFund.q75", "ERC.LAFPP_GenFund.q50", "ERC.LAFPP_GenFund.q25"),
+                                labels = c("75th percentile", "50th percentile", "25th percentile"))) %>% 
+   ggplot(aes(x = year, y = value , color = qtile))  + 
+   geom_point() + 
+   geom_line() + 
+   scale_x_continuous(breaks = c(seq(2015, 2040, 5), 2044)) + 
+   scale_y_continuous(breaks = seq(0, 100, 2)) + 
+   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue), name = "") + 
+   coord_cartesian(ylim = c(0,20)) + 
+   theme_bw() + 
+   RIG.theme() +
+   guides(color = guide_legend(keywidth = 1.5, keyheight = 2)) + 
+   labs(title = "Distribution of ERC for LAFPP (pension and health) \nas a percentage of General Fund of LA",
+        subtitle = "Current policy; expected return = 7.5%",
+        x = "Year",
+        y = "Percent")
+fig_stch.LAFPP
+ 
+ # LAFPP + LACERS ERC
+fig_stch.tot <- 
+ results_fiscal.stch %>% 
+   filter(run.returnScn %in% paste0("RS", c(1)), run.policyScn %in% c("noCap")) %>% 
+   select(run.returnScn, run.policyScn, year, 
+          ERC.tot_GenFund.q25, 
+          ERC.tot_GenFund.q50, 
+          ERC.tot_GenFund.q75) %>% 
+   gather(qtile, value, -run.returnScn, -run.policyScn, -year) %>% 
+   mutate(qtile = factor(qtile, levels = c("ERC.tot_GenFund.q75", 
+                                           "ERC.tot_GenFund.q50", 
+                                           "ERC.tot_GenFund.q25"),
+                         labels = c("75th percentile", "50th percentile", "25th percentile"))) %>% 
+   ggplot(aes(x = year, y = value , color = qtile))  + 
+   geom_point() + 
+   geom_line() + 
+   scale_x_continuous(breaks = c(seq(2015, 2040, 5), 2044)) + 
+   scale_y_continuous(breaks = seq(0, 100, 5)) + 
+   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue), name = "") + 
+   coord_cartesian(ylim = c(0,40)) + 
+   theme_bw() + 
+   RIG.theme() +
+   guides(color = guide_legend(keywidth = 1.5, keyheight = 2)) + 
+   labs(title = "Distribution of ERC for LAFPP and LACERS (pension and health) \nas a percentage of General Fund of LA",
+        subtitle = "Current policy; expected return = 7.5%",
+        x = "Year",
+        y = "Percent")
+fig_stch.tot
   
+ #**********************************************************************************************
+ ## Low returns in early years ####
+ #**********************************************************************************************
+ labs.lowReturns <- c("Scenario 2: \nAssumption achieved", 
+                      "Scenario 3: \n5 years of low returns", 
+                      "Scenario 4: \n15 years of low returns")
+ 
+ 
+ # LAFPP ERC
+fig_lowR.LAFPP <- 
+ results_fiscal.stch %>% 
+   filter(run.returnScn %in% paste0("RS", c(1,2,3)), run.policyScn %in% c("noCap")) %>% 
+   select(run.returnScn, run.policyScn, year,
+          ERC.LAFPP_GenFund.q25, 
+          ERC.LAFPP_GenFund.q50, 
+          ERC.LAFPP_GenFund.q75) %>% 
+   ungroup %>% 
+   gather(qtile, value, -run.returnScn, -run.policyScn, -year) %>% 
+   mutate(qtile = factor(qtile, levels = c("ERC.LAFPP_GenFund.q75", 
+                                           "ERC.LAFPP_GenFund.q50", 
+                                           "ERC.LAFPP_GenFund.q25"),
+                                labels = c("75th percentile", 
+                                           "50th percentile", 
+                                           "25th percentile")),
+          run.returnScn = factor(run.returnScn, labels = labs.lowReturns)) %>% 
+   ggplot(aes(x = year, y = value , color = qtile))  + 
+   facet_grid(. ~ run.returnScn) + 
+   geom_point() + 
+   geom_line() + 
+   scale_x_continuous(breaks = c(seq(2015, 2040, 5), 2044)) + 
+   scale_y_continuous(breaks = seq(0, 100, 2)) + 
+   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue), name = "") + 
+   coord_cartesian(ylim = c(0,29)) + 
+   theme_bw() + 
+   RIG.theme() +
+   guides(color = guide_legend(keywidth = 1.5, keyheight = 2)) + 
+   labs(title = "Distribution of ERC for LAFPP (pension and health) \nas a percentage of General Fund of LA",
+        subtitle = "Current policy; low expected returns in early years",
+        x = "Year",
+        y = "Percent")
+ 
+ 
+ # LAFPP + LACERS ERC
+fig_lowR.tot <- 
+ results_fiscal.stch %>% 
+   filter(run.returnScn %in% paste0("RS", c(1,2,3)), run.policyScn %in% c("noCap")) %>% 
+   select(run.returnScn, run.policyScn, year,
+          ERC.tot_GenFund.q25, 
+          ERC.tot_GenFund.q50, 
+          ERC.tot_GenFund.q75) %>% 
+   ungroup %>% 
+   gather(qtile, value, -run.returnScn, -run.policyScn, -year) %>% 
+   mutate(qtile = factor(qtile, levels = c("ERC.tot_GenFund.q75", 
+                                           "ERC.tot_GenFund.q50", 
+                                           "ERC.tot_GenFund.q25"),
+                         labels = c("75th percentile", 
+                                    "50th percentile", 
+                                    "25th percentile")),
+          run.returnScn = factor(run.returnScn, labels = labs.lowReturns)) %>% 
+   ggplot(aes(x = year, y = value , color = qtile))  + 
+   facet_grid(. ~ run.returnScn) + 
+   geom_point() + 
+   geom_line() + 
+   scale_x_continuous(breaks = c(seq(2015, 2040, 5), 2044)) + 
+   scale_y_continuous(breaks = seq(0, 100, 5)) + 
+   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue), name = "") + 
+   coord_cartesian(ylim = c(0,49)) + 
+   theme_bw() + 
+   RIG.theme() +
+   guides(color = guide_legend(keywidth = 1.5, keyheight = 2)) + 
+   labs(title = "Distribution of ERC for LAFPP and LACERS (pension and health) \nas a percentage of General Fund of LA",
+        subtitle = "Current policy; low expected returns in early years",
+        x = "Year",
+        y = "Percent")
+fig_lowR.tot
+ 
+ #**********************************************************************************************
+ ## Alternative risk-return profiles ####
+ #**********************************************************************************************
+ labs.altAssumptions <- c("Scenario 2: \nAssumption achieved", 
+                          "Scenario 5: \nHigh volatility \nreflecting market forecasts", 
+                          "Scenario 6: \nLow expected return \nbased on LAFPP target portfolio")
+ 
+ 
+ # LAFPP ERC
+
+fig_alt.LAFPP <- 
+ results_fiscal.stch %>% 
+   filter(run.returnScn %in% paste0("RS", c(1,4,5)), run.policyScn %in% c("noCap")) %>% 
+   select(run.returnScn, run.policyScn, year,
+          ERC.LAFPP_GenFund.q25, 
+          ERC.LAFPP_GenFund.q50, 
+          ERC.LAFPP_GenFund.q75) %>% 
+   ungroup %>% 
+   gather(qtile, value, -run.returnScn, -run.policyScn, -year) %>% 
+   mutate(qtile = factor(qtile, levels = c("ERC.LAFPP_GenFund.q75", 
+                                           "ERC.LAFPP_GenFund.q50", 
+                                           "ERC.LAFPP_GenFund.q25"),
+                         labels = c("75th percentile", 
+                                    "50th percentile", 
+                                    "25th percentile")),
+          run.returnScn = factor(run.returnScn, labels = labs.altAssumptions)) %>% 
+   ggplot(aes(x = year, y = value , color = qtile))  + 
+   facet_grid(. ~ run.returnScn) + 
+   geom_point() + 
+   geom_line() + 
+   scale_x_continuous(breaks = c(seq(2015, 2040, 5), 2044)) + 
+   scale_y_continuous(breaks = seq(0, 100, 2)) + 
+   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue), name = "") + 
+   coord_cartesian(ylim = c(0,29)) + 
+   theme_bw() + 
+   RIG.theme() +
+   guides(color = guide_legend(keywidth = 1.5, keyheight = 2)) + 
+   labs(title = "Distribution of ERC for LAFPP (pension and health) \nas a percentage of General Fund of LA",
+        subtitle = "Current policy; alternative risk-return profiles",
+        x = "Year",
+        y = "Percent")
+fig_alt.LAFPP 
+ 
+ # LAFPP + LACERS ERC
+fig_alt.tot <- 
+ results_fiscal.stch %>% 
+   filter(run.returnScn %in% paste0("RS", c(1,4,5)), run.policyScn %in% c("noCap")) %>% 
+   select(run.returnScn, run.policyScn, year,
+          ERC.tot_GenFund.q25, 
+          ERC.tot_GenFund.q50, 
+          ERC.tot_GenFund.q75) %>% 
+   ungroup %>% 
+   gather(qtile, value, -run.returnScn, -run.policyScn, -year) %>% 
+   mutate(qtile = factor(qtile, levels = c("ERC.tot_GenFund.q75", 
+                                           "ERC.tot_GenFund.q50", 
+                                           "ERC.tot_GenFund.q25"),
+                         labels = c("75th percentile", 
+                                    "50th percentile", 
+                                    "25th percentile")),
+          run.returnScn = factor(run.returnScn, labels = labs.altAssumptions)) %>% 
+   ggplot(aes(x = year, y = value , color = qtile))  + 
+   facet_grid(. ~ run.returnScn) + 
+   geom_point() + 
+   geom_line() + 
+   scale_x_continuous(breaks = c(seq(2015, 2040, 5), 2044)) + 
+   scale_y_continuous(breaks = seq(0, 100, 5)) + 
+   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue), name = "") + 
+   coord_cartesian(ylim = c(0,49)) + 
+   theme_bw() + 
+   RIG.theme() +
+   guides(color = guide_legend(keywidth = 1.5, keyheight = 2)) + 
+   labs(title = "Distribution of ERC for LAFPP and LACERS (pension and health) \nas a percentage of General Fund of LA",
+        subtitle = "Current policy; alternative risk-return profiles",
+        x = "Year",
+        y = "Percent")
  
 
+ggsave(file = paste0(Outputs_folder, "fig_projGenFund.png"), fig_projGenFund, height = 6*0.9, width = 10*0.9)
 
+ggsave(file = paste0(Outputs_folder, "fig_det_LAFPP.png"), fig_det_LAFPP, height = 6*0.8, width = 15*0.8)
+ggsave(file = paste0(Outputs_folder, "fig_det_tot.png"), fig_det_tot, height = 6*0.8, width = 15*0.8)
 
+ggsave(file = paste0(Outputs_folder, "fig_stch.LAFPP.png"), fig_stch.LAFPP, height = 7*0.8, width = 10*0.8)
+ggsave(file = paste0(Outputs_folder, "fig_stch.tot.png"), fig_stch.tot, height = 7*0.8, width = 10*0.8)
 
+ggsave(file = paste0(Outputs_folder, "fig_lowR.LAFPP.png"), fig_lowR.LAFPP, height = 6*0.8, width = 15*0.8)
+ggsave(file = paste0(Outputs_folder, "fig_lowR.tot.png"), fig_lowR.tot, height = 6*0.8, width = 15*0.8)
 
-
-
-
-
+ggsave(file = paste0(Outputs_folder, "fig_alt.LAFPP.png"), fig_alt.LAFPP, height = 6*0.8, width = 15*0.8)
+ggsave(file = paste0(Outputs_folder, "fig_alt.tot.png"), fig_alt.tot, height = 6*0.8, width = 15*0.8)
 
 
 
