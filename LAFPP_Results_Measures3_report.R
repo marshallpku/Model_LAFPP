@@ -1037,7 +1037,7 @@ fig_compareRS1.EECdist.allTiers <- df_allTiers.stch.RS1 %>%
   scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
   scale_y_continuous(breaks = seq(0, 500, 10)) + 
   scale_color_manual(values = c(RIG.red, RIG.blue, RIG.green),  name = NULL, 
-                     label  = c("90th percentile", "75th percentile", "50th percentile", "25th percentile", "10th percentile")) + 
+                     label  = c("75th percentile", "50th percentile", "25th percentile")) + 
   labs(title = fig.title,
        x = NULL, y = "Percent") + 
   theme(axis.text.x = element_text(size = 8),
@@ -1885,12 +1885,13 @@ load("SC_amort0.RData")
 
 colSums(SC_amort0)[1:30]
 
-results_all %>% filter(runname == "RS1", sim == 0) %>% 
-  select(runname, sim, year, SC, LG, ADC, C, FR_MA) %>% 
+x <- results_all %>% filter(runname == "RS1", sim == 0) %>% 
+  select(runname, sim, year, SC, LG, ADC, C, FR_MA, PR, NC) %>% 
   mutate(SC_original = colSums(SC_amort0)[1:30]) %>% 
   mutate_each(funs(./1e6), -runname, -sim, -year, -FR_MA) %>%
   mutate(SC_diffpct = 100 * ((SC - SC_original)/SC_original),
-         SC_diff    = SC - SC_original) %>% 
+         SC_diff    = SC - SC_original,
+         PR.growth = 100*PR/lag(PR) - 100) %>% 
   select(runname, sim,year, SC, SC_original, SC_diff, SC_diffpct, everything())
 
   
@@ -1922,19 +1923,21 @@ results_all %>% filter(sim>0, runname %in% c("RS1", "RS1_FR075")) %>%
   mutate(Diff_inc = (sumInvInc_RS1 - sumInvInc_RS1_FR075)/sumInvInc_RS1_FR075)  %>% 
   arrange(geoReturn_RS1)
 
-%>% 
-  ggplot(aes(x = geoReturn_RS1, y = Diff_inc)) + geom_point()
+# %>% 
+#   ggplot(aes(x = geoReturn_RS1, y = Diff_inc)) + geom_point()
 
 
 
 
 
+library(pdata)
 
 
+names(ppd)
 
-
-
-
+x <- ppd %>% select(PlanName, fy, ReqContRate_ER) %>% 
+  filter(fy == 2014) %>% 
+  arrange(ReqContRate_ER)
 
 
 
