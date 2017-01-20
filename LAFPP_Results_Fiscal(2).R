@@ -195,7 +195,7 @@ results_fiscal %>% filter(runname == "RS1", sim == 0) %>%
   geom_bar(stat = "identity", fill = "skyblue2", color = "grey50", width = 0.5) + 
   theme_bw() + 
   RIG.theme() + 
-  scale_x_continuous(breaks = c(2016, seq(2020, 2040, 5))) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0, 20000, 1000)) + 
   labs(title = "Projected General Fund of the Los Angeles City",
        y = "$Million",
@@ -239,6 +239,36 @@ fig_det_LAFPP <-
 fig_det_LAFPP
 
 
+# LAFPP pension ERC
+
+n1 <- "Notes:"
+n2 <- "\n   Scenario 2: Expected compound return is 7.5%, standard deviation is 12%"
+n3 <- "\n   Scenario 4: Expected compound return is 6.6%, standard deviation is 12%"
+n4 <- "\n   Scenario 6: Expected compound return is 6.1%, standard deviation is 13.4%"
+fig.caption <- paste0(n1, n2, n3, n4)
+
+fig_det_LAFPP.noCap <- 
+  results_fiscal.det %>% 
+  filter(run.returnScn %in% paste0("RS", c(1, 3, 5)), run.policyScn %in% c("noCap")) %>% 
+  ggplot(aes(x = year, y = ERC.LAFPP.pension_GenFund, color = run.returnScn.lab))  + 
+  geom_point() + 
+  geom_line()+ 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
+  scale_y_continuous(breaks = seq(0, 100, 2)) + 
+  scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue), name = "Return scenarios") + 
+  coord_cartesian(ylim = c(0,18)) + 
+  theme_bw() + 
+  RIG.theme() +
+  guides(color = guide_legend(keywidth = 1.5, keyheight = 3)) + 
+  labs(title = "ERC for LAFPP (pension only) as a percentage of General Fund of LA",
+       subtitle = "Deterministic runs",
+       caption = fig.caption,
+       x = "Year",
+       y = "Percent")
+fig_det_LAFPP.noCap
+
+
+
 #**********************************************************************************************
 ## Stochastic runs: policies  ####
 #**********************************************************************************************
@@ -279,7 +309,7 @@ fig_stch.LAFPP <-
    ggplot(aes(x = year, y = value , color = qtile))  + 
    geom_point() + 
    geom_line() + 
-   scale_x_continuous(breaks = c(2016, seq(2020, 2040, 5))) + 
+   scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
    scale_y_continuous(breaks = seq(0, 100, 2)) + 
    scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue), name = "") + 
    coord_cartesian(ylim = c(0,20)) + 
@@ -386,12 +416,32 @@ ggsave(file = paste0(Outputs_folder, "fig_projGenFund.png"), fig_projGenFund, he
 
 ggsave(file = paste0(Outputs_folder, "fig_det_LAFPP.png"), fig_det_LAFPP, height = 6*0.8, width = 15*0.8)
 
+ggsave(file = paste0(Outputs_folder, "fig_det_LAFPP.noCap.png"), fig_det_LAFPP.noCap, height = 7*0.8, width = 10*0.8)
+
 ggsave(file = paste0(Outputs_folder, "fig_stch.LAFPP.png"), fig_stch.LAFPP, height = 7*0.8, width = 10*0.8)
 
 ggsave(file = paste0(Outputs_folder, "fig_lowR.LAFPP.png"), fig_lowR.LAFPP, height = 6*0.8, width = 15*0.8)
 
 ggsave(file = paste0(Outputs_folder, "fig_alt.LAFPP.png"), fig_alt.LAFPP, height = 6*0.8, width = 15*0.8)
 
+
+
+
+#**************************************************************************
+# LACERS ####
+#**************************************************************************
+
+ERC.LACERS_2016 <- 565857179
+
+df_LACERS <- 
+results_fiscal %>% 
+  filter(Tier == "sumTiers") %>% 
+  select(runname, sim, year,run.policyScn, run.returnScn, ERC) %>% 
+  group_by(runname, sim) %>% 
+  mutate(ERC.growth = ERC/ERC[year == 2016],
+         ERC.LACERS = ERC.growth*ERC.LACERS_2016)
+  
+df_LACERS %>% filter(runname == "RS1", sim == 0)
 
 #**************************************************************************
 # For LAFPP ####
@@ -407,7 +457,6 @@ df_det <- results_all  %>%
   select(year, FR_MA, B, ERC, GenFund.proj, ERC_PR, ERC_GenFund) 
 
 df_det
-
 
 write.csv(df_det, file = paste0(Outputs_folder, "LAFPP.csv"))
 
