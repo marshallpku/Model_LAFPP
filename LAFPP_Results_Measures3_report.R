@@ -1881,6 +1881,7 @@ results_all %>% filter(runname == "RS1_cap", sim == 0, Tier %in% c("t7", "sumTie
 ## Check supplemental costs in the deterministic run
 
 load("SC_amort0.RData")  
+SC_amort0
 
 colSums(SC_amort0)[1:30]
 
@@ -1892,7 +1893,7 @@ x <- results_all %>% filter(runname == "RS1", sim == 0) %>%
          SC_diff    = SC - SC_original,
          PR.growth = 100*PR/lag(PR) - 100) %>% 
   select(runname, sim,year, SC, SC_original, SC_diff, SC_diffpct, everything())
-
+x
   
   
 results_all %>% filter(runname == "RS1", sim == -1) %>% 

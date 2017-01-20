@@ -132,7 +132,7 @@ RIG.theme <- function(){
 df_revenue <- read_ExcelRange("Data_inputs/LAFPP_PlanInfo_2016.xlsx", sheet = "Fiscal")
 
 # extend the projection into 2044 using the projected growth rate of 2.9% in 2020 
-rev.growth <- 0.029
+rev.growth <- 0.03
 
 df_revenue %<>% 
   mutate(GenFund.proj = 1000 * ifelse(year < 2021, GenFund.original, GenFund.original[year == 2020] * (1 + rev.growth)^(year - 2020))) 
@@ -186,7 +186,8 @@ results_fiscal <-
          ERC.LAFPP.pension_GenFund,
          ERC.LAFPP_GenFund,
          ERC.LACERS_GenFund,
-         ERC.tot_GenFund) 
+         ERC.tot_GenFund,
+         NC) 
 
 
 fig_projGenFund <- 
@@ -202,7 +203,6 @@ results_fiscal %>% filter(runname == "RS1", sim == 0) %>%
        x = "Year")
 fig_projGenFund
   
-
 
 
 #**********************************************************************************************
@@ -436,12 +436,29 @@ ERC.LACERS_2016 <- 565857179
 df_LACERS <- 
 results_fiscal %>% 
   filter(Tier == "sumTiers") %>% 
-  select(runname, sim, year,run.policyScn, run.returnScn, ERC) %>% 
+  select(runname, sim, year,run.policyScn, run.returnScn, ERC, GenFund.proj) %>% 
   group_by(runname, sim) %>% 
-  mutate(ERC.growth = ERC/ERC[year == 2016],
-         ERC.LACERS = ERC.growth*ERC.LACERS_2016)
+  mutate( 
+         ERC.growth = ERC/ERC[year == 2016],
+         ERC.LACERS = ERC.growth*ERC.LACERS_2016,
+         ERC.LACERS_GenFund = 100 * ERC.LACERS / GenFund.proj)
   
 df_LACERS %>% filter(runname == "RS1", sim == 0)
+
+
+df_LACERS_qctile <- 
+  df_LACERS %>%  filter( sim >0) %>%
+  group_by(run.returnScn, run.policyScn, year) %>% 
+  summarise(
+    ERC.LACERS_GenFund.q10  = quantile(ERC.LACERS_GenFund, 0.1,  na.rm = T),
+    ERC.LACERS_GenFund.q25  = quantile(ERC.LACERS_GenFund, 0.25, na.rm = T),
+    ERC.LACERS_GenFund.q50  = quantile(ERC.LACERS_GenFund, 0.50, na.rm = T),
+    ERC.LACERS_GenFund.q75  = quantile(ERC.LACERS_GenFund, 0.75, na.rm = T),
+    ERC.LACERS_GenFund.q90  = quantile(ERC.LACERS_GenFund, 0.90, na.rm = T))
+
+df_LACERS_qctile %>% filter(run.returnScn == "RS1", run.policyScn == "noCap")
+
+
 
 #**************************************************************************
 # For LAFPP ####
@@ -451,10 +468,14 @@ df_LACERS %>% filter(runname == "RS1", sim == 0)
 df_det <- results_all  %>% 
   left_join(df_revenue) %>% 
   filter(runname == "RS5", sim == 0, year <= 2045) %>% 
-  select(year, FR_MA, B, ERC,  ERC_PR, GenFund.proj ) %>%
-  mutate(ERC_GenFund = 100 * ERC/GenFund.proj) %>% 
-  mutate_at(vars(-year, -FR_MA, -ERC_PR, -ERC_GenFund), funs(./1e6)) %>% 
-  select(year, FR_MA, B, ERC, GenFund.proj, ERC_PR, ERC_GenFund) 
+  select(year, FR_MA, B, ERC,  ERC_PR, GenFund.proj, NC, SC, LG, NC, SC) %>%
+  mutate(ERC_GenFund = 100 * ERC/GenFund.proj,
+         NC.growth  = 100 * (NC - lag(NC))/NC,
+         SC.growth  = 100 * (SC - lag(SC))/SC,
+         NC.factor  = 100*NC / NC[year == 2016],
+         SC.factor  = 100*SC / SC[year == 2016]) %>% 
+  mutate_at(vars(-year, -FR_MA, -ERC_PR, -ERC_GenFund, -NC.growth, -SC.growth, -NC.factor, -SC.factor), funs(./1e6)) %>% 
+  select(year, FR_MA, B, ERC, GenFund.proj, ERC_PR, ERC_GenFund, NC.growth, SC.growth, NC.factor, SC.factor, LG, NC, SC) 
 
 df_det
 
