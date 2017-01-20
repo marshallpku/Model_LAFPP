@@ -9,11 +9,11 @@ gc()
 
 # Plan information
 # source("LAFPP_Data_RP2000.R")
-source("LAFPP_Data_PlanInfo.R")
-source("LAFPP_Data_ImportMemberData.R")
+source("LAFPP_Data_PlanInfo_2016.R")
+source("LAFPP_Data_ImportMemberData_2016.R")
 
-load("Data_inputs/LAFPP_PlanInfo.RData")    # for all tiers
-load("Data_inputs/LAFPP_MemberData.RData")  # for all tiers
+load("Data_inputs/LAFPP_PlanInfo_2016.RData")    # for all tiers
+load("Data_inputs/LAFPP_MemberData_2016.RData")  # for all tiers
 
 
 ## Exclude selected type(s) of initial members
@@ -21,7 +21,7 @@ load("Data_inputs/LAFPP_MemberData.RData")  # for all tiers
 # init_retirees_all %<>% mutate(nretirees = 0)
 # init_beneficiaries_all %<>% mutate(n.R0S1 = 0)
 # init_terms_all %<>% mutate(nterm = 0)
-#init_disb_all  %<>% mutate(ndisb = 0) 
+# init_disb_all  %<>% mutate(ndisb = 0) 
 
 
 pct.init.ret.la <-  0.2
@@ -87,7 +87,7 @@ list.decrements.t7      <- get_decrements("t6")
 decrement.model.t7      <- list.decrements.t6$decrement.model
 mortality.post.model.t7 <- list.decrements.t6$mortality.post.model
 
-decrement.model.t7 
+# decrement.model.t7 
 
 #*****************************************************
 ##   Calibration and Modification of initial data ####
@@ -152,7 +152,7 @@ row.names(tier.param) <- tier.param$tier
 # 2. PVFB.act
   # By calibrating benefit factor for service retirees
 
-calibFactor_bfactor <- 1.072
+calibFactor_bfactor <- 1.08
 bfactor %<>% mutate_each(funs(pmin(1, .*calibFactor_bfactor)), -yos )
 bfactor
 
@@ -660,17 +660,19 @@ kable(penSim_results.sumTiers %>% filter(sim == 0) %>% select(one_of(var_display
 kable(penSim_results.sumTiers %>% filter(sim == 1) %>% select(one_of(var_display1)), digits = 2) %>% print 
 kable(penSim_results.sumTiers %>% filter(sim == 1) %>% select(one_of(var_display2)) %>% mutate(#ExF = C - B, 
                                                                                                #ExF_MA = 100 * ExF/MA,
-                                                                                               #PVFB.nonact = AL - AL.act,
+                                                                                               PVFB.nonact = AL - AL.act,
                                                                                                DROP.PR   = PR_DROP/PR,
                                                                                                DROP.rate = EEC_DROP/EEC), digits = 2)  %>%  print 
 
 
-# kable(penSim_results.sumTiers %>% filter(sim == 1) %>%  select(runname, sim, year, NC, SC, ADC, B, C, EEC, ERC, ERC_PR, AL, MA,AA, FR_MA, UAAL, LG, I.r))
-# kable(penSim_results.xt7 %>% filter(sim == 3) %>%  select(runname, sim, year, NC, SC, ADC, B, C, EEC, ERC, ERC_PR, AL, MA,AA, FR_MA, UAAL, LG))
+# kable(penSim_results.sumTiers %>% filter(sim == -1) %>%  select(runname, sim, year, NC, SC, ADC, B, C, EEC, ERC, ERC_PR, AL.disb.ca, MA,AA, FR_MA, UAAL, LG, nactives))
+# 
+# kable(outputs_list$results %>% filter(sim == -1) %>%  select(runname, sim, year, NC, SC, ADC, B, C, EEC, ERC, ERC_PR, AL.disb.ca, MA,AA, FR_MA, UAAL, LG,nactives))
+# kable(outputs_list$results.t7 %>% filter(sim == -1) %>%  select(runname, sim, year, NC, SC, ADC, B, C, EEC, ERC, ERC_PR, AL.act, MA,AA, FR_MA, UAAL, LG, nactives))
 # 
 # 
 # kable(penSim_results.sumTiers %>% filter(sim == 1) %>% select(one_of(var_display3)))
-# 
+
 
 
 # 17085208040 - 7537531159
@@ -776,6 +778,8 @@ kable(penSim_results.sumTiers %>% filter(sim == 1) %>% select(one_of(var_display
 # load("Results/results_sumTiers_RS1.RData")
 # load("Results/results_sumTiers_RS1_cap.RData")
 # load("Results/results_sumTiers_RS1_cap.allTiers.RData")
-# outputs_list$results %>% filter(Tier == "sumTiers", sim == 1) %>% select(runname, sim, year, Tier, AL, MA, FR_MA) %>%  head(100)
+# outputs_list$results %>% filter(Tier == "sumTiers", sim == 1) %>% select(runname, sim, year, Tier, AL, MA, FR_MA, ERC_PR) %>%  head(100)
+
+
 
 

@@ -140,7 +140,7 @@ runs_all_labels <- c(runs_RS_labels, runs_cap_labels, runs_cap.allTiers_labels, 
 
 
 df_all.stch <- results_all  %>% 
-  filter(runname %in% runs_all, sim >= 0, year <= 2044)
+  filter(runname %in% runs_all, sim >= 0, year <= 2045)
 
 
 df_all.stch %<>%   
@@ -187,7 +187,7 @@ df_all.stch %<>%
 
 
 df_t7.stch <- results_all  %>% 
-  filter(runname %in% runs_all, Tier %in% c("xt7", "t7"), sim >= 0, year <= 2044)
+  filter(runname %in% runs_all, Tier %in% c("xt7", "t7"), sim >= 0, year <= 2045)
 
 
 df_t7.stch %<>%   
@@ -283,20 +283,20 @@ results_all %>% filter(runname == "RS1", sim > 0) %>%
 #*****************************************************
 
 df_det <- results_all  %>% 
-  filter(runname == "RS1", sim == 0, year <= 2044) %>% 
+  filter(runname == "RS1", sim == 0, year <= 2045) %>% 
   select(year, AL, MA, B, C, ERC, EEC, ExF, FR_MA, ERC_PR, NC_PR, ExF_MA, MA_PR) %>% 
   mutate_at(vars(-year, -FR_MA, -ERC_PR, -ExF_MA, -MA_PR, -NC_PR), funs(./1e6)) %>% 
   mutate(MA_PR = MA_PR/100) 
 
 
-df_det.short <- df_det %>% filter(year %in% c(seq(2015, 2040, 5), 2044))
+df_det.short <- df_det %>% filter(year %in% c(2016, seq(2015, 2045, 5)))
   
 df_det
 df_det.short
 
 
 results_all  %>% 
-  filter(runname == "RS1", sim == 0, year <= 2044) %>% 
+  filter(runname == "RS1", sim == 0, year <= 2045) %>% 
   select(year, AL, MA, B, C, ERC, EEC, ExF, FR_MA, ERC_PR, NC_PR, ExF_MA, MA_PR, SC, PR) %>% 
   mutate(SC_PR = 100*SC/PR)
 
@@ -324,9 +324,9 @@ fig_distReturn <- results_all %>%
 fig_distReturn
 
 
-med.FR_MA <- (results_all %>% filter(runname == "RS1", sim > 0, year == 2044))$FR_MA %>% median
+med.FR_MA <- (results_all %>% filter(runname == "RS1", sim > 0, year == 2045))$FR_MA %>% median
 fig_distFR30 <- results_all %>% 
-  filter(runname == "RS1", sim > 0, year == 2044) %>% 
+  filter(runname == "RS1", sim > 0, year == 2045) %>% 
   # group_by(sim) %>% 
   # summarize(geoReturn = get_geoReturn(i.r)) %>% 
   ggplot(aes(FR_MA)) + theme_bw() + 
@@ -354,6 +354,7 @@ fig_stchDet.FR40less <- df_all.stch %>% filter(runname == "RS1") %>%
   geom_point() + geom_line() + 
   coord_cartesian(ylim = c(0,5)) + 
   scale_y_continuous(breaks = seq(0,200, 1)) +
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_color_manual(values = c(RIG.red,"black"),  name = "", 
                      label  = c("Stochastic run", "Deterministic run")) + 
   labs(title = fig.title,
@@ -374,6 +375,7 @@ fig_stchDet.ERChike <- df_all.stch %>% filter(runname == "RS1") %>%
   geom_point() + geom_line() + 
   coord_cartesian(ylim = c(0,100)) + 
   scale_y_continuous(breaks = seq(0,200, 10)) +
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_color_manual(values = c(RIG.red,"black"),  name = "", 
                      label  = c("Stochastic run", "Deterministic run")) + 
   labs(title = fig.title,
@@ -393,6 +395,7 @@ fig_stchDet.ERChigh <- df_all.stch %>% filter(runname == "RS1") %>%
   geom_point() + geom_line() + 
   coord_cartesian(ylim = c(0,100)) + 
   scale_y_continuous(breaks = seq(0,200, 10)) +
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_color_manual(values = c(RIG.red,"black"),  name = "", 
                      label  = c("Stochastic run", "Deterministic run")) + 
   labs(title = fig.title ,
@@ -421,7 +424,7 @@ fig_stchDet.3measures <- df_all.stch %>% filter(runname == "RS1") %>%
   geom_point() + geom_line() + 
   coord_cartesian(ylim = c(0,70)) + 
   scale_y_continuous(breaks = seq(0,200, 10)) +
-  scale_x_continuous(breaks = seq(2015,2050, 5)) +
+  scale_x_continuous(breaks = c(2016, seq(2015, 2045, 5))) +
   scale_color_manual(values = c(RIG.red,"black"),  name = "", 
                      label  = c("Stochastic run", "Deterministic run")) + 
   labs(title = fig.title ,
@@ -448,7 +451,7 @@ fig_stchDet.2measures <- df_all.stch %>% filter(runname == "RS1") %>%
   geom_point() + geom_line() + 
   coord_cartesian(ylim = c(0,70)) + 
   scale_y_continuous(breaks = seq(0,200, 10)) +
-  scale_x_continuous(breaks = seq(2015,2050, 5)) +
+  scale_x_continuous(breaks = c(2016, seq(2015, 2045, 5))) +
   scale_color_manual(values = c(RIG.red,"black"),  name = "", 
                      label  = c("Stochastic run", "Deterministic run")) + 
   labs(title = fig.title ,
@@ -475,7 +478,7 @@ fig_stchDet.FRdist <- df_all.stch %>% filter(runname %in% c("RS1"), Tier == "sum
   geom_point() + 
   geom_hline(yintercept = 100, linetype = 2, size = 1) +
   coord_cartesian(ylim = c(50,180)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2015, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0, 500, 20)) + 
   scale_color_manual(values = c(RIG.green, RIG.blue, RIG.red, "black"),  name = NULL, 
                      label  = c("75th percentile", "50th percentile", "25th percentile", "Deterministic")) + 
@@ -505,7 +508,7 @@ fig_stchDet.ERCdist <- df_all.stch %>% filter(runname %in% c("RS1"), Tier == "su
   geom_point() + 
   geom_hline(yintercept = 100, linetype = 2, size = 1) +
   coord_cartesian(ylim = c(0,50)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2015, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0, 500, 5)) + 
   scale_color_manual(values = c(RIG.red, RIG.blue, RIG.green, "black"),  name = NULL, 
                      label  = c("75th percentile", "50th percentile", "25th percentile", "Deterministic")) + 
@@ -534,7 +537,7 @@ fig_policy.FRdist <- df_all.stch %>% filter(runname %in% c("RS1", "RS1_cap"), Ti
   geom_point() + 
   geom_hline(yintercept = 100, linetype = 2, size = 1) +
   coord_cartesian(ylim = c(50,180)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0, 500, 20)) + 
   scale_color_manual(values = c(RIG.green, RIG.blue, RIG.red),  name = NULL, 
                      label  = c("75th percentile", "50th percentile", "25th percentile")) + 
@@ -559,7 +562,7 @@ fig_policy.ERCdist <- df_all.stch %>% filter(runname %in% c("RS1", "RS1_cap", "R
   geom_point() + 
   geom_hline(yintercept = 100, linetype = 2, size = 1) +
   coord_cartesian(ylim = c(0,50)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0, 500, 5)) + 
   scale_color_manual(values = c(RIG.red, RIG.blue, RIG.green),  name = NULL, 
                      label  = c("75th percentile", "50th percentile", "25th percentile")) + 
@@ -576,7 +579,7 @@ fig_policy.ERChigh <- df_all.stch %>% filter(runname %in% c("RS1", "RS1_cap", "R
   ggplot(aes(x = year, y = ERC_high, color = factor(runname, levels = c("RS1", "RS1_cap",  "RS1_cap.allTiers" )))) + theme_bw() + 
   geom_line() + geom_point() + 
   coord_cartesian(ylim = c(0, 40)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,100, 5)) +
   scale_color_manual(values = c(RIG.blue, RIG.green, RIG.red),  name = "Contribution \napproaches", 
                      label  = c("without ERC cap", "ERC cap for new hires", "ERC cap for all tiers")) + 
@@ -594,7 +597,7 @@ fig_policy.ERChike <- df_all.stch %>% filter(runname %in% c("RS1", "RS1_cap", "R
   ggplot(aes(x = year, y = ERC_hike, color = factor(runname, levels = c("RS1", "RS1_cap", "RS1_cap.allTiers")))) + theme_bw() + 
   geom_line() + geom_point() + 
   coord_cartesian(ylim = c(0, 80)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,100, 10)) +
   scale_color_manual(values = c(RIG.blue, RIG.green, RIG.red),  name = "Contribution \napproaches", 
                      label  = c("without ERC cap", "ERC cap for new hires", "ERC cap for all tiers")) + 
@@ -623,7 +626,7 @@ fig_policy.EECdist.t7 <- df_t7.stch %>% filter(runname %in% c("RS1_cap"), Tier =
   geom_point() + 
   geom_hline(yintercept = 100, linetype = 2, size = 1) +
   coord_cartesian(ylim = c(0,20)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0, 500, 2.5)) + 
   scale_color_manual(values = c("red", RIG.red, RIG.blue, RIG.green, "green"),  name = NULL, 
                      label  = c("90th percentile", "75th percentile", "50th percentile", "25th percentile", "10th percentile")) + 
@@ -643,7 +646,7 @@ fig_policy.EEChigh.t7 <- df_t7.stch %>%
   theme_bw() + 
   geom_line() + geom_point() + 
   coord_cartesian(ylim = c(0, 55)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,100, 5)) +
   #scale_color_manual(values = c(RIG.blue, RIG.green),  name = "Contribution \napproaches", 
   #                   label  = c("without ERC cap", "with ERC cap")) + 
@@ -670,7 +673,7 @@ fig_policy.EECdist.allTiers <- df_all.stch %>% filter(runname %in% c("RS1_cap.al
   geom_point() + 
   geom_hline(yintercept = 100, linetype = 2, size = 1) +
   coord_cartesian(ylim = c(0,70)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0, 500, 10)) + 
   scale_color_manual(values = c("red", RIG.red, RIG.blue, RIG.green, "green"),  name = NULL, 
                      label  = c("90th percentile", "75th percentile", "50th percentile", "25th percentile", "10th percentile")) + 
@@ -690,7 +693,7 @@ fig_policy.EEChigh.allTiers <- df_all.stch %>%
   theme_bw() + 
   geom_line() + geom_point() + 
   coord_cartesian(ylim = c(0, 100)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,100, 5)) +
   #scale_color_manual(values = c(RIG.blue, RIG.green),  name = "Contribution \napproaches", 
   #                   label  = c("without ERC cap", "with ERC cap")) + 
@@ -740,7 +743,7 @@ fig_compareRS1.ERChigh <- df_all.stch %>% filter(runname %in% runs.compareRS1, T
   facet_grid(. ~ policy) + 
   geom_line() + geom_point() + 
   coord_cartesian(ylim = c(0, 55)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,100, 5)) +
   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
                      label  = fig.labels.lowReturns) + 
@@ -770,7 +773,7 @@ fig_compareRS1.ERChigh.noCap <- df_all.stch %>% filter(runname %in% c("RS1", "RS
   ggplot(aes(x = year, y = ERC_high, color = factor(runname, levels = c("RS1", "RS2", "RS3")))) + theme_bw() + 
   geom_line() + geom_point() + 
   coord_cartesian(ylim = c(0, 100)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,100, 10)) +
   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
                      label  = fig.labels.lowReturns) + 
@@ -803,7 +806,7 @@ fig_compareRS1.ERChike <- df_all.stch %>% filter(runname %in% runs.compareRS1, T
   facet_grid(. ~ policy) + 
   geom_line() + geom_point() + 
   coord_cartesian(ylim = c(0, 100)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,100, 10)) +
   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
                      label  = fig.labels.lowReturns) + 
@@ -838,7 +841,7 @@ fig_compareRS1.ERChike.noCap <- df_all.stch %>% filter(runname %in% c("RS1", "RS
   ggplot(aes(x = year, y = ERC_hike, color = factor(runname, levels = c("RS1", "RS2", "RS3")))) + theme_bw() + 
   geom_line() + geom_point() + 
   coord_cartesian(ylim = c(0, 100)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,100, 10)) +
   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
                      label  = fig.labels.lowReturns) + 
@@ -883,7 +886,7 @@ fig_compareRS1.FR40less <- df_all.stch %>% filter(runname %in% runs.compareRS1[c
   ggplot(aes(x = year, y = value, color = factor(runname, levels = c("RS1", "RS2", "RS3")))) + theme_bw() + 
   geom_line() + geom_point() + 
   coord_cartesian(ylim = c(0, 10)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,100, 1)) + 
   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
                      label  = fig.labels.lowReturns) + 
@@ -918,7 +921,7 @@ fig_compareRS1.MedERC <- df_all.stch %>% filter(runname %in% runs.compareRS1, Ti
   facet_grid(. ~ policy) + 
   geom_line() + geom_point() + 
   coord_cartesian(ylim = c(0, 50)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,100, 10)) +
   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
                      label  = fig.labels.lowReturns) + 
@@ -949,7 +952,7 @@ fig_compareRS1.MedFR <- df_all.stch %>% filter(runname %in% runs.compareRS1[c(1,
   geom_line() + geom_point() + 
   geom_hline(yintercept = 100, linetype = 2, size = 1) + 
   coord_cartesian(ylim = c(0, 150)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,500, 20)) +
   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
                      label  = fig.labels.lowReturns) + 
@@ -981,7 +984,7 @@ fig_compareRS1.EECdist.t7 <- df_t7.stch.RS1 %>%
   geom_point() + 
   geom_hline(yintercept = 100, linetype = 2, size = 1) +
   coord_cartesian(ylim = c(0,20)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0, 500, 2.5)) + 
   scale_color_manual(values = c(RIG.red, RIG.blue, RIG.green),  name = NULL, 
                      label  = c("75th percentile", "50th percentile", "25th percentile")) + 
@@ -1000,7 +1003,7 @@ fig_compareRS1.EEChigh.t7 <- df_t7.stch.RS1 %>%
   theme_bw() + 
   geom_line() + geom_point() + 
   coord_cartesian(ylim = c(0, 100)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,100, 10)) +
   scale_color_manual(name = "", values = c(RIG.red, RIG.blue, RIG.green)) + 
   #scale_color_manual(values = c(RIG.blue, RIG.green),  name = "Contribution \napproaches", 
@@ -1034,7 +1037,7 @@ fig_compareRS1.EECdist.allTiers <- df_allTiers.stch.RS1 %>%
   geom_point() + 
   geom_hline(yintercept = 100, linetype = 2, size = 1) +
   coord_cartesian(ylim = c(0,70)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0, 500, 10)) + 
   scale_color_manual(values = c(RIG.red, RIG.blue, RIG.green),  name = NULL, 
                      label  = c("75th percentile", "50th percentile", "25th percentile")) + 
@@ -1054,7 +1057,7 @@ fig_compareRS1.EEChigh.allTiers <- df_allTiers.stch.RS1 %>%
   theme_bw() + 
   geom_line() + geom_point() + 
   coord_cartesian(ylim = c(0, 100)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,100, 5)) +
   scale_color_manual(name = "", values = c(RIG.red, RIG.blue, RIG.green)) + 
   #scale_color_manual(values = c(RIG.blue, RIG.green),  name = "Contribution \napproaches", 
@@ -1102,8 +1105,8 @@ fig_compareRS2.ERChigh <- df_all.stch.RS2 %>%
   ggplot(aes(x = year, y = value, color = factor(RS, levels = c("RS1", "RS4", "RS5")))) + theme_bw() + 
   facet_grid(. ~ policy) + 
   geom_line() + geom_point() + 
-  coord_cartesian(ylim = c(0, 55)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  coord_cartesian(ylim = c(0, 59)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,100, 5)) +
   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
                      label  = fig.labels.altAssumptions) + 
@@ -1132,7 +1135,7 @@ fig_compareRS2.ERChigh.noCap <- df_all.stch %>% filter(runname %in% c("RS1", "RS
   ggplot(aes(x = year, y = ERC_high, color = factor(runname, levels = c("RS1", "RS4", "RS5")))) + theme_bw() + 
   geom_line() + geom_point() + 
   coord_cartesian(ylim = c(0, 100)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,100, 10)) +
   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
                      label  = fig.labels.altAssumptions) + 
@@ -1165,7 +1168,7 @@ fig_compareRS2.ERChike <- df_all.stch.RS2 %>%
   facet_grid(. ~ policy) + 
   geom_line() + geom_point() + 
   coord_cartesian(ylim = c(0, 100)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,100, 10)) +
   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
                      label  = fig.labels.altAssumptions) + 
@@ -1204,7 +1207,7 @@ fig_compareRS2.ERChike.noCap <- df_all.stch %>% filter(runname %in% c("RS1", "RS
   ggplot(aes(x = year, y = ERC_hike, color = factor(runname, levels = c("RS1", "RS4", "RS5")))) + theme_bw() + 
   geom_line() + geom_point() + 
   coord_cartesian(ylim = c(0, 100)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,100, 10)) +
   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
                      label  = fig.labels.altAssumptions) + 
@@ -1242,7 +1245,7 @@ fig_compareRS2.FR40less <-  df_all.stch %>% filter(runname %in% runs.compareRS2[
   ggplot(aes(x = year, y = value, color = factor(runname, levels = c("RS1", "RS4", "RS5")))) + theme_bw() + 
   geom_line() + geom_point() + 
   coord_cartesian(ylim = c(0, 20)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,100, 2.5)) +
   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
                      label  = fig.labels.altAssumptions) + 
@@ -1274,7 +1277,7 @@ fig_compareRS2.MedERC <- df_all.stch.RS2 %>%
   facet_grid(. ~ policy) + 
   geom_line() + geom_point() + 
   coord_cartesian(ylim = c(0, 50)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,100, 10)) +
   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
                      label  = fig.labels.altAssumptions) + 
@@ -1298,16 +1301,16 @@ fig.caption <- paste0(n1, n2, n3, n4)
 
 fig_compareRS2.MedERC.noCap <- df_all.stch.RS2 %>% filter(runname %in% c("RS1", "RS4", "RS5"), Tier == "sumTiers") %>%
   select(runname, year, ERC_PR.q50) %>% 
-  ggplot(aes(x = year, y = EC, color = factor(RS, levels = c("RS1", "RS4", "RS5")))) + theme_bw() + 
+  ggplot(aes(x = year, y = ERC_PR.q50, color = factor(runname, levels = c("RS1", "RS4", "RS5")))) + theme_bw() + 
   geom_line() + geom_point() + 
   coord_cartesian(ylim = c(0, 50)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,100, 10)) +
   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
                      label  = fig.labels.altAssumptions) + 
   labs(title = fig.title,
        subtitle = fig.subtitle,
-       caption = caption,
+       caption = fig.caption,
        x = NULL, y = "Percent of payroll (%)") + 
   guides(color = guide_legend(keywidth = 1.5, keyheight = 3)) + 
   RIG.theme()
@@ -1325,7 +1328,7 @@ fig_compareRS2.MedERC.noCap <- df_all.stch.RS2 %>% filter(runname %in% c("RS1", 
   ggplot(aes(x = year, y = ERC_PR.q50, color = factor(runname, levels = c("RS1", "RS4", "RS5")))) + theme_bw() + 
   geom_line() + geom_point() + 
   coord_cartesian(ylim = c(0, 50)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,100, 10)) +
   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
                      label  = fig.labels.altAssumptions) + 
@@ -1354,7 +1357,7 @@ fig_compareRS2.MedFR <-  df_all.stch %>% filter(runname %in% runs.compareRS2[c(1
   geom_line() + geom_point() + 
   geom_hline(yintercept = 100, linetype = 2, size = 1) + 
   coord_cartesian(ylim = c(0, 150)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,500, 20)) +
   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
                      label  = fig.labels.altAssumptions) + 
@@ -1389,7 +1392,7 @@ fig_compareRS2.distFR <-  df_all.stch %>% filter(runname %in% runs.compareRS2[c(
   geom_line() + geom_point() + 
   geom_hline(yintercept = 100, linetype = 2, size = 1) + 
   coord_cartesian(ylim = c(0, 200)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,500, 20)) +
   scale_color_manual(values = rev(c("red", RIG.red, RIG.blue, RIG.green, "green")),  name = "") + 
   labs(title = fig.title,
@@ -1423,7 +1426,7 @@ fig_compareRS2.distERC <-  df_all.stch %>% filter(runname %in% runs.compareRS2[c
   geom_line() + geom_point() + 
   geom_hline(yintercept = 100, linetype = 2, size = 1) + 
   coord_cartesian(ylim = c(0, 80)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,500, 10)) +
   scale_color_manual(values = c("red", RIG.red, RIG.blue, RIG.green, "green"),  name = "") + 
   labs(title = fig.title,
@@ -1460,7 +1463,7 @@ fig_compareRS2.EECdist.t7 <- df_t7.stch.RS2 %>%
   geom_point() + 
   geom_hline(yintercept = 100, linetype = 2, size = 1) +
   coord_cartesian(ylim = c(0,20)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0, 500, 2.5)) + 
   scale_color_manual(values = c(RIG.red, RIG.blue, RIG.green),  name = NULL, 
                      label  = c("75th percentile", "50th percentile", "25th percentile")) + 
@@ -1479,7 +1482,7 @@ fig_compareRS2.EEChigh.t7 <- df_t7.stch.RS2 %>%
   theme_bw() + 
   geom_line() + geom_point() + 
   coord_cartesian(ylim = c(0, 100)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,100, 10)) +
   scale_color_manual(name = "", values = c(RIG.red, RIG.blue, RIG.green)) + 
   #scale_color_manual(values = c(RIG.blue, RIG.green),  name = "Contribution \napproaches", 
@@ -1511,7 +1514,7 @@ fig_compareRS2.EECdist.allTiers <- df_allTiers.stch.RS2 %>%
   geom_point() + 
   geom_hline(yintercept = 100, linetype = 2, size = 1) +
   coord_cartesian(ylim = c(0,70)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0, 500, 10)) + 
   scale_color_manual(values = c(RIG.red, RIG.blue, RIG.green),  name = NULL, 
                      label  = c("75th percentile", "50th percentile", "25th percentile")) + 
@@ -1530,7 +1533,7 @@ fig_compareRS2.EEChigh.allTiers <- df_allTiers.stch.RS2 %>%
   theme_bw() + 
   geom_line() + geom_point() + 
   coord_cartesian(ylim = c(0, 100)) + 
-  scale_x_continuous(breaks = seq(2015, 2045, 5)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,100, 10)) +
   scale_color_manual(name = "", values = c(RIG.red, RIG.blue, RIG.green)) + 
   #scale_color_manual(values = c(RIG.blue, RIG.green),  name = "Contribution \napproaches", 
@@ -1591,7 +1594,7 @@ g.ind.FR <- results_indiv %>%
   ggplot(aes(x = year, y = FR_MA, color = factor(order.ir), label = plot.label)) + theme_bw() + 
   geom_line(linetype = 1) + geom_point() +
   geom_hline(yintercept = c(100, FR.MA.year1), linetype = 2, color = c("red", "black") ) +
-  scale_x_continuous(breaks = c(seq(2015, 2040, 5), 2044) ) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5)) ) + 
   scale_y_continuous(breaks = c(seq(0, 500, 10))) + 
   scale_color_manual(values = c(RIG.red,"dodgerblue", RIG.blue, RIG.green),
                      label = plot.label, name = "Compound \nreturn of \nindiv. sim") +
@@ -1604,7 +1607,7 @@ g.ind.FR
 g.ind.ERC <-  results_indiv %>% 
   ggplot(aes(x = year, y = ERC_PR, color = factor(order.ir), label = plot.label)) + theme_bw() + 
   geom_line(linetype = 1) + geom_point() + 
-  scale_x_continuous(breaks = c(seq(2015, 2040, 5), 2044)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_color_manual(values = c(RIG.red,"dodgerblue", RIG.blue, RIG.green),
                      label = plot.label, name = "Compound \nreturn of \nindiv. sim") +
   labs(title = "Employer contribution rate of \nselected individual simulations",
@@ -1630,9 +1633,9 @@ g.ind.rollgeoReturn <-  results_indiv %>%
   ggplot(aes(x = year, y = rollgeoReturn*100, color = factor(order.ir))) + theme_bw() + 
   geom_line(linetype = 1) + geom_point() + 
   geom_hline(yintercept = unique(round(100*df_indiv_selcet$geoReturn,2)), linetype = 3)+
-  scale_x_continuous(breaks = c(seq(2015, 2040, 5), 2044)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   # scale_y_continuous(breaks = c(seq(-20,30,5), unique(round(100*df_indiv_selcet$geoReturn,2)))) + 
-  annotate("text", label = hlineNotes, x = 2015 , y = hlineNotes, size = 4, colour = c(RIG.red, RIG.blue, RIG.green)) + 
+  annotate("text", label = hlineNotes, x = 2016 , y = hlineNotes, size = 4, colour = c(RIG.red, RIG.blue, RIG.green)) + 
   scale_color_manual(values = c(RIG.red,"dodgerblue", RIG.blue, RIG.green),
                      label = plot.label, name = "Compound \nreturn of \nindiv. sim") +
   labs(title = "Rolling 5-year geometric returns for \nselected individual simulations",
@@ -1646,9 +1649,9 @@ g.ind.expandgeoReturn <-  results_indiv %>%
   ggplot(aes(x = year, y = expandgeoReturn*100, color = factor(order.ir))) + theme_bw() + 
   geom_line(linetype = 1) + geom_point() + 
   geom_hline(yintercept = unique(round(100*df_indiv_selcet$geoReturn,2)), linetype = 3)+
-  scale_x_continuous(breaks = c(seq(2015, 2040, 5), 2044)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   # scale_y_continuous(breaks = c(seq(-20,30,5), unique(round(100*df_indiv_selcet$geoReturn,2)))) + 
-  annotate("text", label = hlineNotes, x = 2015 , y = hlineNotes, size = 4, colour = c(RIG.red, RIG.blue, RIG.green)) + 
+  annotate("text", label = hlineNotes, x = 2016 , y = hlineNotes, size = 4, colour = c(RIG.red, RIG.blue, RIG.green)) + 
   scale_color_manual(values = c(RIG.red,"dodgerblue", RIG.blue, RIG.green),
                      label = plot.label, name = "Compound \nreturn of \nindiv. sim") +
   labs(title = "Rolling geometric returns up to a given year for \nselected individual simulations",
@@ -1661,12 +1664,12 @@ g.ind.annualReturn <-  results_indiv %>%
   ggplot(aes(x = year, y = i.r*100, color = factor(order.ir))) + theme_bw() + 
   geom_line(linetype = 1) + geom_point() + 
   geom_hline(yintercept = unique(round(100*df_indiv_selcet$geoReturn,2)), linetype = 3)+
-  scale_x_continuous(breaks = c(seq(2015, 2040, 5), 2044)) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   # scale_y_continuous(breaks = c(seq(-20,30,5), unique(round(100*df_indiv_selcet$geoReturn,2)))) + 
   #annotate("text", label = hlineNotes, x = 2014 , y = hlineNotes, size = 3, colour = c(RIG.red, RIG.blue, RIG.green)) + 
-  annotate("text", label = hlineNotes[1], x = 2014 , y = hlineNotes[1], size = 3, colour = c(RIG.red), vjust = 1.2) + 
-  annotate("text", label = hlineNotes[2], x = 2014 , y = hlineNotes[2], size = 3, colour = c(RIG.blue)) + 
-  annotate("text", label = hlineNotes[3], x = 2014 , y = hlineNotes[3], size = 3, colour = c(RIG.green), vjust = -0.4) + 
+  annotate("text", label = hlineNotes[1], x = 2015 , y = hlineNotes[1], size = 3, colour = c(RIG.red), vjust = 1.2) + 
+  annotate("text", label = hlineNotes[2], x = 2015 , y = hlineNotes[2], size = 3, colour = c(RIG.blue)) + 
+  annotate("text", label = hlineNotes[3], x = 2015 , y = hlineNotes[3], size = 3, colour = c(RIG.green), vjust = -0.4) + 
   
   scale_color_manual(values = c(RIG.red,"dodgerblue", RIG.blue, RIG.green),
                      label = plot.label, name = "Compound \nreturn of \nindiv. sim") +
@@ -1692,7 +1695,7 @@ lvl_measures  <- c("FR40less", "ERC_hike", "ERC_high")
 
 # Summary tables for the three major risk measures
 tab_summary1 <- 
-  df_all.stch %>% filter(runname %in% c(runs_all[1:15]), year == 2044, Tier == "sumTiers") %>% 
+  df_all.stch %>% filter(runname %in% c(runs_all[1:15]), year == 2045, Tier == "sumTiers") %>% 
   select(runname, FR40less, ERC_hike, ERC_high) %>% 
   gather(Measure, value, -runname) %>% 
   mutate(runname = factor(runname, levels = lvl_scenarios),
@@ -1702,7 +1705,7 @@ tab_summary1 <-
 
 # Summary tables for EEC risks
 tab_summary2 <- 
-df_all.stch %>% filter(runname %in% c(runs_all[1:15]), year == 2044) %>% 
+df_all.stch %>% filter(runname %in% c(runs_all[1:15]), year == 2045) %>% 
   mutate(policy = str_sub(runname, 5)) %>% 
   filter(!(policy == "cap" & Tier == "sumTiers"), !(policy == "cap" & Tier == "xt7")) %>% 
   select(runname, EEC_high, EEC_PR.q75) %>% 
@@ -1785,14 +1788,10 @@ ggsave(file = paste0(Outputs_folder, "fig_appx.indivRuns.FRpath.png"),  g.ind.FR
 ggsave(file = paste0(Outputs_folder, "fig_appx.indivRuns.ERCpath.png"), g.ind.ERC, height = g.height, width = g.width)
 
 
-
-
-
 write.xlsx2(df_det, paste0(Outputs_folder, "tables.xlsx"), sheetName = "det_full")
 write.xlsx2(df_det.short, paste0(Outputs_folder, "tables.xlsx"), sheetName = "det_short", append = TRUE)
 write.xlsx2(tab_summary1, paste0(Outputs_folder, "tables.xlsx"), sheetName = "summary1", append = TRUE)
 write.xlsx2(tab_summary2, paste0(Outputs_folder, "tables.xlsx"), sheetName = "summary2", append = TRUE)
-
 
 
 
@@ -1813,20 +1812,20 @@ results_all %>% filter(runname == "RS1", sim == 2, year <=2040) %>%
         )
   
   
-results_all %>% filter(runname == "RS1_cap", sim == 1, Tier == "sumTiers", year <=2044) %>% 
+results_all %>% filter(runname == "RS1_cap", sim == 1, Tier == "sumTiers", year <=2045) %>% 
   select(runname, sim, year, NC, SC, ADC, B, C, EEC, ERC, AL, MA, AA, UAAL, EUAAL, LG, FR_MA, I.r, ERC_cap, NC_PR)
   # %>% 
   mutate(ADC_unadj = NC + SC,
          ERC_cap_PR = 100 * ERC_cap / PR )
   
-results_all %>% filter(runname == "RS1_cap", sim == 1, Tier == "t7", year <=2044) %>% 
+results_all %>% filter(runname == "RS1_cap", sim == 1, Tier == "t7", year <=2045) %>% 
     select(runname, sim, year, NC, NC_PR, SC, ADC, B, C, EEC, ERC, AL, MA, AA, FR_MA, C_PR, ERC_cap, PR, ERC_PR, i.r, MA_PR, nactives) %>% 
   # %>% 
   mutate(ADC_unadj = NC + SC,
          ERC_cap_PR = 100 * ERC_cap / PR,
          AL_PR = AL/PR)
 
-results_all %>% filter(runname == "RS1_cap", sim == 1, Tier == "xt7", year <=2044) %>% 
+results_all %>% filter(runname == "RS1_cap", sim == 1, Tier == "xt7", year <=2045) %>% 
   select(runname, sim, year, NC, NC_PR, SC, ADC, B, C, EEC, ERC, AL, MA, AA, UAAL, EUAAL, LG, FR_MA, C_PR, ERC_cap, PR, ERC_PR, MA_PR, nactives) %>% 
   # %>% 
   mutate(ADC_unadj = NC + SC,
@@ -1872,7 +1871,7 @@ results_all %>% filter(runname == "RS1_cap", sim == 0, Tier %in% c("t7", "sumTie
   mutate(AL.t7pct = 100*AL.t7 / AL.sumTiers,
          nact.t7pct = 100 * nactives.t7 / nactives.sumTiers,
          PR.t7pct = 100 * PR.t7/ PR.sumTiers) %>% 
-  filter(year %in% c(2019, 2029, 2044))
+  filter(year %in% c(2019, 2029, 2045))
 
 
 #**************************************************************************
@@ -1942,6 +1941,16 @@ x <- ppd %>% select(PlanName, fy, ReqContRate_ER) %>%
 
 
 
+#**************************************************************************
+# For LAFPP ####
+#**************************************************************************
+
+
+df_det <- results_all  %>% 
+  filter(runname == "RS1", sim == 0, year <= 2045) %>% 
+  select(year, AL, MA, B, C, ERC, EEC, ExF, FR_MA, ERC_PR, NC_PR, ExF_MA, MA_PR) %>% 
+  mutate_at(vars(-year, -FR_MA, -ERC_PR, -ExF_MA, -MA_PR, -NC_PR), funs(./1e6)) %>% 
+  mutate(MA_PR = MA_PR/100) 
 
 
 

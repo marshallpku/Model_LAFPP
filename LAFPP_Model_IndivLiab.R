@@ -621,8 +621,8 @@ liab.disb.la <- merge(liab.disb.la,
 #%>% 
 # left_join(select(mortality.post.model_, age, age.r, ax.r.W.ret = ax.r.W)) %>%  #  load present value of annuity for all retirement ages, ax.r.W in liab.active cannot be used anymore. 
 
-liab.disb.la %>% as.data.frame %>% mutate(year = start.year + age - ea) %>% 
-  filter(year == 2015, age.disb == age)
+#liab.disb.la %>% as.data.frame %>% mutate(year = start.year + age - ea) %>% 
+ # filter(year == 2015, age.disb == age)
 
 
 liab.disb.la %<>% as.data.frame  %>% 

@@ -32,19 +32,20 @@ get_AggLiab <- function( Tier_select_,
      # paramlist_ = paramlist
      # Global_paramlist_ = Global_paramlist
      # 
+   
    # for all tiers
-   # Tier_select_ = "t5"
-   # liab_   = liab.t5
-   # liab.ca_ = liab.ca.t5
-   # liab.disb.ca_ = liab.disb.ca.t5
-   # pop_    = pop$pop.t5
-   # mortality.post.model_ = mortality.post.model.t5
-   # 
-   # init_beneficiaries_all_  = init_beneficiaries_all
-   # init_retirees.ca_all_    = init_retirees.ca_all
-   # init_disb.ca_all_        = init_disb.ca_all
-   # paramlist_ = paramlist
-   # Global_paramlist_ = Global_paramlist
+     # Tier_select_ = "t6"
+     # liab_   = liab.t6
+     # liab.ca_ = liab.ca.t6
+     # liab.disb.ca_ = liab.disb.ca.t6
+     # pop_    = pop$pop.t6
+     # mortality.post.model_ = mortality.post.model.t6
+     # 
+     # init_beneficiaries_all_  = init_beneficiaries_all
+     # init_retirees.ca_all_    = init_retirees.ca_all
+     # init_disb.ca_all_        = init_disb.ca_all
+     # paramlist_ = paramlist
+     # Global_paramlist_ = Global_paramlist
 
   
    assign_parmsList(Global_paramlist_, envir = environment())
@@ -61,6 +62,19 @@ get_AggLiab <- function( Tier_select_,
    # "sum" means sum of AL/NA/... across age * ea in each year. 
    # "av"  menas sum of variables related to life annuity, contingent annuity, and term benefits for actives. (now plus death benefit and disability benefit)
    
+   
+   # liab_
+   # #liab.ca_
+   # #liab.disb.ca_
+   # # 
+   # # liab_$active %<>% filter((year - (age - ea)) == 2017 )
+   # # liab_$la %<>% filter((year - (age - ea)) == 2017 )
+   # # liab_$term %<>% filter((year - (age - ea)) == 2017 )
+   # # liab_$death %<>% filter((year - (age - ea)) == 2017 )
+   # # liab_$disb.la %<>% filter((year - (age - ea)) == 2017 )
+   # 
+   # pop_$active %<>% filter((year - (age - ea)) == 2017 )
+   # pop_$active %>% filter(year == 2017) %>% summarize(n = sum(number.a))
    
   #*************************************************************************************************************
   #                                     ## Liabilities and NCs for actives   ####
@@ -92,7 +106,6 @@ get_AggLiab <- function( Tier_select_,
            PR.tot  = sx * number.a,
            EEC.tot = EEC * number.a,
            
-           
            runname = runname)
   
   active.agg <- liab_$active %>%  
@@ -120,10 +133,13 @@ get_AggLiab <- function( Tier_select_,
       EEC.sum   = sum(EEC.tot, na.rm = TRUE),
       
       nactives  = sum(number.a,  na.rm = TRUE)) %>% 
+    # mutate(AL = ALx.laca.sum + ALx.v.sum + ALx.death.sum + ALx.disb.sum + ALx.av.sum,
+    #        NC = NCx.laca.sum + NCx.v.sum + NCx.death.sum + NCx.disb.sum + NCx.av.sum) %>% 
+    # select(year, NC, AL, nactives ) %>% 
       as.matrix # extracting elements from matrices is much faster than from data.frame
   
   
-  # active.agg
+   # active.agg
   
   #*************************************************************************************************************
   #                                     ## Liabilities and benefits for retirees (life annuitants)   ####

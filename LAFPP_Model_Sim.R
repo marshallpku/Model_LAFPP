@@ -220,11 +220,11 @@ run_sim <- function(Tier_select_,
   #                                  Adjust Benefit payments for DROP (LAFPP specific) ####
   #*************************************************************************************************************  
 
-  B.model <- data.frame(year = 2015:2023, B = penSim0$B[1:9]) 
+  B.model <- data.frame(year = 2016:2023, B = penSim0$B[1:8]) 
   B.model$B
   
-  B.GASB <- data.frame(year = 2015:2023,
-                       B    = 1e6*c(970,
+  B.GASB <- data.frame(year = 2016:2023,
+                       B    = 1e6*c(#970,
                                     1104,
                                     1050,
                                     1149,
@@ -234,20 +234,20 @@ run_sim <- function(Tier_select_,
                                     1350,
                                     1416))
   
-  # restriction 1: PVFB for 2015-2023
-  R1.PVFB <- sum(B.model$B / (1 + i)^(2015:2023 - 2015))
+  # restriction 1: PVFB for 2016-2023
+  R1.PVFB <- sum(B.model$B / (1 + i)^(2016:2023 - 2016))
   
   # restriction 2: Schedule of payments from GASB projection
   R2.GASB_scale <- B.GASB$B/B.GASB$B[1]
   
   # Adjustment factor
-  adj.factor <- R1.PVFB/sum(R2.GASB_scale / (1 + i)^(2015:2023 - 2015))
+  adj.factor <- R1.PVFB/sum(R2.GASB_scale / (1 + i)^(2016:2023 - 2016))
   
   # Adjusted Benefits
-  B.adj <-  data.frame(year = 2015:2023, 
+  B.adj <-  data.frame(year = 2016:2023, 
                        B.adj1 = R2.GASB_scale* adj.factor)
   
-  # Extra benefits: approximate DROP balance accumulated before 2015
+  # Extra benefits: approximate DROP balance accumulated before 2016
   
   B.adj %<>% mutate(B.extra = 0, B.extra.balance = 0) 
   B.adj$B.extra.balance[1] <- 1369*3*6132*12
@@ -260,6 +260,10 @@ run_sim <- function(Tier_select_,
                     B.adj2  = B.adj1 + B.extra)
   
   #if(Adj.benDROP) penSim0$B[1:9] <- B.adj$B.adj2
+  
+  penSim0$B.extra <- c(B.adj$B.extra, rep(0, nyear - nrow(B.adj)))
+  penSim0$AL.initDROP <- order_by(-seq_len(nyear), cumsum(penSim0$B.extra/(1 + i)^(seq_len(nyear) - 1))) 
+  
   
   
   #*************************************************************************************************************
@@ -277,11 +281,11 @@ run_sim <- function(Tier_select_,
   
   
   # Adjustment factor for initial amortization payments (LAFPP specific)
-    # Factor is defined as the initial model UAAL as a proportion of UAAL in AV2015.
+    # Factor is defined as the initial model UAAL as a proportion of UAAL in AV2016.
     # CAUTION: the following formula only works when init_AA =  AL_pct, which is the case for LAFPP
   
-  factor.initAmort <- penSim0$AL[1]/ 18337507075
-  
+  # factor.initAmort <- penSim0$AL[1]/ 18337507075
+    factor.initAmort <- penSim0$AL[1]/ 18798510534
   
   
   
@@ -311,7 +315,7 @@ run_sim <- function(Tier_select_,
   
   
   penSim_results <- foreach(k = -1:nsim, .packages = c("dplyr", "tidyr")) %dopar% {
-    # k <- 0
+    # k <- 1
     # initialize
     penSim <- penSim0
     SC_amort <- SC_amort0
@@ -319,7 +323,10 @@ run_sim <- function(Tier_select_,
     if(k == -1) SC_amort[,] <- 0
     
     # if(Tier_select_ != "t7" & Adj.benDROP & k!= -1) penSim$B[1:9] <- B.adj$B.adj2  # Adjust benefit payments for DROP
-    if(Tier_select_ != "t7" & Adj.benDROP & k!= -1) penSim$B[1:5] <- penSim$B[1:5] + B.adj$B.extra[1:5]  # Adjust benefit payments for DROP
+    if(Tier_select_ != "t7" & Adj.benDROP & k!= -1){
+      penSim$B[1:5] <- penSim$B[1:5] + B.adj$B.extra[1:5]  # Adjust benefit payments for DROP
+      penSim$AL     <- penSim$AL + penSim$AL.initDROP
+    }
     
     penSim[["i.r"]] <- i.r_[, as.character(k)]
     
@@ -391,7 +398,7 @@ run_sim <- function(Tier_select_,
       if (j == 1){
         penSim$EUAAL[j] <- 0
         penSim$LG[j] <- with(penSim,  UAAL[j])  # This is the intial underfunding, rather than actuarial loss/gain if the plan is established at period 1. 
-        penSim$Amort_basis[j] <- with(penSim, LG[j])  # This will not be used for LAFPP since the amortization scheme for year 1 is provided by SC_amort.(from AV2015)
+        penSim$Amort_basis[j] <- with(penSim, LG[j])  # This will not be used for LAFPP since the amortization scheme for year 1 is provided by SC_amort.(from AV2016)
         
       } else {
         penSim$EUAAL[j] <- with(penSim, (UAAL[j - 1] + NC[j - 1])*(1 + i[j - 1]) - C[j - 1] - Ic[j - 1])

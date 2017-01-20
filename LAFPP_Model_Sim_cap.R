@@ -341,11 +341,11 @@ run_sim.wt7 <- function(Tier_select_,
   #                                  Adjust Benefit payments for DROP (LAFPP specific, only applied to current tiers) ####
   #***********************************************************************************************************************  
 
-  B.model <- data.frame(year = 2015:2023, B = penSim0.xt7$B[1:9]) 
+  B.model <- data.frame(year = 2016:2023, B = penSim0.xt7$B[1:8]) 
   B.model$B
   
-  B.GASB <- data.frame(year = 2015:2023,
-                       B    = 1e6*c(970,
+  B.GASB <- data.frame(year = 2016:2023,
+                       B    = 1e6*c(#970,
                                     1104,
                                     1050,
                                     1149,
@@ -356,19 +356,19 @@ run_sim.wt7 <- function(Tier_select_,
                                     1416))
   
   # restriction 1: PVFB for 2015-2023
-  R1.PVFB <- sum(B.model$B / (1 + i)^(2015:2023 - 2015))
+  R1.PVFB <- sum(B.model$B / (1 + i)^(2016:2023 - 2016))
   
   # restriction 2: Schedule of payments from GASB projection
   R2.GASB_scale <- B.GASB$B/B.GASB$B[1]
   
   # Adjustment factor
-  adj.factor <- R1.PVFB/sum(R2.GASB_scale / (1 + i)^(2015:2023 - 2015))
+  adj.factor <- R1.PVFB/sum(R2.GASB_scale / (1 + i)^(2016:2023 - 2016))
   
   # Adjusted Benefits
-  B.adj <-  data.frame(year = 2015:2023, 
+  B.adj <-  data.frame(year = 2016:2023, 
                        B.adj1 = R2.GASB_scale* adj.factor)
   
-  # Extra benefits: approximate DROP balance accumulated before 2015
+  # Extra benefits: approximate DROP balance accumulated before 2016
   B.adj %<>% mutate(B.extra = 0, B.extra.balance = 0) 
   B.adj$B.extra.balance[1] <- 1369*3*6132*12
   for(z in 1:5){
@@ -379,6 +379,9 @@ run_sim.wt7 <- function(Tier_select_,
   B.adj %<>% mutate(#B.extra = ifelse(year - 2015 < 5, B.extra/5, 0),
     B.adj2  = B.adj1 + B.extra)
   #if(Adj.benDROP) penSim0$B[1:9] <- B.adj$B.adj2
+  
+  penSim0.xt7$B.extra <- c(B.adj$B.extra, rep(0, nyear - nrow(B.adj)))
+  penSim0.xt7$AL.initDROP <- order_by(-seq_len(nyear), cumsum(penSim0.xt7$B.extra/(1 + i)^(seq_len(nyear) - 1))) 
   
   
   #*************************************************************************************************************
@@ -395,11 +398,11 @@ run_sim.wt7 <- function(Tier_select_,
   SC_amort.init.xt7 <- matrix(0, nrow(init_amort_raw.xt7_), nyear + m.max.xt7)
    
   # Adjustment factor for initial amortization payments (LAFPP specific)
-    # Factor is defined as the initial model UAAL as a proportion of UAAL in AV2015.
+    # Factor is defined as the initial model UAAL as a proportion of UAAL in AV2016.
     # CAUTION: the following formula only works when init_AA =  AL_pct, which is the case for LAFPP
   
-  factor.initAmort <- penSim0.xt7$AL[1]/ 18337507075
-  
+  # factor.initAmort <- penSim0.xt7$AL[1]/ 18337507075
+    factor.initAmort <- penSim0.xt7$AL[1]/ 18798510534
   
   
   
@@ -436,16 +439,16 @@ run_sim.wt7 <- function(Tier_select_,
   
   
   # Adjustment factor for initial amortization payments (LAFPP specific)
-  # Factor is defined as the initial model UAAL as a proportion of UAAL in AV2015.
+  # Factor is defined as the initial model UAAL as a proportion of UAAL in AV2016.
   # CAUTION: the following formula only works when init_AA =  AL_pct, which is the case for LAFPP
   
-  factor.initAmort <- penSim0.t7$AL[1]/ 18337507075
+  factor.initAmort.t7 <- penSim0.t7$AL[1]/ 18798510534
   
   
   
   
   if(useAVamort){
-    SC_amort.init.list.t7 <- mapply(amort_LG, p = init_amort_raw.t7_$balance * factor.initAmort , m = init_amort_raw.t7_$year.remaining, method = init_amort_raw.t7_$amort.method,
+    SC_amort.init.list.t7 <- mapply(amort_LG, p = init_amort_raw.t7_$balance * factor.initAmort.t7 , m = init_amort_raw.t7_$year.remaining, method = init_amort_raw.t7_$amort.method,
                                      MoreArgs = list(i = i, g = salgrowth_amort, end = FALSE), SIMPLIFY = F)
     
     for(j in 1:nrow(SC_amort.init.t7)){
@@ -484,7 +487,10 @@ run_sim.wt7 <- function(Tier_select_,
     if(k == -1) {SC_amort.xt7[,] <- 0; SC_amort.t7[,] <- 0}
     
     #if(Tier_select_ != "t7" & Adj.benDROP & k!= -1) penSim$B[1:9] <- B.adj$B.adj2  # Adjust benefit payments for DROP
-    if(Tier_select_ != "t7" & Adj.benDROP & k!= -1) penSim.xt7$B[1:5] <- penSim.xt7$B[1:5] + B.adj$B.extra[1:5]  # Adjust benefit payments for DROP
+    if(Tier_select_ != "t7" & Adj.benDROP & k!= -1){
+      penSim.xt7$B[1:5] <- penSim.xt7$B[1:5] + B.adj$B.extra[1:5]  # Adjust benefit payments for DROP
+      penSim.xt7$AL     <- penSim.xt7$AL + penSim.xt7$AL.initDROP
+    }
     
     penSim.xt7[["i.r"]] <- i.r_[, as.character(k)]
     penSim.t7[["i.r"]]  <- i.r_[, as.character(k)]
