@@ -443,7 +443,7 @@ results_fiscal %>%
          ERC.LACERS = ERC.growth*ERC.LACERS_2016,
          ERC.LACERS_GenFund = 100 * ERC.LACERS / GenFund.proj)
   
-df_LACERS %>% filter(runname == "RS1", sim == 0)
+df_LACERS %>% filter(runname == "RS5", sim == 0)
 
 
 df_LACERS_qctile <- 
@@ -467,7 +467,7 @@ df_LACERS_qctile %>% filter(run.returnScn == "RS1", run.policyScn == "noCap")
 
 df_det <- results_all  %>% 
   left_join(df_revenue) %>% 
-  filter(runname == "RS5", sim == 0, year <= 2045) %>% 
+  filter(runname == "RS1", sim == 0, year <= 2045) %>% 
   select(year, FR_MA, B, ERC,  ERC_PR, GenFund.proj, NC, SC, LG, NC, SC) %>%
   mutate(ERC_GenFund = 100 * ERC/GenFund.proj,
          NC.growth  = 100 * (NC - lag(NC))/NC,
