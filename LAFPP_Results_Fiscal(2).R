@@ -447,7 +447,7 @@ df_LACERS %>% filter(runname == "RS1", sim == 0)
 
 
 df_LACERS_qctile <- 
-  df_LACERS %>%  filter( sim >0) %>%
+  df_LACERS %>%  filter( sim > 0) %>%
   group_by(run.returnScn, run.policyScn, year) %>% 
   summarise(
     ERC.LACERS_GenFund.q10  = quantile(ERC.LACERS_GenFund, 0.1,  na.rm = T),
