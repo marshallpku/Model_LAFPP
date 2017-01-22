@@ -238,13 +238,19 @@ df_t7.stch
 
 
 # 
-# df_all.stch %>% filter(runname == "RS4")
-df_all.stch %>% filter(runname == "RS1_cap",Tier == "t7") %>% select(runname, Tier, year, starts_with("EEC"))
-df_all.stch %>% filter(runname == "RS3_cap",Tier == "t7") %>% select(runname, Tier, year, starts_with("EEC"))
+df_all.stch %>% filter(runname == "RS5")
+df_all.stch %>% filter(runname == "RS1_cap.allTiers", year == 2045)
+
+df_all.stch %>% filter(runname == "RS5_cap",Tier == "t7") %>% select(runname, Tier, year, starts_with("EEC"))
+df_all.stch %>% filter(runname == "RS5_cap.allTiers") %>% select(runname, Tier, year, starts_with("EEC"))
 # df_all.stch %>% filter(runname == "RS1_cap.allTiers") %>% select(runname, year, starts_with("EEC"))
-# 
-# 
-# df_all.stch %>% filter(runname == "RS1_FR075")
+
+results_all %>% filter(runname == "RS1", sim == 0, year %in% c(2016, 2030, 2045) ) %>% select(runname, Tier, year, AL, PR, SC) %>% mutate(AL_PR = AL/PR)
+
+
+
+
+df_all.stch %>% filter(runname == "RS1_FR075")
 # df_all.stch %>% filter(runname == "RS2_FR075")
 # df_all.stch %>% filter(runname == "RS3_FR075")
 # 
@@ -253,10 +259,7 @@ df_all.stch %>% filter(runname == "RS3_cap",Tier == "t7") %>% select(runname, Ti
 # (8.546271 - 6.1)/8.54
 # (37.73475 - 33.07573) / 37.73475
 # 
-# x <- results_all %>% filter(runname %in% c("RS1", "RS1_FR075"), sim == 0) %>% 
-#   group_by(runname) %>% 
-#   summarise(sum_I.r = sum(I.r))
-# x$sum_I.r[1]/x$sum_I.r[2]
+
 
 # df_all.stch
 # 
@@ -304,6 +307,27 @@ results_all  %>%
 #*****************************************************
 ## Stochastic run: assumption achieved  ####
 #*****************************************************
+
+# Different initial funded ratios
+x <- results_all %>% filter(runname %in% c("RS1", "RS1_FR075"), sim == 0) %>%
+  group_by(runname) %>%
+  summarise(sum_I.r = sum(I.r))
+x$sum_I.r[1]/x$sum_I.r[2]
+
+
+results_all %>% filter(sim>0, runname %in% c("RS1", "RS1_FR075")) %>% 
+  group_by(sim, runname) %>% 
+  summarise(geoReturn = get_geoReturn(i.r),
+            sumInvInc = sum(I.r)/1e6 ) %>% 
+  gather(var, value, -sim, -runname) %>% 
+  mutate(var2 = paste(var, runname, sep = "_" )) %>% 
+  select(-var, -runname) %>% 
+  spread(var2, value) %>% 
+  select(-geoReturn_RS1_FR075) %>% 
+  mutate(Diff_inc = (sumInvInc_RS1 - sumInvInc_RS1_FR075)/sumInvInc_RS1_FR075)  %>% 
+  arrange(geoReturn_RS1)
+
+
 
 # Distribution of 30-year compound returns
 
@@ -1681,7 +1705,7 @@ g.ind.annualReturn
 
 
 results.stch %>% filter(sim == 1977) %>% summarise(Nneg = sum(i.r < 0), minR = min(i.r))
-results.stch %>% filter(sim == 1844) %>% select(year, sim, FR_MA)
+results.stch %>% filter(sim == 1977) %>% select(year, sim, FR_MA, ERC_PR)
 
 
 #*************************************************************************
@@ -1764,7 +1788,7 @@ ggsave(file = paste0(Outputs_folder, "fig_compareRS1.EEChigh.allTiers.png"), fig
 ggsave(file = paste0(Outputs_folder, "fig_compareRS2.MedFR.png"), fig_compareRS2.MedFR, height = 7*0.8, width = 10*0.8)
 ggsave(file = paste0(Outputs_folder, "fig_compareRS2.FR40less.png"), fig_compareRS2.FR40less, height = 7*0.8, width = 10*0.8)
 ggsave(file = paste0(Outputs_folder, "fig_compareRS2.MedERC.noCap.png"), fig_compareRS2.MedERC.noCap, height = 0.8*7, width = 0.8*10)
-ggsave(file = paste0(Outputs_folder, "fig_compareRS2.13ERChigh.noCap.png"), fig_compareRS2.ERChigh.noCap, height = 0.8*7, width = 0.8*10)
+ggsave(file = paste0(Outputs_folder, "fig_compareRS2.ERChigh.noCap.png"), fig_compareRS2.ERChigh.noCap, height = 0.8*7, width = 0.8*10)
 ggsave(file = paste0(Outputs_folder, "fig_compareRS2.ERChike.noCap.png"), fig_compareRS2.ERChike.noCap, height = 0.8*7, width = 0.8*10)
 ggsave(file = paste0(Outputs_folder, "fig_compareRS2.EECdist.t7.png"), fig_compareRS2.EECdist.t7, height = 6*0.7, width = 15*0.7)
 ggsave(file = paste0(Outputs_folder, "fig_compareRS2.EECdist.allTiers.png"), fig_compareRS2.EECdist.allTiers, height = 6*0.7, width = 15*0.7)
@@ -1911,17 +1935,7 @@ G2A <- function(G, V){
 (G2A(0.075, 0.12))
 
 
-results_all %>% filter(sim>0, runname %in% c("RS1", "RS1_FR075")) %>% 
-  group_by(sim, runname) %>% 
-  summarise(geoReturn = get_geoReturn(i.r),
-            sumInvInc = sum(I.r)/1e6 ) %>% 
-  gather(var, value, -sim, -runname) %>% 
-  mutate(var2 = paste(var, runname, sep = "_" )) %>% 
-  select(-var, -runname) %>% 
-  spread(var2, value) %>% 
-  select(-geoReturn_RS1_FR075) %>% 
-  mutate(Diff_inc = (sumInvInc_RS1 - sumInvInc_RS1_FR075)/sumInvInc_RS1_FR075)  %>% 
-  arrange(geoReturn_RS1)
+
 
 # %>% 
 #   ggplot(aes(x = geoReturn_RS1, y = Diff_inc)) + geom_point()
