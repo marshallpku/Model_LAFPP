@@ -482,3 +482,21 @@ df_det
 write.csv(df_det, file = paste0(Outputs_folder, "LAFPP.csv"))
 
 df_det %>% filter(year %in% c(2016, seq(2020, 2045, 5)))
+
+
+#**************************************************************************
+# For LAFPP 2 ####
+#**************************************************************************
+
+df_det2 <- results_all  %>% 
+  left_join(df_revenue) %>% 
+  filter(runname == "RS1", sim == 0, year <= 2045) %>% 
+  select(year, AL, FR_MA, ERC, EEC, NC, SC, MA, C, B, PR) %>% 
+  mutate_at(vars(-year, -FR_MA), funs(./1e6)) %>% 
+  mutate(MA_eb  = (MA + C - B) * 1.075,
+         InvInc =  (MA + C - B) * 0.075)
+
+df_det2 
+
+write.csv(df_det2, file = paste0(Outputs_folder, "LAFPP2.csv"))
+

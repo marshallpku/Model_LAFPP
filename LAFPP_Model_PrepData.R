@@ -422,12 +422,17 @@ get_entrantsDist <- function(.actives,          #= tailored_demoData$actives,
 #*************************************************************************************************************
 
 get_benefit_tier <- function(Tier_select_, grouping_ = paramlist$Grouping){
+  
+  cola <- tier.param[Tier_select_, "cola"]
+  
   #init_actives       <- get_tierData(init_actives_all, Tier_select_)
   init_retirees      <- get_tierData(init_retirees.la_all, Tier_select_)
   #init_beneficiaries <- get_tierData(init_beneficiaries_all, Tier_select_)
   #init_terminated    <- init_terminated_all %>%  filter(grepl(Tier_select, planname, Tier_select_))
+  init_retirees %>% get_benefit() %>% mutate(benefit * (1 + cola))
   
-  init_retirees %>% get_benefit()
+  
+  
   
 }
 
