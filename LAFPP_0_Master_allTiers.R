@@ -144,23 +144,34 @@ mortality.post.model.t7 <- list.decrements.t6$mortality.post.model
 # 1. PVFB.retirees
   # By calibrating benefit factor for survivors   
 
-calibFactor_factor.ca <- 1.1
+calibFactor_factor.ca <- 1
 tier.param %<>% mutate(factor.ca = pmin(1.1, factor.ca * calibFactor_factor.ca))
 row.names(tier.param) <- tier.param$tier
 
 
 # 2. PVFB.act
   # By calibrating benefit factor for service retirees
-
 calibFactor_bfactor <- 1.08
 bfactor %<>% mutate_each(funs(pmin(1, .*calibFactor_bfactor)), -yos )
-bfactor
+
 
 # 3. EEC
-calibFactor_EEC.rate <- 1.0984
+  # Aggregate EEC rate (total EEC / projected payroll) in 2016 AV is about 9.75%
+  # Tier specific ERC rates are no more than 9%. 
+  # Aggergate EEC rate is 9.64% after calibration  
+
+calibFactor_EEC.rate <- 1.1
 tier.param %<>% mutate(EEC.rate = pmin(1.1, EEC.rate * calibFactor_EEC.rate))
 row.names(tier.param) <- tier.param$tier
 
+
+# 3. Initial benefit payments
+ # calibrated to match the budgeted non-DROP payment for FY2016-2017  
+init_beneficiaries_all %<>% mutate(benefit = benefit * 0.989589)
+init_retirees.ca_all   %<>% mutate(benefit = benefit * 0.989589)
+init_retirees.la_all   %<>% mutate(benefit = benefit * 0.989589)
+init_disb.ca_all       %<>% mutate(benefit = benefit * 0.989589)
+init_disb.la_all       %<>% mutate(benefit = benefit * 0.989589)
 
 
 
@@ -231,6 +242,7 @@ bfactor.t6 <- get_tier.bfactor("t6")
 # Modeling ERC cap: new hires of t6
 
 if (paramlist$ERC_cap.initiatives){
+ 
  salary.t7  <- get_salary_proc("t6")
  benefit.t7 <- get_benefit_tier("t6")
  benefit.disb.t7 <- get_benefit.disb_tier("t6")
@@ -639,7 +651,7 @@ if(paramlist$ERC_cap.initiatives){
 var_display1 <- c("runname",  "Tier", "sim", "year", "FR", "MA", "AA", 
                  "AL", 
                  # "AL.act", "AL.act.laca", 
-                 #"NC", "NC.laca",   #"AL.act.v", "AL.la", "AL.ca", "AL.term",
+                 "NC","SC", "NC.laca",   "AL.act", "AL.la", "AL.ca", "AL.term",
                  "PVFB", 
                  "B", # "B.la", "B.ca", "B.disb.la","B.disb.ca", 
                  "C",   
@@ -650,12 +662,20 @@ var_display2 <- c("Tier", "sim", "year", "FR", "MA", "AL", "AL.act", "NC", "SC",
 var_display3 <- c("nactives", "nretirees", "nla", "n.ca.R1", "n.ca.R0S1", 
                   "ndisb.la", "ndisb.ca.R1", "ndisb.ca.R0S1")
 
+var_display.cali <- c("runname",  "Tier", "sim", "year", "FR", "MA", "AA", "AL", 
+                      "AL.act", "AL.initDROP",
+                      "PVFB", 
+                      "B", # "B.la", "B.ca", "B.disb.la","B.disb.ca", 
+                      "C",   
+                      "NC","SC", "ERC", "EEC",
+                      "PR", "NC_PR", "ERC_PR")
+
 
 kable(penSim_results.sumTiers %>% filter(sim == -1) %>% select(one_of(var_display1)), digits = 2) %>% print 
 #kable(penSim_results.sumTiers %>% filter(sim == -1) %>% select(one_of(var_display2)), digits = 2) %>% print 
 
 kable(penSim_results.sumTiers %>% filter(sim == 0) %>% select(one_of(var_display1))) %>% print  # mutate(FR.AA = 100 * AA/AL) , digits = 2) %>%
-#kable(penSim_results.sumTiers %>% filter(sim == 0) %>% select(one_of(var_display2)), digits = 2) %>% print 
+kable(penSim_results.sumTiers %>% filter(sim == 0) %>% select(one_of(var_display.cali)), digits = 2) %>% print 
 
 kable(penSim_results.sumTiers %>% filter(sim == 1) %>% select(one_of(var_display1)), digits = 2) %>% print 
 kable(penSim_results.sumTiers %>% filter(sim == 1) %>% select(one_of(var_display2)) %>% mutate(#ExF = C - B, 
@@ -663,31 +683,6 @@ kable(penSim_results.sumTiers %>% filter(sim == 1) %>% select(one_of(var_display
                                                                                                PVFB.nonact = AL - AL.act,
                                                                                                DROP.PR   = PR_DROP/PR,
                                                                                                DROP.rate = EEC_DROP/EEC), digits = 2)  %>%  print 
-
-
-# kable(penSim_results.sumTiers %>% filter(sim == -1) %>%  select(runname, sim, year, NC, SC, ADC, B, C, EEC, ERC, ERC_PR, AL.disb.ca, MA,AA, FR_MA, UAAL, LG, nactives))
-# 
-# kable(outputs_list$results %>% filter(sim == -1) %>%  select(runname, sim, year, NC, SC, ADC, B, C, EEC, ERC, ERC_PR, AL.disb.ca, MA,AA, FR_MA, UAAL, LG,nactives))
-# kable(outputs_list$results.t7 %>% filter(sim == -1) %>%  select(runname, sim, year, NC, SC, ADC, B, C, EEC, ERC, ERC_PR, AL.act, MA,AA, FR_MA, UAAL, LG, nactives))
-# 
-# 
-# kable(penSim_results.sumTiers %>% filter(sim == 1) %>% select(one_of(var_display3)))
-
-
-
-# 17085208040 - 7537531159
-# 1493679418/1.695558e+10
-# kable(penSim_results.t5 %>% filter(sim == -1) %>% select(one_of(var_display1)), digits = 2) %>% print 
-
-
-# save(penSim_results.sumTiers,
-#      penSim_results.t1,
-#      penSim_results.t2,
-#      penSim_results.t3,
-#      penSim_results.t4,
-#      penSim_results.t5,
-#      penSim_results.t6,
-#      file = "Check_allTiers.RData")
 
 
 

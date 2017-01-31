@@ -250,9 +250,13 @@ run_sim <- function(Tier_select_,
   # Extra benefits: approximate DROP balance accumulated before 2016
   
   B.adj %<>% mutate(B.extra = 0, B.extra.balance = 0) 
-  B.adj$B.extra.balance[1] <- 1369*3*6132*12
+  B.adj$B.extra.balance[1] <- 239562356  # DROP balance as of 6/30/2016 CAFR2016 pdf p37  # 1369*3*6132*12
   for(z in 1:5){
-    B.adj$B.extra[z] <-  B.adj$B.extra.balance[z] / (5 - z + 1)
+    
+    if(z == 1){B.adj$B.extra[z] <- 105000000
+     } else {
+      B.adj$B.extra[z] <-  B.adj$B.extra.balance[z] / (5 - z + 1)} 
+    
     if(z != nrow(B.adj)) B.adj$B.extra.balance[z + 1] <-  (B.adj$B.extra.balance[z] - B.adj$B.extra[z]) * 1.05
   }
   
