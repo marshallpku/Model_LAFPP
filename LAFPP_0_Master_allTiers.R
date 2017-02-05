@@ -659,22 +659,22 @@ var_display1 <- c("runname",  "Tier", "sim", "year", "FR", "MA", "AA",
 
 var_display2 <- c("Tier", "sim", "year", "FR", "MA", "AL", "AL.act", "NC", "SC", "C", "B", "EEC","ERC","PR", "PR_DROP", "EEC_DROP", "ERC_PR" ) # , "ADC") # ,"Amort_basis")
 
-var_display3 <- c("nactives", "nretirees", "nla", "n.ca.R1", "n.ca.R0S1", 
+var_display3 <- c("year", "nactives", "nretirees", "nla", "n.ca.R1", "n.ca.R0S1", 
                   "ndisb.la", "ndisb.ca.R1", "ndisb.ca.R0S1")
 
-var_display.cali <- c("runname",  "Tier", "sim", "year", "FR", "MA", "AA", "AL", 
+var_display.cali <- c("runname", "sim", "year", "FR", "MA", "AA", "AL", 
                       "AL.act", "AL.initDROP",
                       "PVFB", 
                       "B", # "B.la", "B.ca", "B.disb.la","B.disb.ca", 
-                      "C",   
+                      # "C",   
                       "NC","SC", "ERC", "EEC",
                       "PR", "NC_PR", "ERC_PR")
 
 
-kable(penSim_results.sumTiers %>% filter(sim == -1) %>% select(one_of(var_display1)), digits = 2) %>% print 
+kable(penSim_results.sumTiers %>% filter(sim == -1) %>% select(one_of(var_display2)), digits = 2) %>% print 
 #kable(penSim_results.sumTiers %>% filter(sim == -1) %>% select(one_of(var_display2)), digits = 2) %>% print 
 
-kable(penSim_results.sumTiers %>% filter(sim == 0) %>% select(one_of(var_display1))) %>% print  # mutate(FR.AA = 100 * AA/AL) , digits = 2) %>%
+kable(penSim_results.sumTiers %>% filter(sim == 0) %>% select(one_of(var_display3))) %>% print  # mutate(FR.AA = 100 * AA/AL) , digits = 2) %>%
 kable(penSim_results.sumTiers %>% filter(sim == 0) %>% select(one_of(var_display.cali)), digits = 2) %>% print 
 
 kable(penSim_results.sumTiers %>% filter(sim == 1) %>% select(one_of(var_display1)), digits = 2) %>% print 
@@ -683,7 +683,6 @@ kable(penSim_results.sumTiers %>% filter(sim == 1) %>% select(one_of(var_display
                                                                                                PVFB.nonact = AL - AL.act,
                                                                                                DROP.PR   = PR_DROP/PR,
                                                                                                DROP.rate = EEC_DROP/EEC), digits = 2)  %>%  print 
-
 
 
 

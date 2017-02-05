@@ -239,6 +239,13 @@ fig_det_LAFPP <-
 fig_det_LAFPP
 
 
+
+results_all %>% filter(runname == "RS1", sim == 0) %>% select(year, SC, C)
+results_fiscal.det %>% filter(runname == "RS1") %>% select(year,  ERC.LAFPP.pension_GenFund)
+results_fiscal.det %>% filter(runname == "RS3") %>% select(year,  ERC.LAFPP.pension_GenFund)
+
+
+
 # LAFPP pension ERC
 
 n1 <- "Notes:"
@@ -322,6 +329,9 @@ fig_stch.LAFPP <-
         y = "Percent")
 fig_stch.LAFPP
 
+results_fiscal.stch %>% filter(run.returnScn == "RS1", run.policyScn == "noCap")
+results_fiscal.stch %>% filter(run.returnScn == "RS4", run.policyScn == "noCap")
+results_fiscal.stch %>% filter(run.returnScn == "RS5", run.policyScn == "noCap")
 
 #**********************************************************************************************
 ## Low returns in early years ####
@@ -364,6 +374,7 @@ fig_lowR.LAFPP <-
         x = "Year",
         y = "Percent")
 fig_lowR.LAFPP
+
  
  #**********************************************************************************************
  ## Alternative risk-return profiles ####
@@ -441,8 +452,11 @@ results_fiscal %>%
   mutate( 
          ERC.growth = ERC/ERC[year == 2016],
          ERC.LACERS = ERC.growth*ERC.LACERS_2016,
-         ERC.LACERS_GenFund = 100 * ERC.LACERS / GenFund.proj)
+         ERC.LACERS_GenFund = 100 * ERC.LACERS / GenFund.proj,
+         ERC.LAFPP_GenFund = 100 * ERC / GenFund.proj,
+         ERC.tot_GenFund = 100 * (ERC + ERC.LACERS) / GenFund.proj)
   
+df_LACERS %>% filter(runname == "RS1", sim == 0)
 df_LACERS %>% filter(runname == "RS5", sim == 0)
 
 

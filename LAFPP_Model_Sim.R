@@ -250,7 +250,7 @@ run_sim <- function(Tier_select_,
   # Extra benefits: approximate DROP balance accumulated before 2016
   
   B.adj %<>% mutate(B.extra = 0, B.extra.balance = 0) 
-  B.adj$B.extra.balance[1] <- 239562356  # DROP balance as of 6/30/2016 CAFR2016 pdf p37  # 1369*3*6132*12
+  B.adj$B.extra.balance[1] <- 239562356 + 282080479 # DROP balance as of 6/30/2016 CAFR2016 pdf p37  # 1369*3*6132*12
   for(z in 1:5){
     
     if(z == 1){B.adj$B.extra[z] <- 105000000
@@ -289,7 +289,7 @@ run_sim <- function(Tier_select_,
     # CAUTION: the following formula only works when init_AA =  AL_pct, which is the case for LAFPP
   
   # factor.initAmort <- penSim0$AL[1]/ 18337507075
-    factor.initAmort <- penSim0$AL[1]/ 18798510534
+    factor.initAmort <- (penSim0$AL[1] + penSim0$AL.initDROP[1])/ 18798510534
   
   
   
@@ -497,8 +497,8 @@ run_sim <- function(Tier_select_,
       # 50% of the total normal cost. (we interpret the "total cost of retirement benefits" as the the total normal cost.)
       # When the limit is triggered, the EEC is calculated as the total ADC minus the capped ERC. 
       
-      if(ERC_cap_NC50) penSim$ERC_cap[j] <- min(0.13 * penSim$PR[j], 0.5 * penSim$NC[j]) else
-                       penSim$ERC_cap[j] <- 0.13 * penSim$PR[j]
+      if(ERC_cap_C50) penSim$ERC_cap[j] <- min(0.13 * penSim$PR[j], 0.5 * max(0, penSim$NC[j] + penSim$SC[j])) else
+                      penSim$ERC_cap[j] <- 0.13 * penSim$PR[j]
       
       if(ERC_cap.initiatives.allTiers){
         penSim$ERC[j] <- with(penSim, ifelse(ERC[j] > ERC_cap[j], ERC_cap[j], ERC[j]))

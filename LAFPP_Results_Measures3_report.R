@@ -292,7 +292,7 @@ df_det <- results_all  %>%
   mutate(MA_PR = MA_PR/100) 
 
 
-df_det.short <- df_det %>% filter(year %in% c(2016, seq(2015, 2045, 5)))
+df_det.short <- df_det %>% filter(year %in% c(2016, seq(2020, 2045, 5)))
   
 df_det
 df_det.short
@@ -448,7 +448,7 @@ fig_stchDet.3measures <- df_all.stch %>% filter(runname == "RS1") %>%
   geom_point() + geom_line() + 
   coord_cartesian(ylim = c(0,70)) + 
   scale_y_continuous(breaks = seq(0,200, 10)) +
-  scale_x_continuous(breaks = c(2016, seq(2015, 2045, 5))) +
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) +
   scale_color_manual(values = c(RIG.red,"black"),  name = "", 
                      label  = c("Stochastic run", "Deterministic run")) + 
   labs(title = fig.title ,
@@ -475,7 +475,7 @@ fig_stchDet.2measures <- df_all.stch %>% filter(runname == "RS1") %>%
   geom_point() + geom_line() + 
   coord_cartesian(ylim = c(0,70)) + 
   scale_y_continuous(breaks = seq(0,200, 10)) +
-  scale_x_continuous(breaks = c(2016, seq(2015, 2045, 5))) +
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) +
   scale_color_manual(values = c(RIG.red,"black"),  name = "", 
                      label  = c("Stochastic run", "Deterministic run")) + 
   labs(title = fig.title ,
@@ -502,7 +502,7 @@ fig_stchDet.FRdist <- df_all.stch %>% filter(runname %in% c("RS1"), Tier == "sum
   geom_point() + 
   geom_hline(yintercept = 100, linetype = 2, size = 1) +
   coord_cartesian(ylim = c(50,180)) + 
-  scale_x_continuous(breaks = c(2016, seq(2015, 2045, 5))) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0, 500, 20)) + 
   scale_color_manual(values = c(RIG.green, RIG.blue, RIG.red, "black"),  name = NULL, 
                      label  = c("75th percentile", "50th percentile", "25th percentile", "Deterministic")) + 
@@ -532,7 +532,7 @@ fig_stchDet.ERCdist <- df_all.stch %>% filter(runname %in% c("RS1"), Tier == "su
   geom_point() + 
   geom_hline(yintercept = 100, linetype = 2, size = 1) +
   coord_cartesian(ylim = c(0,50)) + 
-  scale_x_continuous(breaks = c(2016, seq(2015, 2045, 5))) + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0, 500, 5)) + 
   scale_color_manual(values = c(RIG.red, RIG.blue, RIG.green, "black"),  name = NULL, 
                      label  = c("75th percentile", "50th percentile", "25th percentile", "Deterministic")) + 
@@ -1816,6 +1816,90 @@ write.xlsx2(df_det, paste0(Outputs_folder, "tables.xlsx"), sheetName = "det_full
 write.xlsx2(df_det.short, paste0(Outputs_folder, "tables.xlsx"), sheetName = "det_short", append = TRUE)
 write.xlsx2(tab_summary1, paste0(Outputs_folder, "tables.xlsx"), sheetName = "summary1", append = TRUE)
 write.xlsx2(tab_summary2, paste0(Outputs_folder, "tables.xlsx"), sheetName = "summary2", append = TRUE)
+
+
+
+
+
+#**************************************************************************
+## Checking results for in-text numbers                              ####
+#**************************************************************************
+
+
+# Stochastic results: 
+df_all.stch %>% filter(runname == "RS1")
+df_all.stch %>% filter(runname == "RS1_FR075")
+
+# comparing policies:
+df_all.stch %>% filter(runname == "RS1")
+df_all.stch %>% filter(runname == "RS1_cap")
+df_all.stch %>% filter(runname == "RS1_cap.allTiers")
+
+df_all.stch %>% filter(runname == "RS1_cap",Tier == "t7") %>% select(runname, Tier, year, starts_with("EEC"))
+df_all.stch %>% filter(runname == "RS1_cap.allTiers") %>% select(runname, Tier, year, starts_with("EEC"))
+
+
+# comparing return scenarios 1:
+df_all.stch %>% filter(runname == "RS1")
+df_all.stch %>% filter(runname == "RS2")
+df_all.stch %>% filter(runname == "RS3")
+
+df_all.stch %>% filter(runname == "RS1_cap",Tier == "t7") %>% select(runname, Tier, year, starts_with("EEC"))
+df_all.stch %>% filter(runname == "RS2_cap",Tier == "t7") %>% select(runname, Tier, year, starts_with("EEC"))
+df_all.stch %>% filter(runname == "RS3_cap",Tier == "t7") %>% select(runname, Tier, year, starts_with("EEC"))
+
+results_all %>% filter(runname == "RS1_cap", Tier == "t7", sim == 0, year %in% c(2016, 2030, 2045) ) %>% select(runname, Tier, year, AL, PR, SC, B) %>% mutate(AL_PR = AL/PR)
+results_all %>% filter(runname == "RS1_cap", Tier == "xt7", sim == 0, year %in% c(2016, 2030, 2045) ) %>% select(runname, Tier, year, AL, PR, SC, B) %>% mutate(AL_PR = AL/PR)
+
+df_all.stch %>% filter(runname == "RS1_cap.allTiers") %>% select(runname, Tier, year, starts_with("EEC"))
+df_all.stch %>% filter(runname == "RS2_cap.allTiers") %>% select(runname, Tier, year, starts_with("EEC"))
+df_all.stch %>% filter(runname == "RS3_cap.allTiers") %>% select(runname, Tier, year, starts_with("EEC"))
+
+
+# comparing return scenarios 2:
+df_all.stch %>% filter(runname == "RS1")
+df_all.stch %>% filter(runname == "RS4")
+df_all.stch %>% filter(runname == "RS5")
+
+df_all.stch %>% filter(runname == "RS1_cap",Tier == "t7") %>% select(runname, Tier, year, starts_with("EEC"))
+df_all.stch %>% filter(runname == "RS4_cap",Tier == "t7") %>% select(runname, Tier, year, starts_with("EEC"))
+df_all.stch %>% filter(runname == "RS5_cap",Tier == "t7") %>% select(runname, Tier, year, starts_with("EEC"))
+
+df_all.stch %>% filter(runname == "RS1_cap.allTiers") %>% select(runname, Tier, year, starts_with("EEC"))
+df_all.stch %>% filter(runname == "RS4_cap.allTiers") %>% select(runname, Tier, year, starts_with("EEC"))
+df_all.stch %>% filter(runname == "RS5_cap.allTiers") %>% select(runname, Tier, year, starts_with("EEC"))
+
+
+
+
+
+
+results_all %>% filter(runname == "RS1_cap", sim == 0, Tier %in% c("t7", "sumTiers")) %>% 
+  select(Tier, year, nactives, AL, NC, PR) %>% 
+  gather(key, value, -Tier, -year) %>% 
+  mutate(var = paste(key, Tier, sep=".")) %>% 
+  select(-key, -Tier) %>% 
+  spread(var, value) %>% 
+  mutate(AL.t7pct = 100*AL.t7 / AL.sumTiers,
+         nact.t7pct = 100 * nactives.t7 / nactives.sumTiers,
+         PR.t7pct = 100 * PR.t7/ PR.sumTiers) %>% 
+  filter(year %in% c(2019, 2029, 2045))
+
+
+df_all.stch %>% filter(runname == "RS1_cap.allTiers", year == 2045)
+
+df_all.stch %>% filter(runname == "RS5_cap",Tier == "t7") %>% select(runname, Tier, year, starts_with("EEC"))
+df_all.stch %>% filter(runname == "RS5_cap.allTiers") %>% select(runname, Tier, year, starts_with("EEC"))
+# df_all.stch %>% filter(runname == "RS1_cap.allTiers") %>% select(runname, year, starts_with("EEC"))
+
+results_all %>% filter(runname == "RS1", sim == 0, year %in% c(2016, 2030, 2045) ) %>% select(runname, Tier, year, AL, PR, SC, B) %>% mutate(AL_PR = AL/PR)
+
+
+
+
+df_all.stch %>% filter(runname == "RS1_FR075")
+
+
 
 
 
