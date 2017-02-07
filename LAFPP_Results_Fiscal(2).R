@@ -232,7 +232,7 @@ fig_det_LAFPP <-
    theme_bw() + 
    RIG.theme() +
    guides(color = guide_legend(keywidth = 1.5, keyheight = 3)) + 
-   labs(title = "ERC for LAFPP (pension and health) as a percentage of General Fund of LA",
+   labs(title = "ERC for LAFPP (pension only) as a percentage of General Fund of LA",
         subtitle = "Deterministic runs",
         x = "Year",
         y = "Percent")
@@ -318,12 +318,12 @@ fig_stch.LAFPP <-
    geom_line() + 
    scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
    scale_y_continuous(breaks = seq(0, 100, 2)) + 
-   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue), name = "") + 
+   scale_color_manual(values = c(RIG.red, RIG.blue, RIG.green), name = "") + 
    coord_cartesian(ylim = c(0,20)) + 
    theme_bw() + 
    RIG.theme() +
    guides(color = guide_legend(keywidth = 1.5, keyheight = 2)) + 
-   labs(title = "Distribution of ERC for LAFPP (pension and health) \nas a percentage of General Fund of LA",
+   labs(title = "Distribution of ERC for LAFPP (pension only) \nas a percentage of General Fund of LA",
         subtitle = "Current policy; expected return = 7.5%",
         x = "Year",
         y = "Percent")
@@ -369,7 +369,7 @@ fig_lowR.LAFPP <-
    theme_bw() + 
    RIG.theme() +
    guides(color = guide_legend(keywidth = 1.5, keyheight = 2)) + 
-   labs(title = "Distribution of ERC for LAFPP (pension and health) \nas a percentage of General Fund of LA",
+   labs(title = "Distribution of ERC for LAFPP (pension only) \nas a percentage of General Fund of LA",
         subtitle = "Current policy; low expected returns in early years",
         x = "Year",
         y = "Percent")
@@ -384,7 +384,14 @@ fig_lowR.LAFPP
                           "Scenario 6: \nLow expected return \nbased on LAFPP target portfolio")
  
  
- # LAFPP ERC
+# LAFPP ERC
+
+
+n1 <- "Notes:"
+n2 <- "\n   Scenario 2: Expected compound return is 7.5%, standard deviation is 12%"
+n3 <- "\n   Scenario 5: Expected compound return is 7.5%, standard deviation is 17.2%"
+n4 <- "\n   Scenario 6: Expected compound return is 6.1%, standard deviation is 13.4%"
+fig.caption <- paste0(n1, n2, n3, n4)
 
 fig_alt.LAFPP <- 
  results_fiscal.stch %>% 
@@ -406,19 +413,67 @@ fig_alt.LAFPP <-
    facet_grid(. ~ run.returnScn) + 
    geom_point() + 
    geom_line() + 
-   scale_x_continuous(breaks = c(2016, seq(2020, 2040, 5))) + 
-   scale_y_continuous(breaks = seq(0, 100, 2)) + 
-   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue), name = "") + 
+   scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
+   scale_y_continuous(breaks = seq(0, 100, 5)) + 
+   scale_color_manual(values = c(RIG.red, RIG.blue, RIG.green), name = "") + 
    coord_cartesian(ylim = c(0,29)) + 
    theme_bw() + 
    RIG.theme() +
    guides(color = guide_legend(keywidth = 1.5, keyheight = 2)) + 
-   labs(title = "Distribution of ERC for LAFPP (pension and health) \nas a percentage of General Fund of LA",
-        subtitle = "Current policy; alternative risk-return profiles",
-        x = "Year",
+   labs(title = "Distribution of ERC for LAFPP (pension only) \nas a percentage of General Fund of LA under different return scenarios",
+        subtitle = "Current policy",
+        caption = fig.caption,
+        x = NULL,
         y = "Percent")
 fig_alt.LAFPP 
+
+
+
+
  
+n1 <- "Notes:"
+n2 <- "\n   Scenario 2: Expected compound return is 7.5%, standard deviation is 12%"
+n3 <- "\n   Scenario 6: Expected compound return is 6.1%, standard deviation is 13.4%"
+fig.caption <- paste0(n1, n2, n3)
+
+fig_alt2.LAFPP <- 
+  results_fiscal.stch %>% 
+  filter(run.returnScn %in% paste0("RS", c(2, 5)), run.policyScn %in% c("noCap")) %>% 
+  select(run.returnScn, run.policyScn, year,
+         ERC.LAFPP.pension_GenFund.q25, 
+         ERC.LAFPP.pension_GenFund.q50, 
+         ERC.LAFPP.pension_GenFund.q75) %>% 
+  ungroup %>% 
+  gather(qtile, value, -run.returnScn, -run.policyScn, -year) %>% 
+  mutate(qtile = factor(qtile, levels = c("ERC.LAFPP.pension_GenFund.q75", 
+                                          "ERC.LAFPP.pension_GenFund.q50", 
+                                          "ERC.LAFPP.pension_GenFund.q25"),
+                        labels = c("75th percentile", 
+                                   "50th percentile", 
+                                   "25th percentile")),
+         run.returnScn = factor(run.returnScn, labels = labs.altAssumptions[c(1,3)])) %>% 
+  ggplot(aes(x = year, y = value , color = qtile))  + 
+  facet_grid(. ~ run.returnScn) + 
+  geom_point() + 
+  geom_line() + 
+  scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
+  scale_y_continuous(breaks = seq(0, 100, 5)) + 
+  scale_color_manual(values = c(RIG.red, RIG.blue, RIG.green), name = "") + 
+  coord_cartesian(ylim = c(0,29)) + 
+  theme_bw() + 
+  RIG.theme() +
+  guides(color = guide_legend(keywidth = 1.5, keyheight = 2)) + 
+  labs(title = "Distribution of ERC for LAFPP (pension only) \nas a percentage of General Fund of LA under different return scenarios",
+       subtitle = "Current policy",
+       caption = fig.caption,
+       x = NULL,
+       y = "Percent")
+fig_alt2.LAFPP 
+
+
+
+
+
 
 
 
@@ -433,7 +488,9 @@ ggsave(file = paste0(Outputs_folder, "fig_stch.LAFPP.png"), fig_stch.LAFPP, heig
 
 ggsave(file = paste0(Outputs_folder, "fig_lowR.LAFPP.png"), fig_lowR.LAFPP, height = 6*0.8, width = 15*0.8)
 
-ggsave(file = paste0(Outputs_folder, "fig_alt.LAFPP.png"), fig_alt.LAFPP, height = 6*0.8, width = 15*0.8)
+ggsave(file = paste0(Outputs_folder, "fig_alt.LAFPP.png"), fig_alt.LAFPP, height = 6*0.75, width = 15*0.75)
+
+ggsave(file = paste0(Outputs_folder, "fig_alt2.LAFPP.png"), fig_alt2.LAFPP, height = 7*0.7, width = 13*0.7)
 
 
 
@@ -492,8 +549,12 @@ df_det <- results_all  %>%
   select(year, FR_MA, B, ERC, GenFund.proj, ERC_PR, ERC_GenFund, NC.growth, SC.growth, NC.factor, SC.factor, LG, NC, SC) 
 
 df_det
+df_det.5y <- df_det %>% filter(year %in% c(2016, seq(2020, 2045,5)))
+
 
 write.csv(df_det, file = paste0(Outputs_folder, "LAFPP.csv"))
+write.csv(df_det.5y, file = paste0(Outputs_folder, "LAFPP_5y.csv"))
+
 
 df_det %>% filter(year %in% c(2016, seq(2020, 2045, 5)))
 
@@ -511,6 +572,8 @@ df_det2 <- results_all  %>%
          InvInc =  (MA + C - B) * 0.075)
 
 df_det2 
+
+
 
 write.csv(df_det2, file = paste0(Outputs_folder, "LAFPP2.csv"))
 
