@@ -108,6 +108,8 @@ runs_RS <- paste0("RS", 1:5)
 runs_cap <-  paste0("RS", 1:5, "_cap") 
 runs_cap.allTiers <-  paste0("RS", 1:5, "_cap.allTiers")
 runs_RS_FR075 <- paste0("RS", 1:5, "_FR075")
+runs_RS_DC7 <- c("RS1_DC7", "RS1_DC7a", "RS1_DC7b")
+
 
 runs_RS_labels <- c("Assumption Achieved",
                     "5 years of low returns",
@@ -134,9 +136,10 @@ runs_RS_FR075_labels <- c("Assumption Achieved; 75% initial FR",
                           "Callan; 75% initial FR",
                           "RVK; 75% initial FR")
 
+runs_RS_DC7_labels <- c("Discount rate = 7%", "Discount rate = 7.25%, lower salgrowth 0.25%",  "Discount rate = 7%, lower salgrowth 0.5%")
 
-runs_all <- c(runs_RS, runs_cap, runs_cap.allTiers, runs_RS_FR075)
-runs_all_labels <- c(runs_RS_labels, runs_cap_labels, runs_cap.allTiers_labels, runs_RS_FR075_labels )
+runs_all <- c(runs_RS, runs_cap, runs_cap.allTiers, runs_RS_FR075, runs_RS_DC7)
+runs_all_labels <- c(runs_RS_labels, runs_cap_labels, runs_cap.allTiers_labels, runs_RS_FR075_labels, runs_RS_DC7_labels )
 
 
 df_all.stch <- results_all  %>% 
@@ -2038,18 +2041,50 @@ x <- ppd %>% select(PlanName, fy, ReqContRate_ER) %>%
   arrange(ReqContRate_ER)
 
 
-
-
 #**************************************************************************
-# For LAFPP ####
+# Lower discount rate: 7%     ####
 #**************************************************************************
 
+df.DC7 <- results_all %>% filter(runname %in% c("RS1", "RS1_DC7","RS1_DC7a", "RS1_DC7b"), sim == 0, year == 2016) %>% 
+  select(runname, year, FR_MA, AL, MA,AA,UAAL, SC, NC,  C, ERC, EEC, PR)
+df.DC7
 
-df_det <- results_all  %>% 
-  filter(runname == "RS1", sim == 0, year <= 2045) %>% 
-  select(year, AL, MA, B, C, ERC, EEC, ExF, FR_MA, ERC_PR, NC_PR, ExF_MA, MA_PR) %>% 
-  mutate_at(vars(-year, -FR_MA, -ERC_PR, -ExF_MA, -MA_PR, -NC_PR), funs(./1e6)) %>% 
-  mutate(MA_PR = MA_PR/100) 
+628253575/565444323 # C
+493605962/430796709 # ERC
+
+19943067948/18808249455 # 
+
+
+amort_cp(2282121710-1147303217, 0.07, 20, 0.04) #  73350356 year - 1 amort payment for change in DC
+
+
+(628253575 + 73350356) /565444323 # C
+(493605962 + 73350356) /430796709 # ERC
+
+
+write.xlsx2(df.DC7, file = paste0(Outputs_folder, "df.DC7.xlsx"))
+
+
+# DC = 7.25%, salary growth lowered by 0.25%
+amort_cp(1606067056-1147303217, 0.0725, 20, 0.04)
+
+(441302839 + 30248344)/1397264823 # 33.75% , 2.9 pct points higher 
+
+
+# DC = 7%, salary growth lowered by 0.5%
+amort_cp(2085255919-1147303217, 0.07, 20, 0.04)
+
+
+(452417767 + 60625699)/1397264823 # 36.72% , 5.9 pct points higher 
+
+# DC = 7%, salary growth lowered by 0.5%, cola lowered by 0.25%
+amort_cp(1704374607-1147303217, 0.07, 20, 0.04)
+
+# DC
+(442379906 + 36006978)/1397264823 # 34.24% , 3.4 pct points higher 
+
+
+
 
 
 

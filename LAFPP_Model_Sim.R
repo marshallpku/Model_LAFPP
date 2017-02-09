@@ -290,8 +290,8 @@ run_sim <- function(Tier_select_,
   
   # factor.initAmort <- penSim0$AL[1]/ 18337507075
     factor.initAmort <- (penSim0$AL[1] + penSim0$AL.initDROP[1])/ 18798510534
-  
-  
+    #factor.initAmort <-   18808249455 / 18798510534
+    
   
   if(useAVamort){
     SC_amort.init.list <- mapply(amort_LG, p = init_amort_raw_$balance * factor.initAmort , m = init_amort_raw_$year.remaining, method = init_amort_raw_$amort.method,
@@ -352,11 +352,12 @@ run_sim <- function(Tier_select_,
                                          AL = EAA_0,                       # Use preset value 
                                          MA = penSim$MA[j])                # Assume inital EAA equals inital market value.
                  
-                 penSim$AA[j]  <- ifelse(init_AA == "AL_pct" & k != -1, 
-                                          penSim$AL[j] * AA_0_pct,
-                                          switch(smooth_method,
-                                                 method1 =  with(penSim, MA[j]),   # we may want to allow for a preset initial AA.
-                                                 method2 =  with(penSim, (1 - w) * EAA[j] + w * MA[j])
+                 penSim$AA[j]  <- ifelse(init_AA == "AL_pct" & k != -1, penSim$AL[j] * AA_0_pct, 
+                                             ifelse(init_AA == "AA0" & k != -1, AA_0,
+                                                    switch(smooth_method,
+                                                           method1 =  with(penSim, MA[j]),   # we may want to allow for a preset initial AA.
+                                                           method2 =  with(penSim, (1 - w) * EAA[j] + w * MA[j])
+                                                    ) 
                                           )
       )
       } else {

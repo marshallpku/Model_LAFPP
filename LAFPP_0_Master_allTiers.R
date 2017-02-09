@@ -139,6 +139,9 @@ mortality.post.model.t7 <- list.decrements.t6$mortality.post.model
   # 
 
 
+# tier.param %<>% mutate(cola = cola - 0.0025)  
+
+
 ### Calibration:
 
 # 1. PVFB.retirees

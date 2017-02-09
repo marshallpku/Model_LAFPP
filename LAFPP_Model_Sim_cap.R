@@ -531,12 +531,13 @@ run_sim.wt7 <- function(Tier_select_,
                                          AL = EAA_0,                       # Use preset value 
                                          MA = penSim.xt7$MA[j])                # Assume inital EAA equals inital market value.
                  
-                 penSim.xt7$AA[j]  <- ifelse(init_AA == "AL_pct" & k != -1, 
-                                          penSim.xt7$AL[j] * AA_0_pct,
-                                          switch(smooth_method,
-                                                 method1 =  with(penSim.xt7, MA[j]),   # we may want to allow for a preset initial AA.
-                                                 method2 =  with(penSim.xt7, (1 - w) * EAA[j] + w * MA[j])
-                                          )
+                 penSim.xt7$AA[j]  <- ifelse(init_AA == "AL_pct" & k != -1, penSim.xt7$AL[j] * AA_0_pct,
+                                             ifelse(init_AA == "AA" & k != -1, AA_0, 
+                                                    switch(smooth_method,
+                                                           method1 =  with(penSim.xt7, MA[j]),   # we may want to allow for a preset initial AA.
+                                                           method2 =  with(penSim.xt7, (1 - w) * EAA[j] + w * MA[j])
+                                                           )
+                                             )
       )
       } else {
         penSim.xt7$MA[j]  <- with(penSim.xt7, MA[j - 1] + I.r[j - 1] + C[j - 1] - B[j - 1])

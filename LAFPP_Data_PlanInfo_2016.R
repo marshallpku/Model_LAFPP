@@ -114,7 +114,7 @@ disbRates <- data.frame(age = 20:64) %>%
 #                      ## Salary growth rates  ####
 #*********************************************************************************************************
 
-AV.infl  <- 0.0325 # Assumed inflation used in salary scale in AV2015 
+AV.infl  <- 0.0325 # - 0.005 # Assumed inflation used in salary scale in AV2015 
 AV.raise <- 0.0075 # Assumed "across the board" salary increases used in salary scale in AV2015 
 
 salgrowth <- read_ExcelRange(file_planInfo, sheet="SalaryGrowth", "B2", "B3", colTypes="numeric") %>% 

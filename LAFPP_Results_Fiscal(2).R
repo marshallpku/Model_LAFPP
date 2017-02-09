@@ -197,10 +197,10 @@ results_fiscal %>% filter(runname == "RS1", sim == 0) %>%
   theme_bw() + 
   RIG.theme() + 
   scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
-  scale_y_continuous(breaks = seq(0, 20000, 1000)) + 
-  labs(title = "Projected General Fund of the Los Angeles City",
+  scale_y_continuous(breaks = seq(0, 20000, 1000), labels = comma(seq(0, 20000, 1000))) + 
+  labs(title = "Projected General fund of the Los Angeles City",
        y = "$Million",
-       x = "Year")
+       x = NULL)
 fig_projGenFund
   
 
