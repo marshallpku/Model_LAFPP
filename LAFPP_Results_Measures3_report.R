@@ -2087,9 +2087,19 @@ amort_cp(1704374607-1147303217, 0.07, 20, 0.04)
 
 
 
+x <- results_all %>% filter(runname == "RS1", sim > 0) %>% 
+  group_by(sim) %>% 
+  summarise(FR30 = FR_MA[year == 2045],
+            ERC30 = ERC_PR[year == 2045],
+            geoR = get_geoReturn(i.r)) %>% 
+  arrange(geoR)
 
 
+df_all.stch %>% filter(runname == "RS1_FR075")
+results_all %>% filter(runname == "RS1_FR075", sim == 0) %>% select(runname, sim, year, FR_MA, ERC_PR)
 
+df_all.stch %>% filter(runname == "RS1")
+results_all %>% filter(runname == "RS1", sim == 0) %>% select(runname, sim, year, FR_MA, ERC_PR)
 
-
-
+(1.075)^30
+(1.0753)^30
