@@ -71,11 +71,11 @@ results_all <- get_results(IO_folder, "results_sumTiers_RS") %>% select(runname,
 runs_RS <- paste0("RS", 1:5)
 runs_policy <- c("noCap", "cap", "cap.allTiers")
 
-runs_RS_labels <- c("Scenario 2: \nAssumption achieved", 
+runs_RS_labels <- c("Scenario 2: \nAssumption Achieved:\nStochastic Base Case", 
                     "Scenario 3: \n5 years of low returns", 
                     "Scenario 4: \n15 years of low returns",
-                    "Scenario 5: \nHigh volatility \nreflecting market forecasts", 
-                    "Scenario 6: \nLow expected return \nbased on LAFPP target portfolio")
+                    "Scenario 5: \nHigh Volatility", 
+                    "Scenario 6: \nTarget Asset Allocation")
 
 runs_policy_labels <- c("without ERC cap", 
                         "ERC cap for new hires", 
@@ -216,6 +216,7 @@ fig_projGenFund
           ERC.LAFPP_GenFund,
           ERC.tot_GenFund)
 
+results_fiscal.det
 
 # LAFPP pension ERC
 fig_det_LAFPP <- 
@@ -238,6 +239,9 @@ fig_det_LAFPP <-
         y = "Percent")
 fig_det_LAFPP
 
+results_fiscal.det %>% 
+  filter(run.returnScn %in% paste0("RS", c(1)), run.policyScn %in% c("noCap" )) 
+
 
 
 results_all %>% filter(runname == "RS1", sim == 0) %>% select(year, SC, C)
@@ -249,27 +253,32 @@ results_fiscal.det %>% filter(runname == "RS3") %>% select(year,  ERC.LAFPP.pens
 # LAFPP pension ERC
 
 n1 <- "Notes:"
-n2 <- "\n   Scenario 2: Expected compound return is 7.5%, standard deviation is 12%"
+n2 <- "\n   Scenario 1: annual "
 n3 <- "\n   Scenario 4: Expected compound return is 6.6%, standard deviation is 12%"
-n4 <- "\n   Scenario 6: Expected compound return is 6.1%, standard deviation is 13.4%"
-fig.caption <- paste0(n1, n2, n3, n4)
+fig.caption <- paste0(n1, n2, n3)
+
+fig.labels <- c("Scenario 1: Assumption Achieved:\nDeterministic\nAnnual return = 7.5%",
+                "Deterministic version of \nScenario 6: Target Asset Allocation\nAnnual return = 6.1%")
 
 fig_det_LAFPP.noCap <- 
   results_fiscal.det %>% 
-  filter(run.returnScn %in% paste0("RS", c(1, 3, 5)), run.policyScn %in% c("noCap")) %>% 
-  ggplot(aes(x = year, y = ERC.LAFPP.pension_GenFund, color = run.returnScn.lab))  + 
+  filter(run.returnScn %in% paste0("RS", c(1, 5)), run.policyScn %in% c("noCap")) %>% 
+  ggplot(aes(x = year, y = ERC.LAFPP.pension_GenFund, color = run.returnScn.lab, shape = run.returnScn.lab))  + 
   geom_point() + 
   geom_line()+ 
   scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0, 100, 2)) + 
-  scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue), name = "Return scenarios") + 
+  scale_color_manual(values = c(RIG.blue, RIG.red, RIG.blue), name = "Return scenarios",
+                     labels = fig.labels) + 
+  scale_shape_manual(values = c(16, 17, 15), name = "Return scenarios",
+                     labels = fig.labels) + 
   coord_cartesian(ylim = c(0,18)) + 
   theme_bw() + 
   RIG.theme() +
   guides(color = guide_legend(keywidth = 1.5, keyheight = 3)) + 
-  labs(title = "ERC for LAFPP (pension only) as a percentage of General Fund of LA",
+  labs(title = "Employer contribution as a percentage of City general fund revenue",
        subtitle = "Deterministic runs",
-       caption = fig.caption,
+       #caption = fig.caption,
        x = "Year",
        y = "Percent")
 fig_det_LAFPP.noCap
@@ -379,9 +388,9 @@ fig_lowR.LAFPP
  #**********************************************************************************************
  ## Alternative risk-return profiles ####
  #**********************************************************************************************
- labs.altAssumptions <- c("Scenario 2: \nAssumption achieved", 
-                          "Scenario 5: \nHigh volatility \nreflecting market forecasts", 
-                          "Scenario 6: \nLow expected return \nbased on LAFPP target portfolio")
+ labs.altAssumptions <- c("Scenario 2: \nAssumption Achieved: \nStochastic Base Case", 
+                          "Scenario 5: \nHigh Volatility", 
+                          "Scenario 6: \nTarget Asset Allocation")
  
  
 # LAFPP ERC
@@ -452,18 +461,19 @@ fig_alt2.LAFPP <-
                                    "50th percentile", 
                                    "25th percentile")),
          run.returnScn = factor(run.returnScn, labels = labs.altAssumptions[c(1,3)])) %>% 
-  ggplot(aes(x = year, y = value , color = qtile))  + 
+  ggplot(aes(x = year, y = value , color = qtile, shape = qtile))  + 
   facet_grid(. ~ run.returnScn) + 
   geom_point() + 
   geom_line() + 
   scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0, 100, 5)) + 
   scale_color_manual(values = c(RIG.red, RIG.blue, RIG.green), name = "") + 
-  coord_cartesian(ylim = c(0,29)) + 
+  scale_shape_manual(values = c(17, 16, 15), name = "") + 
+  coord_cartesian(ylim = c(0,25)) + 
   theme_bw() + 
   RIG.theme() +
   guides(color = guide_legend(keywidth = 1.5, keyheight = 2)) + 
-  labs(title = "Distribution of ERC for LAFPP (pension only) \nas a percentage of General Fund of LA under different return scenarios",
+  labs(title = "Distribution of employer contribution as a percentage of City general fund revenue \nunder different return scenarios",
        subtitle = "Current policy",
        caption = fig.caption,
        x = NULL,
@@ -478,11 +488,11 @@ fig_alt2.LAFPP
 
 
 
-ggsave(file = paste0(Outputs_folder, "fig_projGenFund.png"), fig_projGenFund, height = 6*0.9, width = 10*0.9)
+ggsave(file = paste0(Outputs_folder, "fig15_projGenFund.png"), fig_projGenFund, height = 6*0.9, width = 10*0.9)
 
 ggsave(file = paste0(Outputs_folder, "fig_det_LAFPP.png"), fig_det_LAFPP, height = 6*0.8, width = 15*0.8)
 
-ggsave(file = paste0(Outputs_folder, "fig_det_LAFPP.noCap.png"), fig_det_LAFPP.noCap, height = 7*0.8, width = 10*0.8)
+ggsave(file = paste0(Outputs_folder, "fig16_det_LAFPP.noCap.png"), fig_det_LAFPP.noCap, height = 7*0.75, width = 10*0.8)
 
 ggsave(file = paste0(Outputs_folder, "fig_stch.LAFPP.png"), fig_stch.LAFPP, height = 7*0.8, width = 10*0.8)
 
@@ -490,8 +500,12 @@ ggsave(file = paste0(Outputs_folder, "fig_lowR.LAFPP.png"), fig_lowR.LAFPP, heig
 
 ggsave(file = paste0(Outputs_folder, "fig_alt.LAFPP.png"), fig_alt.LAFPP, height = 6*0.75, width = 15*0.75)
 
-ggsave(file = paste0(Outputs_folder, "fig_alt2.LAFPP.png"), fig_alt2.LAFPP, height = 7*0.7, width = 13*0.7)
+ggsave(file = paste0(Outputs_folder, "fig17_alt2.LAFPP.png"), fig_alt2.LAFPP, height = 7*0.7, width = 13*0.7)
 
+
+ggsave(file = paste0(Outputs_folder, "fig15_projGenFund.pdf"), fig_projGenFund, height = 6*0.9, width = 10*0.9)
+ggsave(file = paste0(Outputs_folder, "fig16_det_LAFPP.noCap.pdf"), fig_det_LAFPP.noCap, height = 7*0.75, width = 10*0.8)
+ggsave(file = paste0(Outputs_folder, "fig17_alt2.LAFPP.pdf"), fig_alt2.LAFPP, height = 7*0.7, width = 13*0.7)
 
 
 

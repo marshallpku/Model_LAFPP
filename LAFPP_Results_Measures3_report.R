@@ -370,20 +370,22 @@ fig_distFR30 <- results_all %>%
 fig_distFR30
 
 
-
+# Figure2
 fig.title <- "Probability of funded ratio below 40% in any year up to the given year"
 fig.subtitle <- "Current LAFPP funding policy; expected compound return = 7.5%"
 fig_stchDet.FR40less <- df_all.stch %>% filter(runname == "RS1") %>% 
   select(year, FR40less) %>% 
   mutate(FR40less.det = 0) %>% 
   gather(variable, value, - year) %>% 
-  ggplot(aes(x = year, y = value, color = variable)) + theme_bw() + 
-  geom_point() + geom_line() + 
+  ggplot(aes(x = year, y = value, color = variable, shape = variable)) + theme_bw() + 
+  geom_point(size = 2) + geom_line() + 
   coord_cartesian(ylim = c(0,5)) + 
   scale_y_continuous(breaks = seq(0,200, 1)) +
   scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_color_manual(values = c(RIG.red,"black"),  name = "", 
                      label  = c("Stochastic run", "Deterministic run")) + 
+  scale_shape_manual(values = c(17,16),  name = "", 
+                     label  = c("Stochastic run", "Deterministic run")) +
   labs(title = fig.title,
        subtitle = fig.subtitle,
        x = NULL, y = "Probability (%)") + 
@@ -391,20 +393,22 @@ fig_stchDet.FR40less <- df_all.stch %>% filter(runname == "RS1") %>%
 fig_stchDet.FR40less
 
 
-
+# Figure 4
 fig.title <- "Probability of employer contribution rising more than 10% of payroll \nin a 5-year period at any time prior to and including the given year"
 fig.subtitle <- "Current LAFPP funding policy; expected compound return = 7.5%"
 fig_stchDet.ERChike <- df_all.stch %>% filter(runname == "RS1") %>% 
   select(year, ERC_hike) %>% 
   mutate(ERChike.det = 0) %>% 
   gather(variable, value, - year) %>% 
-  ggplot(aes(x = year, y = value, color = variable)) + theme_bw() + 
-  geom_point() + geom_line() + 
+  ggplot(aes(x = year, y = value, color = variable, shape = variable)) + theme_bw() + 
+  geom_point(size = 2) + geom_line() + 
   coord_cartesian(ylim = c(0,100)) + 
   scale_y_continuous(breaks = seq(0,200, 10)) +
   scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_color_manual(values = c(RIG.red,"black"),  name = "", 
                      label  = c("Stochastic run", "Deterministic run")) + 
+  scale_shape_manual(values = c(17,16),  name = "", 
+                     label  = c("Stochastic run", "Deterministic run")) +
   labs(title = fig.title,
        subtitle = fig.subtitle,
        x = NULL, y = "Probability (%)") + 
@@ -488,7 +492,7 @@ fig_stchDet.2measures
 
 
 
-
+# Figure1
 # Distribution of funded ratio 
 fig.title <- "Distribution of funded ratios across simulations"
 fig.subtitle <- "Current LAFPP funding policy; expected compound return = 7.5%"
@@ -499,16 +503,19 @@ fig_stchDet.FRdist <- df_all.stch %>% filter(runname %in% c("RS1"), Tier == "sum
   select(runname, year, FR.q25, FR.q50, FR.q75, FR_det) %>% 
   gather(type, value, -runname, -year) %>% 
   ggplot(aes(x = year, y = value,
-             color = factor(type, levels = c("FR.q75", "FR.q50", "FR.q25", "FR_det"))
+             color = factor(type, levels = c("FR.q75", "FR.q50", "FR.q25", "FR_det")),
+             shape = factor(type, levels = c("FR.q75", "FR.q50", "FR.q25", "FR_det"))
   )) + theme_bw() + 
   geom_line() + 
-  geom_point() + 
+  geom_point(size = 2) + 
   geom_hline(yintercept = 100, linetype = 2, size = 1) +
   coord_cartesian(ylim = c(50,180)) + 
   scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0, 500, 20)) + 
   scale_color_manual(values = c(RIG.green, RIG.blue, RIG.red, "black"),  name = NULL, 
                      label  = c("75th percentile", "50th percentile", "25th percentile", "Deterministic")) + 
+  scale_shape_manual(values = c(15, 16, 17, 18),  name = NULL, 
+                    label  = c("75th percentile", "50th percentile", "25th percentile", "Deterministic")) +
   labs(title = fig.title,
        subtitle = fig.subtitle,
        x = NULL, y = "Percent") + 
@@ -518,7 +525,7 @@ fig_stchDet.FRdist <- df_all.stch %>% filter(runname %in% c("RS1"), Tier == "sum
 fig_stchDet.FRdist
 
 
-
+# Figure 3
 # Distribution of ERC rate
 fig.title <- "Distribution of employer contribution rates across simulations"
 fig.subtitle <- "Current LAFPP funding policy; expected compound return = 7.5%"
@@ -529,16 +536,19 @@ fig_stchDet.ERCdist <- df_all.stch %>% filter(runname %in% c("RS1"), Tier == "su
   select(runname, year, ERC_PR.q25, ERC_PR.q50, ERC_PR.q75, ERC_det) %>% 
   gather(type, value, -runname, -year) %>% 
   ggplot(aes(x = year, y = value,
-             color = factor(type, levels = c("ERC_PR.q75", "ERC_PR.q50", "ERC_PR.q25", "ERC_det")))) + 
+             color = factor(type, levels = c("ERC_PR.q75", "ERC_PR.q50", "ERC_PR.q25", "ERC_det")),
+             shape = factor(type, levels = c("ERC_PR.q75", "ERC_PR.q50", "ERC_PR.q25", "ERC_det")))) + 
   theme_bw() + 
   geom_line() + 
-  geom_point() + 
+  geom_point(size = 2) + 
   geom_hline(yintercept = 100, linetype = 2, size = 1) +
   coord_cartesian(ylim = c(0,50)) + 
   scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0, 500, 5)) + 
   scale_color_manual(values = c(RIG.red, RIG.blue, RIG.green, "black"),  name = NULL, 
                      label  = c("75th percentile", "50th percentile", "25th percentile", "Deterministic")) + 
+  scale_shape_manual(values = c(17, 16, 15, 18),  name = NULL, 
+                     label  = c("75th percentile", "50th percentile", "25th percentile", "Deterministic")) +
   labs(title = fig.title,
        subtitle = fig.subtitle,
        x = NULL, y = "Percent") + 
@@ -576,6 +586,7 @@ fig_policy.FRdist <- df_all.stch %>% filter(runname %in% c("RS1", "RS1_cap"), Ti
 fig_policy.FRdist
 
 
+# Figure 11
 # Distribution of ERC rate
 fig_policy.ERCdist <- df_all.stch %>% filter(runname %in% c("RS1", "RS1_cap", "RS1_cap.allTiers"), Tier == "sumTiers") %>% 
   mutate(runname = factor(runname, levels = c("RS1", "RS1_cap", "RS1_cap.allTiers" ), 
@@ -583,18 +594,21 @@ fig_policy.ERCdist <- df_all.stch %>% filter(runname %in% c("RS1", "RS1_cap", "R
   select(runname, year, ERC_PR.q25, ERC_PR.q50, ERC_PR.q75) %>% 
   gather(type, value, -runname, -year) %>% 
   ggplot(aes(x = year, y = value,
-             color = factor(type, levels = c("ERC_PR.q75", "ERC_PR.q50", "ERC_PR.q25")))) + 
+             color = factor(type, levels = c("ERC_PR.q75", "ERC_PR.q50", "ERC_PR.q25")),
+             shape = factor(type, levels = c("ERC_PR.q75", "ERC_PR.q50", "ERC_PR.q25")))) + 
   theme_bw() + facet_grid(.~runname) + 
   geom_line() + 
-  geom_point() + 
+  geom_point(size = 2) + 
   geom_hline(yintercept = 100, linetype = 2, size = 1) +
   coord_cartesian(ylim = c(0,50)) + 
   scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0, 500, 5)) + 
   scale_color_manual(values = c(RIG.red, RIG.blue, RIG.green),  name = NULL, 
                      label  = c("75th percentile", "50th percentile", "25th percentile")) + 
+  scale_shape_manual(values = c(17, 16, 15),  name = NULL, 
+                     label  = c("75th percentile", "50th percentile", "25th percentile")) + 
   labs(title = "Distribution of employer contribution rates across simulations under different funding approaches",
-       x = NULL, y = "Percent") + 
+       x = NULL, y = "Percent of payroll(%)") + 
   theme(axis.text.x = element_text(size = 8)) + 
   RIG.theme()
 fig_policy.ERCdist
@@ -617,16 +631,20 @@ fig_policy.ERChigh
 
 
 
-
+# Figure 12
 # Risk of sharp ERC increase
 fig.title <- "Probability of ERC rising by more than 10% of payroll \nin any 5-year period up to the given year \nunder different funding approaches"
 fig_policy.ERChike <- df_all.stch %>% filter(runname %in% c("RS1", "RS1_cap", "RS1_cap.allTiers"), Tier == "sumTiers") %>%
-  ggplot(aes(x = year, y = ERC_hike, color = factor(runname, levels = c("RS1", "RS1_cap", "RS1_cap.allTiers")))) + theme_bw() + 
-  geom_line() + geom_point() + 
+  ggplot(aes(x = year, y = ERC_hike, 
+             color = factor(runname, levels = c("RS1", "RS1_cap", "RS1_cap.allTiers")),
+             shape = factor(runname, levels = c("RS1", "RS1_cap", "RS1_cap.allTiers")))) + theme_bw() + 
+  geom_line() + geom_point(size = 2) + 
   coord_cartesian(ylim = c(0, 80)) + 
   scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,100, 10)) +
-  scale_color_manual(values = c(RIG.blue, RIG.green, RIG.red),  name = "Contribution \napproaches", 
+  scale_color_manual(values = c(RIG.blue, RIG.green, RIG.red),  name = "Contribution \nPolicies", 
+                     label  = c("without ERC cap", "ERC cap for new hires", "ERC cap for all tiers")) + 
+  scale_shape_manual(values = c(16, 15, 17),  name = "Contribution \nPolicies", 
                      label  = c("without ERC cap", "ERC cap for new hires", "ERC cap for all tiers")) + 
   labs(title = fig.title,
        x = NULL, y = "Probability (%)") + 
@@ -638,27 +656,30 @@ fig_policy.ERChike
 
 # Distribution of EEC rates of t7 members 
 
-
+# Figure 13
 # Distribution of EEC rate: ERC cap applied on new hires
-fig.title <- "Distribution of employee contribution rates for new hires \nif the ERC cap is applied to new hires"
+fig.title <- "Distribution of employee contribution rates for new hires \nif the employer contribution cap is applied to new hires"
 fig_policy.EECdist.t7 <- df_t7.stch %>% filter(runname %in% c("RS1_cap"), Tier == "t7") %>% 
   #mutate(runname = factor(runname, levels = c("RS1", "RS1_cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
   select(runname, year, EEC_PR.q10, EEC_PR.q25, EEC_PR.q50, EEC_PR.q75, EEC_PR.q90) %>% 
   gather(type, value, -runname, -year) %>% 
   ggplot(aes(x = year, y = value,
-             color = factor(type, levels = c("EEC_PR.q90", "EEC_PR.q75", "EEC_PR.q50", "EEC_PR.q25", "EEC_PR.q10")))) + 
+             color = factor(type, levels = c("EEC_PR.q90", "EEC_PR.q75", "EEC_PR.q50", "EEC_PR.q25", "EEC_PR.q10")),
+             shape = factor(type, levels = c("EEC_PR.q90", "EEC_PR.q75", "EEC_PR.q50", "EEC_PR.q25", "EEC_PR.q10")))) + 
   theme_bw() + 
   #facet_grid(.~runname) + 
   geom_line() + 
-  geom_point() + 
+  geom_point(size = 2) + 
   geom_hline(yintercept = 100, linetype = 2, size = 1) +
   coord_cartesian(ylim = c(0,20)) + 
   scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0, 500, 2.5)) + 
   scale_color_manual(values = c("red", RIG.red, RIG.blue, RIG.green, "green"),  name = NULL, 
                      label  = c("90th percentile", "75th percentile", "50th percentile", "25th percentile", "10th percentile")) + 
+  scale_shape_manual(values = c(18, 17, 16, 15, 18),  name = NULL, 
+                     label  = c("90th percentile", "75th percentile", "50th percentile", "25th percentile", "10th percentile")) +
   labs(title = fig.title,
-       x = NULL, y = "Percent") + 
+       x = NULL, y = "Percent of payroll (%)") + 
   theme(axis.text.x = element_text(size = 8)) + 
   RIG.theme()
 fig_policy.EECdist.t7
@@ -685,25 +706,28 @@ fig_policy.EEChigh.t7
 
 
 
-
+# Figure 14
 # Distribution of EEC rate: : ERC cap applied to all tiers
-fig.title <- "Distribution of employee contribution rates \nif the ERC cap is applied to all current tiers"
+fig.title <- "Distribution of employee contribution rates \nif the employer contribution cap is applied to all plan members"
 fig_policy.EECdist.allTiers <- df_all.stch %>% filter(runname %in% c("RS1_cap.allTiers")) %>% 
   #mutate(runname = factor(runname, levels = c("RS1", "RS1_cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
   select(runname, year, EEC_PR.q10, EEC_PR.q25, EEC_PR.q50, EEC_PR.q75, EEC_PR.q90) %>% 
   gather(type, value, -runname, -year) %>% 
   ggplot(aes(x = year, y = value,
-             color = factor(type, levels = c("EEC_PR.q90", "EEC_PR.q75", "EEC_PR.q50", "EEC_PR.q25", "EEC_PR.q10")))) + 
+             color = factor(type, levels = c("EEC_PR.q90", "EEC_PR.q75", "EEC_PR.q50", "EEC_PR.q25", "EEC_PR.q10")),
+             shape = factor(type, levels = c("EEC_PR.q90", "EEC_PR.q75", "EEC_PR.q50", "EEC_PR.q25", "EEC_PR.q10")))) + 
   theme_bw() + 
   #facet_grid(.~runname) + 
   geom_line() + 
-  geom_point() + 
+  geom_point(size = 2) + 
   geom_hline(yintercept = 100, linetype = 2, size = 1) +
   coord_cartesian(ylim = c(0,70)) + 
   scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0, 500, 10)) + 
   scale_color_manual(values = c("red", RIG.red, RIG.blue, RIG.green, "green"),  name = NULL, 
-                     label  = c("90th percentile", "75th percentile", "50th percentile", "25th percentile", "10th percentile")) + 
+                     label  = c("90th percentile", "75th percentile", "50th percentile", "25th percentile", "10th percentile")) +
+  scale_shape_manual(values = c(18, 17, 16, 15, 18),  name = NULL, 
+                     label  = c("90th percentile", "75th percentile", "50th percentile", "25th percentile", "10th percentile")) +
   labs(title = fig.title,
        x = NULL, y = "Percent") + 
   theme(axis.text.x = element_text(size = 8)) + 
@@ -732,12 +756,6 @@ fig_policy.EEChigh.allTiers
 
 
 
-
-
-
-
-
-
 #*************************************************************
 ## Comparing return scenarios: low returns in early years ####
 #*************************************************************
@@ -746,9 +764,9 @@ runs.compareRS1 <- c("RS1", "RS1_cap", "RS1_cap.allTiers",
                      "RS2", "RS2_cap", "RS2_cap.allTiers",
                      "RS3", "RS3_cap", "RS3_cap.allTiers")
 
-fig.labels.lowReturns <- c("Scenario 2: \nAssumption achieved \nstochastic", 
-                           "Scenario 3: \n5 years of low returns", 
-                           "Scenario 4: \n15 years of low returns")
+fig.labels.lowReturns <- c("Scenario 2: \nAssumption Achieved \nStochastic Base Case", 
+                           "Scenario 3: \n5 Years of Low Returns", 
+                           "Scenario 4: \n15 Years of Low Returns")
 
 # Risk of high ERC
 fig.title <-  "Probability of ERC above 50% of payroll \nat any time prior to and including the given year \nunder different return scenarios"
@@ -844,12 +862,13 @@ fig_compareRS1.ERChike <- df_all.stch %>% filter(runname %in% runs.compareRS1, T
 fig_compareRS1.ERChike
 
 
+#Figure 6
 # Risk of sharp ERC increase, current policy
 fig.title <- "Probability of ERC rising by more than 10% of payroll \nin any 5-year period up to the given year \nunder different return scenarios"
 fig.subtitle <- "Current LAFPP funding policy"
-fig.labels.lowReturns <- c("Scenario 2: \nAssumption achieved \nstochastic", 
-                           "Scenario 3: \n5 years of low returns", 
-                           "Scenario 4: \n15 years of low returns")
+fig.labels.lowReturns <- c("Scenario 2: \nAssumption Achieved \nStochastic Base Case", 
+                           "Scenario 3: \n5 Years of Low Returns", 
+                           "Scenario 4: \n15 Years of Low Returns")
 n1 <- "Notes:"
 n2 <- "\n   Scenario 2: Expected compound return is 7.5%, standard deviation is 12%"
 n3 <- "\n   Scenario 3: Expected compound return is 7.1%, standard deviation is 12%"
@@ -865,13 +884,17 @@ fig_compareRS1.ERChike.noCap <- df_all.stch %>% filter(runname %in% c("RS1", "RS
   #        policy = ifelse(policy == "", "no_cap", policy),
   #        policy = factor(policy, levels = c("no_cap", "cap", "cap.allTiers"), 
   #                        labels = c("No ERC cap", "ERC cap for new hires", "ERC cap for all tiers"))) %>%  
-  ggplot(aes(x = year, y = ERC_hike, color = factor(runname, levels = c("RS1", "RS2", "RS3")))) + theme_bw() + 
-  geom_line() + geom_point() + 
+  ggplot(aes(x = year, y = ERC_hike, 
+             color = factor(runname, levels = c("RS1", "RS2", "RS3")),
+             shape = factor(runname, levels = c("RS1", "RS2", "RS3")))) + theme_bw() + 
+  geom_line() + geom_point(size = 2) + 
   coord_cartesian(ylim = c(0, 100)) + 
   scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,100, 10)) +
   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
                      label  = fig.labels.lowReturns) + 
+  scale_shape_manual(values = c(17, 15, 16),  name = "", 
+                     label  = fig.labels.lowReturns) +
   labs(title = fig.title,
        subtitle = fig.subtitle,
        caption = fig.caption,
@@ -888,13 +911,13 @@ fig_compareRS1.ERChike.noCap
 
 
 
-
+# Figure 5
 # Risk of low FR
 fig.title <- "Probability of funded ratio below 40% \nat any time prior to and including the given year \nunder different return scenarios"
 fig.subtitle <- "Current LAFPP funding policy%"
-fig.labels.lowReturns <- c("Scenario 2: \nAssumption achieved \nstochastic", 
-                           "Scenario 3: \n5 years of low returns", 
-                           "Scenario 4: \n15 years of low returns")
+fig.labels.lowReturns <- c("Scenario 2: \nAssumption Achieved \nStochastic Base Case", 
+                           "Scenario 3: \n5 Years of Low Returns", 
+                           "Scenario 4: \n15 Years of Low Returns")
 
 n1 <- "Notes:"
 n2 <- "\n   Scenario 2: Expected compound return is 7.5%, standard deviation is 12%"
@@ -910,12 +933,16 @@ fig_compareRS1.FR40less <- df_all.stch %>% filter(runname %in% runs.compareRS1[c
   #        policy = str_sub(runname, 5),
   #        policy = ifelse(policy == "cap", policy, "no_cap" ),
   #        policy = factor(policy, levels = c("no_cap", "cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
-  ggplot(aes(x = year, y = value, color = factor(runname, levels = c("RS1", "RS2", "RS3")))) + theme_bw() + 
-  geom_line() + geom_point() + 
+  ggplot(aes(x = year, y = value, 
+             color = factor(runname, levels = c("RS1", "RS2", "RS3")),
+             shape = factor(runname, levels = c("RS1", "RS2", "RS3")))) + theme_bw() + 
+  geom_line() + geom_point(size = 2) + 
   coord_cartesian(ylim = c(0, 10)) + 
   scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,100, 1)) + 
   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
+                     label  = fig.labels.lowReturns) + 
+  scale_shape_manual(values = c(17, 15, 16),  name = "", 
                      label  = fig.labels.lowReturns) + 
   labs(title = fig.title,
        subtitle = fig.subtitle,
@@ -992,31 +1019,35 @@ fig_compareRS1.MedFR
 
 
 
-# Impact on EEC rates of new hires after 2019
+# Impact on EEC rates of new hires 
 
 df_t7.stch.RS1 <- df_t7.stch %>% filter(runname %in% c("RS1_cap", "RS2_cap", "RS3_cap"), Tier == "t7") %>% 
   mutate(runname = factor(runname, labels = fig.labels.lowReturns))
 
+# Figure 19
 # Distribution of EEC rate
-fig.title <- "Distribution of employee contribution rates for new hires \nif the proposed ERC cap is applied to new hires"
+fig.title <- "Distribution of employee contribution rates for new hires \nif the proposed employer contribution cap is applied to new hires"
 fig_compareRS1.EECdist.t7 <- df_t7.stch.RS1 %>% 
   #mutate(runname = factor(runname, levels = c("RS1", "RS1_cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
   select(runname, year, EEC_PR.q25, EEC_PR.q50, EEC_PR.q75) %>% 
   gather(type, value, -runname, -year) %>% 
   ggplot(aes(x = year, y = value,
-             color = factor(type, levels = c("EEC_PR.q75", "EEC_PR.q50", "EEC_PR.q25")))) + 
+             color = factor(type, levels = c("EEC_PR.q75", "EEC_PR.q50", "EEC_PR.q25")),
+             shape = factor(type, levels = c("EEC_PR.q75", "EEC_PR.q50", "EEC_PR.q25")))) + 
   theme_bw()  + 
   facet_grid(.~runname) + 
   geom_line() + 
-  geom_point() + 
+  geom_point(size = 2) + 
   geom_hline(yintercept = 100, linetype = 2, size = 1) +
   coord_cartesian(ylim = c(0,20)) + 
   scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0, 500, 2.5)) + 
   scale_color_manual(values = c(RIG.red, RIG.blue, RIG.green),  name = NULL, 
                      label  = c("75th percentile", "50th percentile", "25th percentile")) + 
+  scale_shape_manual(values = c(17, 16, 15),  name = NULL, 
+                     label  = c("75th percentile", "50th percentile", "25th percentile")) + 
   labs(title = fig.title,
-       x = NULL, y = "Percent") + 
+       x = NULL, y = "Percent of payroll (%)") + 
   theme(axis.text.x = element_text(size = 8)) + 
   RIG.theme()
 fig_compareRS1.EECdist.t7
@@ -1044,32 +1075,36 @@ fig_compareRS1.EEChigh.t7
 
 
 
+
 # Impact on EEC rates: applying ERC cap on all current tiers
 
 df_allTiers.stch.RS1 <- df_all.stch %>% filter(runname %in% c("RS1_cap.allTiers", "RS2_cap.allTiers", "RS3_cap.allTiers")) %>% 
   mutate(runname = factor(runname, labels = fig.labels.lowReturns))
 
+# Figure 20
 # Distribution of EEC rate
-
 fig.title <- "Distribution of employee contribution rates \nif the proposed ERC cap is applied to all current tiers"
 fig_compareRS1.EECdist.allTiers <- df_allTiers.stch.RS1 %>% 
   #mutate(runname = factor(runname, levels = c("RS1", "RS1_cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
   select(runname, year, EEC_PR.q25, EEC_PR.q50, EEC_PR.q75) %>% 
   gather(type, value, -runname, -year) %>% 
   ggplot(aes(x = year, y = value,
-             color = factor(type, levels = c("EEC_PR.q75", "EEC_PR.q50", "EEC_PR.q25")))) + 
+             color = factor(type, levels = c("EEC_PR.q75", "EEC_PR.q50", "EEC_PR.q25")),
+             shape = factor(type, levels = c("EEC_PR.q75", "EEC_PR.q50", "EEC_PR.q25")))) + 
   theme_bw()  + 
   facet_grid(.~runname) + 
   geom_line() + 
-  geom_point() + 
+  geom_point(size = 2 ) + 
   geom_hline(yintercept = 100, linetype = 2, size = 1) +
   coord_cartesian(ylim = c(0,70)) + 
   scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0, 500, 10)) + 
   scale_color_manual(values = c(RIG.red, RIG.blue, RIG.green),  name = NULL, 
-                     label  = c("75th percentile", "50th percentile", "25th percentile")) + 
+                     label  = c("75th percentile", "50th percentile", "25th percentile")) +
+  scale_shape_manual(values = c(17, 16, 15),  name = NULL, 
+                     label  = c("75th percentile", "50th percentile", "25th percentile")) +
   labs(title = fig.title,
-       x = NULL, y = "Percent") + 
+       x = NULL, y = "Percent of payroll") + 
   theme(axis.text.x = element_text(size = 8),
         plot.title=element_text(hjust=0.5)) + 
   RIG.theme()
@@ -1111,9 +1146,9 @@ runs.compareRS2 <- c("RS1", "RS1_cap", "RS1_cap.allTiers",
                      "RS4", "RS4_cap", "RS4_cap.allTiers",
                      "RS5", "RS5_cap", "RS5_cap.allTiers")
 
-fig.labels.altAssumptions <- c("Scenario 2: \nAssumption achieved \nstochastic", 
-                               "Scenario 5: \nHigh volatility \nreflecting market forecasts", 
-                               "Scenario 6: \nLow expected return \nbased on LAFPP target portfolio")
+fig.labels.altAssumptions <- c("Scenario 2: \nAssumption Achieved \nStochastic Base Case", 
+                               "Scenario 5: \nHigh Volatility", 
+                               "Scenario 6: \nTarget Asset Allocation")
 
 df_all.stch.RS2 <-  df_all.stch %>% filter(runname %in% runs.compareRS2, Tier == "sumTiers")
 
@@ -1147,9 +1182,9 @@ fig_compareRS2.ERChigh
 # Risk of high ERC, current policy only
 fig.title <-  "Probability of ERC above 50% of payroll \nat any time prior to and including the given year \nunder different return scenarios"
 fig.subtitle <- "Current LAFPP funding policy%"
-fig.labels.altAssumptions <- c("Scenario 2: \nAssumption achieved \nstochastic", 
-                               "Scenario 5: \nHigh volatility \nreflecting market forecasts", 
-                               "Scenario 6: \nLow expected return \nbased on LAFPP target portfolio")
+# fig.labels.altAssumptions <- c("Scenario 2: \nAssumption achieved \nstochastic", 
+#                                "Scenario 5: \nHigh volatility \nreflecting market forecasts", 
+#                                "Scenario 6: \nLow expected return \nbased on LAFPP target portfolio")
 
 n1 <- "Notes:"
 n2 <- "\n   Scenario 2: Expected compound return is 7.5%, standard deviation is 12%"
@@ -1209,13 +1244,13 @@ fig_compareRS2.ERChike
 
 
 
-
+# Figure 10
 # Risk of sharp ERC increase, current policy
 fig.title <- "Probability of ERC rising by more than 10% of payroll \nin any 5-year period up to the given year \nunder different return scenarios"
 fig.subtitle <- "Current LAFPP funding policy"
-fig.labels.altAssumptions <- c("Scenario 2: \nAssumption achieved \nstochastic", 
-                               "Scenario 5: \nHigh volatility \nreflecting market forecasts", 
-                               "Scenario 6: \nLow expected return \nbased on LAFPP target portfolio")
+# fig.labels.altAssumptions <- c("Scenario 2: \nAssumption Achieved \nStochastic Base Case", 
+#                                "Scenario 5: \nHigh volatility", 
+#                                "Scenario 6: \nLow expected return \nbased on LAFPP target portfolio")
 n1 <- "Notes:"
 n2 <- "\n   Scenario 2: Expected compound return is 7.5%, standard deviation is 12%"
 n3 <- "\n   Scenario 5: Expected compound return is 7.5%, standard deviation is 17.2%"
@@ -1231,12 +1266,16 @@ fig_compareRS2.ERChike.noCap <- df_all.stch %>% filter(runname %in% c("RS1", "RS
   #        policy = ifelse(policy == "", "no_cap", policy),
   #        policy = factor(policy, levels = c("no_cap", "cap", "cap.allTiers"), 
   #                        labels = c("No ERC cap", "ERC cap for new hires", "ERC cap for all tiers"))) %>%  
-  ggplot(aes(x = year, y = ERC_hike, color = factor(runname, levels = c("RS1", "RS4", "RS5")))) + theme_bw() + 
-  geom_line() + geom_point() + 
+  ggplot(aes(x = year, y = ERC_hike, 
+             color = factor(runname, levels = c("RS1", "RS4", "RS5")),
+             shape = factor(runname, levels = c("RS1", "RS4", "RS5")))) + theme_bw() + 
+  geom_line() + geom_point(size = 2) + 
   coord_cartesian(ylim = c(0, 100)) + 
   scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,100, 10)) +
   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
+                     label  = fig.labels.altAssumptions) + 
+  scale_shape_manual(values = c(17, 15, 16),  name = "", 
                      label  = fig.labels.altAssumptions) + 
   labs(title = fig.title,
        subtitle = fig.subtitle,
@@ -1250,7 +1289,7 @@ fig_compareRS2.ERChike.noCap
 
 
 
-
+# Figure 8
 # Risk of low FR
 fig.title <- "Probability of funded ratio below 40% \nat any time prior to and including the given year \nunder different return scenarios"
 fig.subtitle <- "Current LAFPP funding policy"
@@ -1269,12 +1308,16 @@ fig_compareRS2.FR40less <-  df_all.stch %>% filter(runname %in% runs.compareRS2[
   #        policy = str_sub(runname, 5),
   #        policy = ifelse(policy == "cap", policy, "no_cap" ),
   #        policy = factor(policy, levels = c("no_cap", "cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
-  ggplot(aes(x = year, y = value, color = factor(runname, levels = c("RS1", "RS4", "RS5")))) + theme_bw() + 
-  geom_line() + geom_point() + 
+  ggplot(aes(x = year, y = value, 
+             color = factor(runname, levels = c("RS1", "RS4", "RS5")),
+             shape = factor(runname, levels = c("RS1", "RS4", "RS5")))) + theme_bw() + 
+  geom_line() + geom_point(size = 2) + 
   coord_cartesian(ylim = c(0, 20)) + 
   scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,100, 2.5)) +
   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
+                     label  = fig.labels.altAssumptions) + 
+  scale_shape_manual(values = c(17, 15, 16),  name = "", 
                      label  = fig.labels.altAssumptions) + 
   labs(title = fig.title,
        subtitle = fig.subtitle,
@@ -1315,7 +1358,7 @@ fig_compareRS2.MedERC <- df_all.stch.RS2 %>%
 fig_compareRS2.MedERC
 
 
-
+# Figure 9
 # Median ERC rate, current policy only
 fig.title <- "Median employer contribution rates \nunder different return scenarios and funding approaches"
 fig.subtitle <- "Current LAFPP funding policy"
@@ -1328,12 +1371,16 @@ fig.caption <- paste0(n1, n2, n3, n4)
 
 fig_compareRS2.MedERC.noCap <- df_all.stch.RS2 %>% filter(runname %in% c("RS1", "RS4", "RS5"), Tier == "sumTiers") %>%
   select(runname, year, ERC_PR.q50) %>% 
-  ggplot(aes(x = year, y = ERC_PR.q50, color = factor(runname, levels = c("RS1", "RS4", "RS5")))) + theme_bw() + 
-  geom_line() + geom_point() + 
+  ggplot(aes(x = year, y = ERC_PR.q50, 
+             color = factor(runname, levels = c("RS1", "RS4", "RS5")),
+             shape = factor(runname, levels = c("RS1", "RS4", "RS5")))) + theme_bw() + 
+  geom_line() + geom_point(size = 2) + 
   coord_cartesian(ylim = c(0, 50)) + 
   scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,100, 10)) +
   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
+                     label  = fig.labels.altAssumptions) + 
+  scale_shape_manual(values = c(17, 15, 16),  name = "", 
                      label  = fig.labels.altAssumptions) + 
   labs(title = fig.title,
        subtitle = fig.subtitle,
@@ -1368,7 +1415,7 @@ fig_compareRS2.MedERC.noCap <- df_all.stch.RS2 %>% filter(runname %in% c("RS1", 
 fig_compareRS2.MedERC.noCap
 
 
-
+# Figure 7
 # Median FR
 fig.title <- "Median funded ratios \nunder different return scenarios"
 fig.subtitle <- "Current LAFPP funding policy"
@@ -1380,13 +1427,17 @@ fig_compareRS2.MedFR <-  df_all.stch %>% filter(runname %in% runs.compareRS2[c(1
   #        policy = str_sub(runname, 5),
   #        policy = ifelse(policy == "cap", policy, "no_cap" ),
   #        policy = factor(policy, levels = c("no_cap", "cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
-  ggplot(aes(x = year, y = value, color = factor(runname, levels = c("RS1", "RS4", "RS5")))) + theme_bw() + 
-  geom_line() + geom_point() + 
+  ggplot(aes(x = year, y = value, 
+             color = factor(runname, levels = c("RS1", "RS4", "RS5")),
+             shape = factor(runname, levels = c("RS1", "RS4", "RS5")))) + theme_bw() + 
+  geom_line() + geom_point(size = 2) + 
   geom_hline(yintercept = 100, linetype = 2, size = 1) + 
   coord_cartesian(ylim = c(0, 150)) + 
   scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0,500, 20)) +
   scale_color_manual(values = c(RIG.red, RIG.green, RIG.blue),  name = "", 
+                     label  = fig.labels.altAssumptions) + 
+  scale_shape_manual(values = c(17, 15, 16),  name = "", 
                      label  = fig.labels.altAssumptions) + 
   labs(title = fig.title,
        subtitle = fig.subtitle,
@@ -1470,8 +1521,8 @@ fig_compareRS2.distERC
 
 
 
-
-# Impact on EEC rates of new hires after 2019
+# Figure 21
+# Impact on EEC rates of new hires
 
 df_t7.stch.RS2 <- df_t7.stch %>% filter(runname %in% c("RS1_cap", "RS4_cap", "RS5_cap"), Tier == "t7") %>% 
   mutate(runname = factor(runname, labels = fig.labels.altAssumptions))
@@ -1483,19 +1534,22 @@ fig_compareRS2.EECdist.t7 <- df_t7.stch.RS2 %>%
   select(runname, year, EEC_PR.q25, EEC_PR.q50, EEC_PR.q75) %>% 
   gather(type, value, -runname, -year) %>% 
   ggplot(aes(x = year, y = value,
-             color = factor(type, levels = c("EEC_PR.q75", "EEC_PR.q50", "EEC_PR.q25")))) + 
+             color = factor(type, levels = c("EEC_PR.q75", "EEC_PR.q50", "EEC_PR.q25")),
+             shape = factor(type, levels = c("EEC_PR.q75", "EEC_PR.q50", "EEC_PR.q25")))) + 
   theme_bw()  + 
   facet_grid(.~runname) + 
   geom_line() + 
-  geom_point() + 
+  geom_point(size =2) + 
   geom_hline(yintercept = 100, linetype = 2, size = 1) +
   coord_cartesian(ylim = c(0,20)) + 
   scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0, 500, 2.5)) + 
   scale_color_manual(values = c(RIG.red, RIG.blue, RIG.green),  name = NULL, 
-                     label  = c("75th percentile", "50th percentile", "25th percentile")) + 
+                     label  = c("75th percentile", "50th percentile", "25th percentile")) +
+  scale_shape_manual(values = c(17, 16, 15),  name = NULL, 
+                     label  = c("75th percentile", "50th percentile", "25th percentile")) +
   labs(title = fig.title,
-       x = NULL, y = "Percent") + 
+       x = NULL, y = "Percent of payroll (%)") + 
   theme(axis.text.x = element_text(size = 8)) + 
   RIG.theme()
 fig_compareRS2.EECdist.t7
@@ -1521,29 +1575,32 @@ fig_compareRS2.EEChigh.t7 <- df_t7.stch.RS2 %>%
 fig_compareRS2.EEChigh.t7
 
 
-
+# Figure 22
 # Impact on EEC rates: applying the proposed ERC cap to all tiers
 
 df_allTiers.stch.RS2 <- df_all.stch %>% filter(runname %in% c("RS1_cap.allTiers", "RS4_cap.allTiers", "RS5_cap.allTiers")) %>% 
   mutate(runname = factor(runname, labels = fig.labels.altAssumptions))
 
 # Distribution of EEC rate
-fig.title <- "Distribution of employee contribution rate for new hires \nif the proposed ERC cap is applied to all current tiers"
+fig.title <- "Distribution of employee contribution rate for new hires \nif the proposed employer contribution cap is applied to all current tiers"
 fig_compareRS2.EECdist.allTiers <- df_allTiers.stch.RS2 %>% 
   #mutate(runname = factor(runname, levels = c("RS1", "RS1_cap"), labels = c("without ERC cap", "with ERC cap"))) %>% 
   select(runname, year, EEC_PR.q25, EEC_PR.q50, EEC_PR.q75) %>% 
   gather(type, value, -runname, -year) %>% 
   ggplot(aes(x = year, y = value,
-             color = factor(type, levels = c("EEC_PR.q75", "EEC_PR.q50", "EEC_PR.q25")))) + 
+             color = factor(type, levels = c("EEC_PR.q75", "EEC_PR.q50", "EEC_PR.q25")),
+             shape = factor(type, levels = c("EEC_PR.q75", "EEC_PR.q50", "EEC_PR.q25")))) + 
   theme_bw()  + 
   facet_grid(.~runname) + 
   geom_line() + 
-  geom_point() + 
+  geom_point(size = 2) + 
   geom_hline(yintercept = 100, linetype = 2, size = 1) +
   coord_cartesian(ylim = c(0,70)) + 
   scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
   scale_y_continuous(breaks = seq(0, 500, 10)) + 
   scale_color_manual(values = c(RIG.red, RIG.blue, RIG.green),  name = NULL, 
+                     label  = c("75th percentile", "50th percentile", "25th percentile")) + 
+  scale_shape_manual(values = c(17, 16, 15),  name = NULL, 
                      label  = c("75th percentile", "50th percentile", "25th percentile")) + 
   labs(title = fig.title,
        x = NULL, y = "Percent") + 
@@ -1753,48 +1810,69 @@ g.width <- 12
 # g.height.3col <- 
 # g.width.3col <- 
 
-ggsave(file = paste0(Outputs_folder, "fig_distReturn.png"), fig_distReturn, height = 7, width = 10)
+ggsave(file = paste0(Outputs_folder, "fig1_stchDet.FRdist.pdf"), fig_stchDet.FRdist, height = 7*0.8, width = 10*0.8)
+ggsave(file = paste0(Outputs_folder, "fig2_stchDet.FR40less.pdf"), fig_stchDet.FR40less, height = 7*0.8, width = 10*0.8)
+ggsave(file = paste0(Outputs_folder, "fig3_stchDet.ERCdist.pdf"), fig_stchDet.ERCdist, height = 7*0.8, width = 10*0.8)
+ggsave(file = paste0(Outputs_folder, "fig4_stchDet.ERChike.pdf"), fig_stchDet.ERChike, height = 7*0.8, width = 10*0.8)
+ggsave(file = paste0(Outputs_folder, "fig5_compareRS1.FR40less.pdf"), fig_compareRS1.FR40less, height = 7*0.8, width = 9*0.8)
+ggsave(file = paste0(Outputs_folder, "fig6_compareRS1.ERChike.noCap.pdf"), fig_compareRS1.ERChike.noCap, height = 0.8*7, width = 0.8*9)
+ggsave(file = paste0(Outputs_folder, "fig7_compareRS2.MedFR.pdf"), fig_compareRS2.MedFR, height = 7*0.8, width = 10*0.8)
+ggsave(file = paste0(Outputs_folder, "fig8_compareRS2.FR40less.pdf"), fig_compareRS2.FR40less, height = 7*0.8, width = 10*0.8)
+ggsave(file = paste0(Outputs_folder, "fig9_compareRS2.MedERC.noCap.pdf"), fig_compareRS2.MedERC.noCap, height = 0.8*7, width = 0.8*10)
+ggsave(file = paste0(Outputs_folder, "fig10_compareRS2.ERChike.noCap.pdf"), fig_compareRS2.ERChike.noCap, height = 0.8*7, width = 0.8*10)
+ggsave(file = paste0(Outputs_folder, "fig11_policy.ERCdist.pdf"), fig_policy.ERCdist, height = 0.8*5, width = 0.8*15)
+ggsave(file = paste0(Outputs_folder, "fig12_policy.ERChike.pdf"), fig_policy.ERChike, height = 7*0.8, width = 10*0.8)
+ggsave(file = paste0(Outputs_folder, "fig13_policy.EECdist.t7.pdf"), fig_policy.EECdist.t7, height = 7*0.8, width = 10*0.8)
+ggsave(file = paste0(Outputs_folder, "fig14_policy.EECdist.allTiers.pdf"), fig_policy.EECdist.allTiers, height = 7*0.8, width = 10*0.8)
+ggsave(file = paste0(Outputs_folder, "fig18_distReturn.pdf"), fig_distReturn, height = 7, width = 10)
+ggsave(file = paste0(Outputs_folder, "fig19_compareRS1.EECdist.t7.pdf"), fig_compareRS1.EECdist.t7, height = 6*0.8, width = 15*0.8)
+ggsave(file = paste0(Outputs_folder, "fig20_compareRS1.EECdist.allTiers.pdf"), fig_compareRS1.EECdist.allTiers, height = 6*0.8, width = 15*0.8)
+ggsave(file = paste0(Outputs_folder, "fig21_compareRS2.EECdist.t7.pdf"), fig_compareRS2.EECdist.t7, height = 6*0.7, width = 15*0.7)
+ggsave(file = paste0(Outputs_folder, "fig22_compareRS2.EECdist.allTiers.pdf"), fig_compareRS2.EECdist.allTiers, height = 6*0.7, width = 15*0.7)
+
+
+ggsave(file = paste0(Outputs_folder, "fig18_distReturn.png"), fig_distReturn, height = 7, width = 10)
 ggsave(file = paste0(Outputs_folder, "fig_distFR30.png"), fig_distFR30, height = 7, width = 10)
-ggsave(file = paste0(Outputs_folder, "fig_stchDet.FR40less.png"), fig_stchDet.FR40less, height = 7*0.8, width = 10*0.8)
+ggsave(file = paste0(Outputs_folder, "fig2_stchDet.FR40less.png"), fig_stchDet.FR40less, height = 7*0.8, width = 10*0.8)
 ggsave(file = paste0(Outputs_folder, "fig_stchDet.ERChigh.png"), fig_stchDet.ERChigh, height = 7*0.8, width = 10*0.8)
-ggsave(file = paste0(Outputs_folder, "fig_stchDet.ERChike.png"), fig_stchDet.ERChike, height = 7*0.8, width = 10*0.8)
+ggsave(file = paste0(Outputs_folder, "fig4_stchDet.ERChike.png"), fig_stchDet.ERChike, height = 7*0.8, width = 10*0.8)
 ggsave(file = paste0(Outputs_folder, "fig_stchDet.3measures.png"), fig_stchDet.3measures, height = g.height, width = g.width)
 ggsave(file = paste0(Outputs_folder, "fig_stchDet.2measures.png"), fig_stchDet.2measures, height = 1.1*g.height, width = g.width)
-ggsave(file = paste0(Outputs_folder, "fig_stchDet.ERCdist.png"), fig_stchDet.ERCdist, height = 7*0.8, width = 10*0.8)
-ggsave(file = paste0(Outputs_folder, "fig_stchDet.FRdist.png"), fig_stchDet.FRdist, height = 7*0.8, width = 10*0.8)
+ggsave(file = paste0(Outputs_folder, "fig3_stchDet.ERCdist.png"), fig_stchDet.ERCdist, height = 7*0.8, width = 10*0.8)
+ggsave(file = paste0(Outputs_folder, "fig1_stchDet.FRdist.png"), fig_stchDet.FRdist, height = 7*0.8, width = 10*0.8)
 
 
 
 ggsave(file = paste0(Outputs_folder, "fig_policy.FRdist.png"), fig_policy.FRdist, height = 7, width = 13)
-ggsave(file = paste0(Outputs_folder, "fig_policy.ERCdist.png"), fig_policy.ERCdist, height = 0.8*5, width = 0.8*15)
+ggsave(file = paste0(Outputs_folder, "fig11_policy.ERCdist.png"), fig_policy.ERCdist, height = 0.8*5, width = 0.8*15)
 ggsave(file = paste0(Outputs_folder, "fig_policy.ERChigh.png"), fig_policy.ERChigh, height = 7*0.8, width = 10*0.8)
-ggsave(file = paste0(Outputs_folder, "fig_policy.ERChike.png"), fig_policy.ERChike, height = 7*0.8, width = 10*0.8)
-ggsave(file = paste0(Outputs_folder, "fig_policy.EECdist.t7.png"), fig_policy.EECdist.t7, height = 7*0.8, width = 10*0.8)
+ggsave(file = paste0(Outputs_folder, "fig12_policy.ERChike.png"), fig_policy.ERChike, height = 7*0.8, width = 10*0.8)
+ggsave(file = paste0(Outputs_folder, "fig13_policy.EECdist.t7.png"), fig_policy.EECdist.t7, height = 7*0.8, width = 10*0.8)
 ggsave(file = paste0(Outputs_folder, "fig_policy.EEChigh.t7.png"), fig_policy.EEChigh.t7, height = 7*0.8, width = 9*0.8)
-ggsave(file = paste0(Outputs_folder, "fig_policy.EECdist.allTiers.png"), fig_policy.EECdist.allTiers, height = 7*0.8, width = 10*0.8)
+ggsave(file = paste0(Outputs_folder, "fig14_policy.EECdist.allTiers.png"), fig_policy.EECdist.allTiers, height = 7*0.8, width = 10*0.8)
 ggsave(file = paste0(Outputs_folder, "fig_policy.EEChigh.allTiers.png"), fig_policy.EEChigh.allTiers, height = 7*0.8, width = 9*0.8)
 
 
 ggsave(file = paste0(Outputs_folder, "fig_compareRS1.MedFR.png"), fig_compareRS1.MedFR, height = 7*0.9, width = 10*0.9)
-ggsave(file = paste0(Outputs_folder, "fig_compareRS1.FR40less.png"), fig_compareRS1.FR40less, height = 7*0.8, width = 9*0.8)
-ggsave(file = paste0(Outputs_folder, "fig_compareRS1.ERChike.noCap.png"), fig_compareRS1.ERChike.noCap, height = 0.8*7, width = 0.8*9)
+ggsave(file = paste0(Outputs_folder, "fig5_compareRS1.FR40less.png"), fig_compareRS1.FR40less, height = 7*0.8, width = 9*0.8)
+ggsave(file = paste0(Outputs_folder, "fig6_compareRS1.ERChike.noCap.png"), fig_compareRS1.ERChike.noCap, height = 0.8*7, width = 0.8*9)
 ggsave(file = paste0(Outputs_folder, "fig_compareRS1.ERChigh.noCap.png"), fig_compareRS1.ERChigh.noCap, height = 0.8*7, width = 0.8*9)
 ggsave(file = paste0(Outputs_folder, "fig_compareRS1.MedERC.png"), fig_compareRS1.MedERC, height = 0.8*5, width = 0.8*15)
 ggsave(file = paste0(Outputs_folder, "fig_compareRS1.ERChigh.png"), fig_compareRS1.ERChigh, height = 0.8*5, width = 0.8*15)
 ggsave(file = paste0(Outputs_folder, "fig_compareRS1.ERChike.png"), fig_compareRS1.ERChike, height = 0.8*5, width = 0.8*15)
-ggsave(file = paste0(Outputs_folder, "fig_compareRS1.EECdist.t7.png"), fig_compareRS1.EECdist.t7, height = 6*0.8, width = 15*0.8)
+ggsave(file = paste0(Outputs_folder, "fig19_compareRS1.EECdist.t7.png"), fig_compareRS1.EECdist.t7, height = 6*0.8, width = 15*0.8)
 ggsave(file = paste0(Outputs_folder, "fig_compareRS1.EEChigh.t7.png"), fig_compareRS1.EEChigh.t7, height = 7, width = 10)
-ggsave(file = paste0(Outputs_folder, "fig_compareRS1.EECdist.allTiers.png"), fig_compareRS1.EECdist.allTiers, height = 6*0.8, width = 15*0.8)
+ggsave(file = paste0(Outputs_folder, "fig20_compareRS1.EECdist.allTiers.png"), fig_compareRS1.EECdist.allTiers, height = 6*0.8, width = 15*0.8)
 ggsave(file = paste0(Outputs_folder, "fig_compareRS1.EEChigh.allTiers.png"), fig_compareRS1.EEChigh.allTiers, height = 7, width = 10)
 
 
-ggsave(file = paste0(Outputs_folder, "fig_compareRS2.MedFR.png"), fig_compareRS2.MedFR, height = 7*0.8, width = 10*0.8)
-ggsave(file = paste0(Outputs_folder, "fig_compareRS2.FR40less.png"), fig_compareRS2.FR40less, height = 7*0.8, width = 10*0.8)
-ggsave(file = paste0(Outputs_folder, "fig_compareRS2.MedERC.noCap.png"), fig_compareRS2.MedERC.noCap, height = 0.8*7, width = 0.8*10)
+ggsave(file = paste0(Outputs_folder, "fig7_compareRS2.MedFR.png"), fig_compareRS2.MedFR, height = 7*0.8, width = 10*0.8)
+ggsave(file = paste0(Outputs_folder, "fig8_compareRS2.FR40less.png"), fig_compareRS2.FR40less, height = 7*0.8, width = 10*0.8)
+ggsave(file = paste0(Outputs_folder, "fig9_compareRS2.MedERC.noCap.png"), fig_compareRS2.MedERC.noCap, height = 0.8*7, width = 0.8*10)
 ggsave(file = paste0(Outputs_folder, "fig_compareRS2.ERChigh.noCap.png"), fig_compareRS2.ERChigh.noCap, height = 0.8*7, width = 0.8*10)
-ggsave(file = paste0(Outputs_folder, "fig_compareRS2.ERChike.noCap.png"), fig_compareRS2.ERChike.noCap, height = 0.8*7, width = 0.8*10)
-ggsave(file = paste0(Outputs_folder, "fig_compareRS2.EECdist.t7.png"), fig_compareRS2.EECdist.t7, height = 6*0.7, width = 15*0.7)
-ggsave(file = paste0(Outputs_folder, "fig_compareRS2.EECdist.allTiers.png"), fig_compareRS2.EECdist.allTiers, height = 6*0.7, width = 15*0.7)
+ggsave(file = paste0(Outputs_folder, "fig10_compareRS2.ERChike.noCap.png"), fig_compareRS2.ERChike.noCap, height = 0.8*7, width = 0.8*10)
+ggsave(file = paste0(Outputs_folder, "fig21_compareRS2.EECdist.t7.png"), fig_compareRS2.EECdist.t7, height = 6*0.7, width = 15*0.7)
+ggsave(file = paste0(Outputs_folder, "fig22_compareRS2.EECdist.allTiers.png"), fig_compareRS2.EECdist.allTiers, height = 6*0.7, width = 15*0.7)
 
 ggsave(file = paste0(Outputs_folder, "fig_compareRS2.MedERC.png"), fig_compareRS2.MedERC, height = 0.8*5, width = 0.8*15)
 ggsave(file = paste0(Outputs_folder, "fig_compareRS2.distFR.png"), fig_compareRS2.distFR, height = 5*0.9, width = 15*0.9)
