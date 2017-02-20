@@ -771,9 +771,9 @@ fig.labels.lowReturns <- c("Scenario 2: \nAssumption Achieved \nStochastic Base 
 # Risk of high ERC
 fig.title <-  "Probability of ERC above 50% of payroll \nat any time prior to and including the given year \nunder different return scenarios"
 
-fig.labels.lowReturns <- c("Scenario 2: \nAssumption achieved \nstochastic", 
-                           "Scenario 3: \n5 years of low returns", 
-                           "Scenario 4: \n15 years of low returns")
+# fig.labels.lowReturns <- c("Scenario 2: \nAssumption achieved \nstochastic", 
+#                            "Scenario 3: \n5 years of low returns", 
+#                            "Scenario 4: \n15 years of low returns")
 
 fig_compareRS1.ERChigh <- df_all.stch %>% filter(runname %in% runs.compareRS1, Tier == "sumTiers") %>% 
   select(runname, year, ERC_high) %>% 
@@ -803,9 +803,9 @@ fig_compareRS1.ERChigh
 # Risk of high ERC, current policy only
 fig.title <-  "Probability of ERC above 50% of payroll \nat any time prior to and including the given year \nunder different return scenarios"
 fig.subtitle <- "Current LAFPP funding policy"
-fig.labels.lowReturns <- c("Scenario 2: \nAssumption achieved \nstochastic", 
-                           "Scenario 3: \n5 years of low returns", 
-                           "Scenario 4: \n15 years of low returns")
+# fig.labels.lowReturns <- c("Scenario 2: \nAssumption achieved \nstochastic", 
+#                            "Scenario 3: \n5 years of low returns", 
+#                            "Scenario 4: \n15 years of low returns")
 
 n1 <- "Notes:"
 n2 <- "\n   Scenario 2: Expected compound return is 7.5%, standard deviation is 12%"
@@ -834,9 +834,9 @@ fig_compareRS1.ERChigh.noCap
 
 # Risk of sharp ERC increase
 fig.title <- "Probability of ERC rising by more than 10% of payroll \nin any 5-year period up to the given year \nunder different return scenarios"
-fig.labels.lowReturns <- c("Scenario 2: \nAssumption achieved \nstochastic", 
-                           "Scenario 3: \n5 years of low returns", 
-                           "Scenario 4: \n15 years of low returns")
+# fig.labels.lowReturns <- c("Scenario 2: \nAssumption achieved \nstochastic", 
+#                            "Scenario 3: \n5 years of low returns", 
+#                            "Scenario 4: \n15 years of low returns")
 
 fig_compareRS1.ERChike <- df_all.stch %>% filter(runname %in% runs.compareRS1, Tier == "sumTiers") %>% 
   select(runname, year, ERC_hike) %>% 
@@ -866,9 +866,9 @@ fig_compareRS1.ERChike
 # Risk of sharp ERC increase, current policy
 fig.title <- "Probability of ERC rising by more than 10% of payroll \nin any 5-year period up to the given year \nunder different return scenarios"
 fig.subtitle <- "Current LAFPP funding policy"
-fig.labels.lowReturns <- c("Scenario 2: \nAssumption Achieved \nStochastic Base Case", 
-                           "Scenario 3: \n5 Years of Low Returns", 
-                           "Scenario 4: \n15 Years of Low Returns")
+# fig.labels.lowReturns <- c("Scenario 2: \nAssumption Achieved \nStochastic Base Case", 
+#                            "Scenario 3: \n5 Years of Low Returns", 
+#                            "Scenario 4: \n15 Years of Low Returns")
 n1 <- "Notes:"
 n2 <- "\n   Scenario 2: Expected compound return is 7.5%, standard deviation is 12%"
 n3 <- "\n   Scenario 3: Expected compound return is 7.1%, standard deviation is 12%"
@@ -914,10 +914,10 @@ fig_compareRS1.ERChike.noCap
 # Figure 5
 # Risk of low FR
 fig.title <- "Probability of funded ratio below 40% \nat any time prior to and including the given year \nunder different return scenarios"
-fig.subtitle <- "Current LAFPP funding policy%"
-fig.labels.lowReturns <- c("Scenario 2: \nAssumption Achieved \nStochastic Base Case", 
-                           "Scenario 3: \n5 Years of Low Returns", 
-                           "Scenario 4: \n15 Years of Low Returns")
+fig.subtitle <- "Current LAFPP funding policy"
+# fig.labels.lowReturns <- c("Scenario 2: \nAssumption Achieved \nStochastic Base Case", 
+#                            "Scenario 3: \n5 Years of Low Returns", 
+#                            "Scenario 4: \n15 Years of Low Returns")
 
 n1 <- "Notes:"
 n2 <- "\n   Scenario 2: Expected compound return is 7.5%, standard deviation is 12%"
@@ -958,9 +958,9 @@ fig_compareRS1.FR40less
 # Median ERC rate
 fig.title <- "Median employer contribution rates \nunder different return scenarios and funding approaches"
 
-fig.labels.lowReturns <- c("Scenario 2: \nAssumption achieved \nstochastic", 
-                           "Scenario 3: \n5 years of low returns", 
-                           "Scenario 4: \n15 years of low returns")
+# fig.labels.lowReturns <- c("Scenario 2: \nAssumption achieved \nstochastic", 
+#                            "Scenario 3: \n5 years of low returns", 
+#                            "Scenario 4: \n15 years of low returns")
 
 fig_compareRS1.MedERC <- df_all.stch %>% filter(runname %in% runs.compareRS1, Tier == "sumTiers") %>% 
   select(runname, year, ERC_PR.q50) %>% 
@@ -990,9 +990,9 @@ fig_compareRS1.MedERC
 # Median  FR
 fig.title <- "Median funded ratios \nunder different return scenarios"
 
-fig.labels.lowReturns <- c("Scenario 2: \nAssumption achieved \nstochastic", 
-                           "Scenario 3: \n5 years of low returns", 
-                           "Scenario 4: \n15 years of low returns")
+# fig.labels.lowReturns <- c("Scenario 2: \nAssumption achieved \nstochastic", 
+#                            "Scenario 3: \n5 years of low returns", 
+#                            "Scenario 4: \n15 years of low returns")
 
 fig_compareRS1.MedFR <- df_all.stch %>% filter(runname %in% runs.compareRS1[c(1,4,7)], Tier == "sumTiers") %>% 
   select(runname, year, FR.q50) %>% 
@@ -1442,7 +1442,7 @@ fig_compareRS2.MedFR <-  df_all.stch %>% filter(runname %in% runs.compareRS2[c(1
   labs(title = fig.title,
        subtitle = fig.subtitle,
        caption = fig.caption,
-       x = NULL, y = "Percent of payroll (%)") + 
+       x = NULL, y = "Percent") + 
   guides(color = guide_legend(keywidth = 1.5, keyheight = 3)) + 
   RIG.theme()
 fig_compareRS2.MedFR 
