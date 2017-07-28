@@ -26,10 +26,6 @@ library("btools")
 options(dplyr.print_min = 60) # default is 10
 
 
-
-
-
-
 source("Functions.R")
 
 
@@ -326,26 +322,5 @@ for(runName in runList$runname ){
   }
 
 }
-
-
-
-
-
-#paramlist$Tier
-
-# Checking the importance of death benefit
-
-# Tier_select <- "t5"
-# source("Test_0_Master_singleTier.R")
-
-
-# 
-# 
-# 
-# 166987857/16955579066
-# 
-# (16955579066 + 541456502 - 798249899)*0.04
-
-
 
 

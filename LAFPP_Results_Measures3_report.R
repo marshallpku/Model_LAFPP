@@ -2181,3 +2181,35 @@ results_all %>% filter(runname == "RS1", sim == 0) %>% select(runname, sim, year
 
 (1.075)^30
 (1.0753)^30
+
+
+# Examine disability benefits (for MISERS DC disability benefits) #####
+
+results_all %>% filter(runname == "RS1", sim == 1) %>% select(year, NC.disb, B.disb.la, B.disb.ca, AL.act.disb, AL.disb.la, AL.disb.ca) %>% 
+  mutate(B.disb = B.disb.la + B.disb.ca,
+         AL.disb = AL.act.disb + AL.disb.la+ AL.disb.ca,
+         NC_AL.disb = NC.disb/AL.disb,
+         NC_B.disb  = NC.disb/B.disb, 
+         B_AL.disb =  B.disb/AL.disb,
+         gAL = 100*(AL.disb/lag(AL.disb) - 1 ),
+         gNC = 100*(NC.disb/lag(NC.disb) - 1 ),
+         gB  = 100*(B.disb/lag(B.disb) - 1 ))
+
+
+
+# MA in AV: 10416577282 
+# AA in AV: 10731762400
+
+
+
+
+
+
+
+
+
+
+
+
+
+
